@@ -1,8 +1,8 @@
-/* Fyblic V1000 — palette globale + recherche.
+/* Fyblic V1023 — palette globale + recherche, fond système unifié.
    Présentation uniquement : aucune donnée métier, aucun compteur ni média n'est modifié. */
 :root{
-  --ha997-bg:#0d1117;
-  --ha997-bg-rgb:13,17,23;
+  --ha997-bg:#080b10;
+  --ha997-bg-rgb:8,11,16;
   --ha997-surface:#111720;
   --ha997-surface-2:#151c26;
   --ha997-surface-3:#19222d;
@@ -19,7 +19,7 @@
   --ha988-home-surface-rgb:var(--ha997-bg-rgb)!important;
   --ha988-home-surface-raised:var(--ha997-surface-2)!important;
   --bg:var(--ha997-bg)!important;
-  --bg-deep:#090d12!important;
+  --bg-deep:#05070b!important;
   --bg-soft:var(--ha997-surface)!important;
   --panel:var(--ha997-surface)!important;
   --panel2:var(--ha997-surface-2)!important;

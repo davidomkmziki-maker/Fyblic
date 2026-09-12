@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1022-brand-offline-theme-20260912';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1023-system-surface-unified-20260912';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -13,7 +13,7 @@ var HAPPYAD_VAPID_PUBLIC_KEY = 'BA3UgDp8-6VYN6nZgSNX14LeZVLK6FesJgLXVytEKkKgplK_
 var HAPPYAD_APP_SHELL = [
   './',
   './index.html',
-  './index.html?v=v1022-brand-offline-theme',
+  './index.html?v=v1023-system-surface-unified',
   './manifest.webmanifest',
   './core/fyblic-system-theme-v1022.css?v=1022-world-theme',
   './icons/fyblic-logo-exact-v1021.png',
@@ -45,7 +45,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-card-layout-master-v982.css?v=986-professional-icons-love',
   './core/home-visual-maturity-master-v988.css?v=1006-action-count-15',
   './core/action-counters-global-v1006.css?v=1006-counts-15-video-home-size',
-  './core/happyad-global-coherence-v997.css?v=1000-global-coherence-no-story-overlay',
+  './core/happyad-global-coherence-v997.css?v=1023-system-surface-unified',
   './core/happyad-global-coherence-v997.js?v=1000-global-coherence-no-story-overlay',
   './core/happyad-search-nav-v998.css?v=1005r4-search-primary-name-white-locked',
   './core/story-name-presence-master-v999.css?v=999-story-name-presence-off',

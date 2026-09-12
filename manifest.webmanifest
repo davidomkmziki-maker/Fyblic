@@ -2,7 +2,7 @@
   "name": "Fyblic",
   "short_name": "Fyblic",
   "description": "Fyblic — réseau social.",
-  "start_url": "./index.html?source=pwa&v=1022",
+  "start_url": "./index.html?source=pwa&v=1023",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
