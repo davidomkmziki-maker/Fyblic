@@ -1,0 +1,14 @@
+/* Fyblic V681 — le menu inférieur ne doit jamais couvrir l'interface Commentaires. */
+body.happyadCommentOverlayOpenV681 .bottom.happyadMainDockV585,
+body.happyadCommentOverlayOpenV681 #happyadMainDockV585{
+  transform:translate3d(0,calc(100% + 24px + env(safe-area-inset-bottom,0px)),0)!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  transition:none!important;
+}
+
+/* La zone de saisie reste au-dessus de la barre système Android, sans réserver la place du dock. */
+body.happyadCommentOverlayOpenV681 #happyadHomeCommentPopup .haCommentComposer{
+  z-index:8!important;
+}

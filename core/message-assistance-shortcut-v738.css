@@ -1,0 +1,17 @@
+/* Fyblic V738 — accès Assistance visible dans Messages */
+.message-assistance-shortcut-v738{
+  width:36px!important;height:36px!important;min-width:36px!important;flex:0 0 36px!important;
+  margin:0!important;padding:0!important;border:1px solid rgba(105,143,255,.34)!important;
+  border-radius:13px!important;display:grid!important;place-items:center!important;
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;z-index:8!important;
+  color:#c2d5ff!important;background:linear-gradient(145deg,rgba(37,75,142,.72),rgba(8,24,47,.96))!important;
+  box-shadow:0 6px 18px rgba(15,72,180,.18),inset 0 1px 0 rgba(255,255,255,.06)!important;
+  cursor:pointer!important;-webkit-tap-highlight-color:transparent!important;
+}
+.message-assistance-shortcut-v738 svg{width:19px!important;height:19px!important;display:block!important}
+.message-assistance-shortcut-v738:active{transform:scale(.96)!important;background:rgba(41,87,166,.78)!important}
+@media(max-width:390px){
+  .message-assistance-shortcut-v738{width:33px!important;height:33px!important;min-width:33px!important;flex-basis:33px!important;border-radius:12px!important}
+  .message-assistance-shortcut-v738 svg{width:18px!important;height:18px!important}
+  #listView .head-text{min-width:0!important}
+}

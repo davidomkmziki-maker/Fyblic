@@ -1,0 +1,26 @@
+TEST EXACT V1006
+
+1. ACCUEIL
+- Vérifier 1, 999, 1K, 999K, 999.9K, 1M, 1.5M et 1MD sur les compteurs d'actions.
+- Tous doivent avoir exactement la même taille visuelle de 15 px.
+- Aucun suffixe ne doit être plus petit que les chiffres.
+- Aucun texte ne doit sortir de sa ligne d'action.
+
+2. VUES ACCUEIL
+- Tester une vidéo avec compteur court puis long (ex. 1K et 999.9K).
+- Le compteur doit rester dans son badge noir, sur une seule ligne, à 15 px.
+
+3. FULLSCREEN PHOTO
+- Ouvrir une photo depuis Accueil et un album.
+- Vérifier les 5 actions et les formats longs : 15 px, aucun débordement.
+
+4. CENTRALE VIDÉO
+- Ouvrir une vidéo avec plusieurs compteurs élevés.
+- Les boutons d'action doivent avoir la même échelle que l'Accueil : cible 44 px, SVG 24 px.
+- Les compteurs doivent être à 15 px.
+- Vérifier spécialement 999.9K : il doit être compact, sur une ligne, sans chiffre brut long.
+
+5. NON-RÉGRESSION
+- Tester Like, Commentaire, Partage, Republier et Favoris.
+- Tester le double-tap Like vidéo.
+- Vérifier que les couleurs actives et le fond transparent des actions restent inchangés.

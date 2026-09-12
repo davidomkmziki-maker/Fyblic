@@ -1,0 +1,30 @@
+HISTORIQUE — UTILISER HAPPYAD_V1000_TEST_EXACT.txt
+TEST EXACT V999
+
+A. NOM NORMAL SANS BADGE
+1. Ouvrir l'Accueil.
+2. Vérifier une Story avec un nom court/moyen.
+ATTENDU : nom complet, aucun « … » inutile.
+
+B. NOM NORMAL AVEC BADGE
+1. Vérifier une Story avec badge et nom qui tient dans la largeur.
+ATTENDU : nom complet + badge entier, sur une seule ligne.
+
+C. NOM LONG AVEC BADGE
+1. Vérifier une Story dont le nom dépasse réellement la largeur disponible.
+ATTENDU : le nom finit par « … » puis le badge reste entièrement visible.
+
+D. STABILITÉ
+1. Faire défiler le Radar.
+2. Ouvrir puis fermer une Story.
+3. Changer Accueil -> Messages -> Profil -> Accueil.
+ATTENDU : le même rendu de nom revient ; pas de deuxième format ni de saut entre deux styles.
+
+E. POINT VERT
+1. Vérifier les avatars Story dans le Radar.
+2. Vérifier les avatars de profils/messages où un ancien point .online pouvait apparaître.
+ATTENDU : aucun point vert de présence n'est affiché pour l'instant.
+
+F. CACHE
+Après déploiement, fermer complètement l'application/PWA puis la rouvrir une fois.
+ATTENDU : V999 est chargée et l'ancien point vert ne réapparaît pas.

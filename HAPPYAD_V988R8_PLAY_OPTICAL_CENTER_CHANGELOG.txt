@@ -1,0 +1,8 @@
+HAPPYAD V988R8 — CENTRAGE OPTIQUE FINAL DU PLAY
+
+Correction unique :
+- Triangle noir du bouton play des cartes Accueil descendu de 4,5 px à 7 px sur l’axe vertical.
+- Cercle blanc, taille du triangle, position horizontale, cartes, médias, actions et logique métier inchangés.
+- Cache CSS et Service Worker passés à V988R8 afin de servir immédiatement la correction après déploiement.
+
+Aucune image générée ni ajoutée.

@@ -1,0 +1,25 @@
+HAPPYAD V986 — ICÔNES PROFESSIONNELLES ET LOVE VIDÉO
+
+1. Abonnement sur les cartes Accueil
+   - Remplacement des caractères + et ✔️ par deux pictogrammes SVG nets.
+   - Badge bleu pour s’abonner, confirmation verte, puis disparition après succès.
+   - Le moteur d’abonnement partagé conserve la synchronisation Supabase et masque
+     le bouton pour son propre compte ou un créateur déjà suivi.
+
+2. Ajouter une Story
+   - Même pictogramme SVG professionnel sur l’avatar sans Story et sur l’avatar
+     ayant déjà une Story.
+   - Anneau sombre régulier, fond orange HAPPYAD et cible tactile conservée.
+
+3. Double-clic dans la Centrale vidéo
+   - Grand cœur rose plein de 124 px, sans cercle ni ombre, avec deux échos doux.
+   - Quatre cœurs de 26 px répartis dans les quatre zones de l’interface.
+   - Le double-clic ajoute uniquement le like ; seul le vrai bouton d’action peut
+     ensuite retirer le like.
+   - Variante courte respectueuse du réglage système « réduire les animations ».
+
+4. Robustesse
+   - Cache applicatif et routes vidéo actualisés en V986.
+   - Les CTA texte « S’abonner » des autres écrans restent inchangés.
+   - modules/photo.html, le chargeur média Accueil et le layout photo/actions sont
+     strictement identiques à V985.

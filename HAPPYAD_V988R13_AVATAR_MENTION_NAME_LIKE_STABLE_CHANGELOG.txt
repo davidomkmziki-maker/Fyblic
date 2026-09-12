@@ -1,0 +1,30 @@
+HAPPYAD V988R13 — AVATAR SOURCE + MENTION NOM COURANT + LIKE STABLE
+Date : 2026-08-31
+Base : HAPPYAD0_ACCUEIL_MATURE_V988R12
+
+1) PROFIL SANS PHOTO — FALLBACK SOURCE ROBUSTE
+- L’icône profil neutre blanc/gris est maintenant définie directement dans le source HTML des surfaces.
+- Les chemins actifs qui pouvaient encore produire des initiales B/C/K ont été neutralisés (Accueil/fullscreen, stories, messages, partage, publication/mentions, profil photo, ouverture conversation, etc.).
+- Le master avatar masque aussi une image de profil cassée et revient sur le fallback canonique.
+- Les query strings du master avatar ont été renouvelées pour éviter de reprendre une ancienne version depuis le cache.
+- Le logo/titre HAPPYAD n’a pas été modifié, conformément à la demande.
+
+2) @ DANS LES COMMENTAIRES — IDENTITÉ STABLE, NOM COURANT
+- La valeur persistée reste le vrai @username : c’est l’identifiant stable utilisé pour résoudre le compte.
+- À l’affichage du commentaire, le @username est transformé en @Nom courant + vrai badge du profil.
+- Le clic conserve le vrai username/UID en donnée interne et ouvre donc le bon profil visiteur.
+- Si full_name/badge change, les mentions visibles sont repeintes via le realtime profiles et le cache local est actualisé.
+- À la prochaine ouverture, une hydratation Supabase rafraîchit le nom/badge à partir du @username stocké.
+- Fallback de requête ajouté si updated_at n’est pas disponible dans le schéma.
+
+3) LIKE — ÉTAT PERSONNEL RÉSILIENT AU RÉSEAU
+- Une requête actions échouée sous connexion moyenne/faible ne remet plus le like/favori/repost à faux.
+- Le même UID confirmé au démarrage/reconnexion ne déclenche plus de neutralisation visuelle avant l’hydratation.
+- La garde du like optimiste/confirmé protège le cœur contre une réponse distante ou iframe ancienne.
+- Les surfaces Photo/Vidéo conservent aussi la couleur pendant une reconnexion du même compte et ne neutralisent que lors d’un vrai changement de compte / déconnexion.
+
+4) CACHE
+- Service Worker : happyad-pwa-v988r13-avatar-mention-name-like-stable-20260831
+- Références avatar/mention/like renouvelées.
+
+Aucun changement volontaire : design des cartes, boutons Annonce, double-tap Love, navigation, stories existantes, pagination et logique média.

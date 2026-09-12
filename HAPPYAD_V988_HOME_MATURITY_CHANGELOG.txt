@@ -1,0 +1,32 @@
+HAPPYAD V988 — ACCUEIL UNIFORME ET MATURE
+Date : 30 août 2026
+Base : HAPPYAD0 / V986
+
+OBJECTIF
+- Faire disparaître l'impression de panneaux gris posés sur un fond noir.
+- Élever la finition visuelle de l'Accueil sans modifier son fonctionnement.
+
+CORRECTIONS VISUELLES
+1. Surface gris-noir unique sur l'Accueil, l'en-tête, les textes et les actions.
+2. Suppression visuelle des contours, ombres, grands rayons et bandes entre les publications.
+3. Séparation très légère entre publications, sans distance noire visible.
+4. Typographie harmonisée : noms, dates, lieux, titres, descriptions, compteurs et métadonnées.
+5. Date volontairement moins grasse et textes secondaires moins dominants.
+6. Quatre actions visibles réparties à largeur égale, avec zones tactiles de 44 px conservées.
+7. Icônes affinées, compteurs plus calmes et états actifs clairement colorés.
+8. Cœur actif rempli, republication active verte, pressions discrètes sans fond permanent.
+9. Lecteur des cartes vidéo, vues et libellé vidéo simplifiés visuellement.
+10. Albums, annonces Marketplace, radar, recherche, publicité et barre inférieure harmonisés.
+11. Squelettes et chargements alignés sur la surface unique dès le premier rendu.
+
+GARANTIES
+- Aucun JavaScript fonctionnel modifié.
+- Aucun changement de requête Supabase, cache de données, authentification ou navigation.
+- Aucun changement de taille/ratio, object-fit, recadrage ou comportement des médias.
+- Aucun changement du scroll, de la pagination, des albums ou des compteurs.
+- Le noir pur reste utilisé dans les médias lorsque des bandes sont nécessaires.
+
+FICHIERS
+- Ajout : core/home-visual-maturity-master-v988.css
+- Modifié : index.html (préchargement + autorité visuelle finale + version publique)
+- Modifié : service-worker.js (cache V988 + nouveau master CSS)

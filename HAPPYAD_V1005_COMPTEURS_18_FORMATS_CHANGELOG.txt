@@ -1,0 +1,9 @@
+HAPPYAD V1005R1 — COMPTEURS ACCUEIL 18 PX, TEXTE SEULEMENT
+
+- Base : V1005.
+- Seule propriété visuelle ajoutée : font-size:18px sur le texte des compteurs d’actions de l’Accueil.
+- Chiffres et suffixes K / M / D / MD utilisent exactement les mêmes 18 px.
+- Aucun font-weight ajouté.
+- Aucun changement sur boutons, icônes, dimensions, positions, espacements, alignements, zones tactiles ou compteur de vues.
+- Logique de formatage K/M/MD inchangée.
+- Le suffixe de cache est seulement renouvelé pour forcer le navigateur à charger cette feuille CSS.

@@ -1,0 +1,26 @@
+FYBLIC V1022 — IDENTITÉ + SYSTÈME VISUEL
+
+Base: V1021.
+
+1. Barre système
+- theme-color harmonisé à #080b10 sur toutes les pages HTML.
+- black-translucent activé pour iOS/PWA lorsque supporté.
+- viewport-fit=cover uniformisé.
+
+2. Marque hors connexion
+- logo officiel local Fyblic ajouté au cache statique du service worker.
+- feuille de thème système également préchargée hors ligne.
+- nom Fyblic reste du texte local, donc indépendant du réseau.
+
+3. Nom application
+- manifest name + short_name = Fyblic.
+- application-name / apple-mobile-web-app-title = Fyblic.
+
+4. Accueil
+- Fyblic: graisse 800, métriques système stables, contraste blanc, espacement professionnel.
+- logo officiel V1021 conservé sans changement graphique.
+
+5. Palette
+- fond #080b10, surfaces #11161d / #171d26, texte #f7f8fa, muted #9aa3af.
+- accent Fyblic orange #ff8500 et orange secondaire #ff4f2a.
+- uniquement tokens/surfaces; aucune logique fonctionnelle modifiée.

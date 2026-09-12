@@ -1,0 +1,30 @@
+HAPPYAD V988R9 — correction ciblée Accueil
+Date : 2026-08-31
+Base : HAPPYAD0_ACCUEIL_MATURE_V988R8
+
+1. DOUBLE TAP SUR CARTES SOCIALES
+- Simple tap sur le média : ouverture fullscreen photo / centrale vidéo après une fenêtre courte de 290 ms.
+- Double tap rapide (< 280 ms) : annule l’ouverture et applique J’aime directement.
+- Si la publication est déjà aimée, le double tap ne retire pas le J’aime.
+- Protection mouvement/scroll : déplacement > 11 px annule le geste.
+- Albums groupés inclus avec protection du swipe horizontal.
+- Aucun conflit avec profil, Voir plus, commentaires, partage, republication ou favori.
+
+2. EFFET LOVE
+- Même logique visuelle que la centrale vidéo : grand cœur plein + deux échos + quatre petits cœurs dispersés.
+- SVG propre et arrondi, sans cercle de fond.
+- Animation pointer-events:none, donc aucune interception de clic.
+
+3. DESCRIPTION PUBLICATION NORMALE
+- 2 lignes maximum sur la carte.
+- Voir plus reste intégré à droite de la 2e ligne uniquement si le texte déborde.
+- Albums suivent la même règle.
+
+4. DESCRIPTION ANNONCE
+- 3 lignes maximum.
+- Voir plus intégré à droite de la 3e ligne uniquement si nécessaire.
+- Cliquer Voir plus développe la description; Réduire la referme.
+- Boutons Partager et Voir l’annonce strictement inchangés.
+
+5. CACHE
+- Service worker et versions statiques renouvelés en V988R9.

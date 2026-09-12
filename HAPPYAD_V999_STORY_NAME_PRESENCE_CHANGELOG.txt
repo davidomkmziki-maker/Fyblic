@@ -1,0 +1,21 @@
+HISTORIQUE — REMPLACÉ PAR HAPPYAD V1000 (CORRECTION INTÉGRÉE À LA SOURCE)
+HAPPYAD V999 — NOM STORY MAÎTRE + PRÉSENCE VISUELLE DÉSACTIVÉE
+Date : 2026-09-01
+Base : HAPPYAD3_V998_RECHERCHE_NAV_EXCLUSIVE.zip
+
+1. NOM STORY : UN SEUL MAÎTRE
+- V999 devient l'unique couche responsable de l'affichage des noms dans le Radar.
+- Le normaliseur de nom V997 a été retiré de son cycle pour éviter deux moteurs concurrents.
+- Un nom qui tient dans l'espace disponible reste affiché entièrement.
+- Un nom réellement trop long est tronqué automatiquement par « … ».
+- Lorsqu'un badge existe, le nom se réduit AVANT le badge : le badge ne doit jamais être coupé.
+- La règle utilise la largeur réellement disponible, pas un nombre fixe de lettres.
+
+2. POINT VERT / PRÉSENCE
+- Le point vert .typeDot.story du Radar est désactivé : il indiquait le type Story et pouvait être interprété comme « en ligne ».
+- Les indicateurs visuels .online attachés aux avatars sont aussi masqués.
+- Aucun statut « en ligne » ne sera affiché tant qu'un vrai moteur de présence fiable n'est pas activé.
+- Le moteur de données de présence existant n'est pas supprimé : seule l'affichage visuel est désactivé pour préparer une future implémentation propre.
+
+3. CACHE
+- Service Worker passé en V999 pour forcer le chargement du nouveau maître sur les appareils déjà déployés.

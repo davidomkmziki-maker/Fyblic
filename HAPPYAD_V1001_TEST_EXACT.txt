@@ -1,0 +1,42 @@
+TEST EXACT V1001
+
+NOTE : historique V1001. Pour les compteurs d'actions et le compteur de vues,
+utiliser désormais le protocole HAPPYAD_V1002_TEST_EXACT.txt.
+
+A. COMPTEURS D'ACTIONS ACCUEIL
+1. Ouvrir une carte contenant des valeurs J'aime, commentaires, partage et republication.
+2. Comparer les chiffres aux icônes.
+ATTENDU : chiffres un peu plus hauts et lisibles, alignés verticalement, sans grossir les icônes.
+
+B. COMPTEUR DE VUES
+1. Ouvrir l'Accueil sur une vidéo avec 0, 3, 999, 1K puis une grande valeur si disponible.
+ATTENDU : indicateur Play + nombre en bas à gauche, sans capsule grise ni contour.
+ATTENDU : lisible sur média clair et sombre grâce à l'ombre légère.
+
+C. PUBLICATION STORY
+1. Publier une photo puis une vidéo en Story.
+2. Observer le texte fixe, chaque étape de progression et un éventuel message d'erreur.
+ATTENDU : aucun nom d'infrastructure affiché ; uniquement un vocabulaire HAPPYAD/publication.
+
+D. PUBLICATION NORMALE
+1. Publier une photo, un groupe de photos puis une vidéo.
+2. Observer progression, succès et erreur réseau simulée si possible.
+ATTENDU : aucun nom d'infrastructure affiché.
+
+E. PUBLICATION MARKETPLACE
+1. Ouvrir Market, remplir une annonce valide et la publier.
+2. Observer le bouton pendant chaque étape et le bloc d'erreur si la connexion est coupée.
+ATTENDU : aucun nom d'infrastructure affiché ; les étapes restent compréhensibles.
+
+F. MON PROFIL
+1. Ouvrir Mon profil avec puis sans badge.
+ATTENDU : nom et badge légèrement moins hauts ; alignement centré ; fond inchangé.
+ATTENDU : menu flottant strictement inchangé.
+
+G. PROFIL VISITEUR
+1. Ouvrir un profil visiteur avec un nom court, long et avec badge.
+ATTENDU : même échelle réduite que Mon profil, sans couper le badge.
+
+H. CACHE V1001
+1. Déployer le ZIP, fermer complètement l'application/PWA puis la rouvrir.
+ATTENDU : les quatre corrections sont visibles dès le premier nouveau chargement.

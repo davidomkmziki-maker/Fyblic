@@ -1,0 +1,23 @@
+HAPPYAD V988R7 — ALIGNEMENT FINAL ACCUEIL + RECHERCHE
+
+Base conservée : HAPPYAD0_ACCUEIL_MATURE_V988R6.
+
+1. Play des cartes vidéo
+- Le cercle blanc, sa taille et sa zone de clic restent inchangés.
+- Le triangle noir est abaissé de 1,5 px supplémentaires : translation verticale totale 4,5 px.
+- Aucun changement du média, autoplay, fullscreen ou centrale vidéo.
+
+2. Recherche — profil sans photo
+- Suppression du fallback par initiale (B, C, etc.) dans les résultats de recherche.
+- Lorsqu’aucune photo valide n’existe, la carte utilise directement le fallback profil canonique blanc/gris déjà employé globalement.
+- Lorsqu’une vraie photo existe, elle reste prioritaire et conserve son cadrage.
+
+3. Finition légère des cartes / header
+- Date / âge des publications légèrement plus contrasté, sans agrandissement ni graisse forte.
+- SVG Recherche et Notifications passent de 24 px à 26 px, sans changer leurs boutons ni la géométrie du header.
+
+4. Robustesse de déploiement
+- Cache-busting du CSS Accueil passé à V988R7.
+- Service Worker passé à V988R7 afin d’éviter qu’un ancien V988R6 reste servi après déploiement.
+
+Aucune image générée ou ajoutée. Aucun changement Supabase, navigation, publication, compteur, album, messages ou logique métier.

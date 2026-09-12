@@ -1,0 +1,34 @@
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/service-worker.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+
+
+/reset-password.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/auth/reset/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/manifest.webmanifest
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/modules/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/modules/js/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/modules/css/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/icons/*
+  Cache-Control: no-cache, must-revalidate
+
+/core/*
+  Cache-Control: no-cache, no-store, must-revalidate

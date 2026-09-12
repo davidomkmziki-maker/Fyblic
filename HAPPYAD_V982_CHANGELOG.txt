@@ -1,0 +1,9 @@
+HAPPYAD V982 — GROUPED PHOTO BADGE MASTER
+Base source: HAPPYAD27 / V981.
+
+Correction unique :
+- Publication photo groupée : le numéro 1/2/3 reste visible.
+- Un petit pictogramme de deux carrés superposés est désormais affiché devant le numéro, identique au langage visuel utilisé pour une publication groupée partagée dans Story.
+- Aucune modification de la carte unique 4:5, du swipe horizontal, des points, des actions, de Supabase ou du fullscreen.
+- Le master V982 est chargé dès la première peinture et en dernier.
+- Service Worker versionné V982 pour empêcher le retour d’un ancien badge en cache.

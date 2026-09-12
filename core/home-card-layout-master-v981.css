@@ -1,0 +1,208 @@
+/* Fyblic V981 — SINGLE CARD MEDIA MASTER
+   Base source : V979. Autorité finale uniquement sur les cartes sociales Accueil.
+   Contrat :
+   - photo et vidéo : viewport carte unique 4:5 ;
+   - média plus haut que 4:5 : cover (le reste reste disponible en fullscreen) ;
+   - média plus court/large : contain, bandes noires autorisées ;
+   - album photo : une seule carte, seul le média glisse ;
+   - description + actions dans le même cadre, aucune séparation ;
+   - seul l'album affiche les points ;
+   - espacement vertical compact et stable. */
+
+:root{--ha981-card-ratio:4/5;--ha981-feed-gap:8px;}
+
+/* Une publication = un seul cadre visuel. */
+html body #list.homeTimeline{
+  gap:var(--ha981-feed-gap)!important;
+}
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard):not(.happyadMarketplaceDedicatedCardV856){
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  overflow:visible!important;
+  margin:0!important;
+  padding:0!important;
+}
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard):not(.happyadMarketplaceDedicatedCardV856) > .miniCardFrame{
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  background:#090c12!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:22px!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.30)!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+
+/* Format carte canonique : exactement 4:5 pour photo ET vidéo. */
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard):not(.happyadMarketplaceDedicatedCardV856):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia,
+html body #list.homeTimeline > .miniCard.videoCard:not(.happyadMarketplaceDedicatedCardV856) > .miniCardFrame > .miniMedia,
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 .haAlbumMediaViewportV981{
+  display:block!important;
+  position:relative!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  aspect-ratio:var(--ha981-card-ratio)!important;
+  overflow:hidden!important;
+  background:#000!important;
+  contain:layout paint!important;
+}
+
+/* Par défaut le média entier est visible : vide noir accepté. */
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia > img,
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia > video,
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia > img.happyadVideoPoster,
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia > img.happyadCropImg{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  background:#000!important;
+  display:block!important;
+}
+/* Un média réellement plus long/vertical que le cadre garde la carte 4:5 :
+   seule la partie centrale est montrée ici, l'original entier reste en fullscreen. */
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia.haCardTallCropV981 > img,
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia.haCardTallCropV981 > video{
+  object-fit:cover!important;
+  object-position:center center!important;
+}
+/* Un recadrage explicitement choisi par l'utilisateur reste prioritaire. */
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia.haPhotoUserCropV613D > img.happyadCropImg{
+  object-fit:cover!important;
+  object-position:var(--ha-crop-focus-x,50%) var(--ha-crop-focus-y,50%)!important;
+}
+/* Les anciennes classes de ratio ne peuvent plus changer la hauteur de carte. */
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia.haPhotoTall,
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia.haPhotoSquare,
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia.haPhotoWide,
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia.haPhotoPanorama,
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) .miniMedia.haPhotoUserCropV613D{
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  aspect-ratio:var(--ha981-card-ratio)!important;
+}
+
+/* Album : UNE carte. Le track occupe le viewport 4:5, chaque média fait exactement
+   100 % du même cadre et aucun header/body/actions ne glisse avec lui. */
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 .haAlbumFullTrack{
+  position:absolute!important;
+  inset:0!important;
+  display:flex!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:100%!important;
+  max-height:100%!important;
+  gap:0!important;
+  column-gap:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  scroll-snap-type:x mandatory!important;
+  scroll-behavior:auto!important;
+  overscroll-behavior-x:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  scrollbar-width:none!important;
+  touch-action:pan-x pan-y pinch-zoom!important;
+}
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 .haAlbumFullTrack::-webkit-scrollbar{display:none!important;}
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 .haAlbumFullSlide{
+  position:relative!important;
+  flex:0 0 100%!important;
+  width:100%!important;
+  min-width:100%!important;
+  max-width:100%!important;
+  height:100%!important;
+  min-height:100%!important;
+  max-height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  scroll-snap-align:start!important;
+  scroll-snap-stop:always!important;
+  box-sizing:border-box!important;
+}
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 .haAlbumSingleMedia{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:100%!important;
+  max-height:100%!important;
+  aspect-ratio:auto!important;
+  margin:0!important;
+  background:#000!important;
+  overflow:hidden!important;
+}
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 .haAlbumSingleMedia > img{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:none!important;
+  background:#000!important;
+}
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 .haAlbumSingleMedia.haCardTallCropV981 > img{
+  object-fit:cover!important;
+}
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 .haAlbumSingleMedia.haPhotoUserCropV613D > img.happyadCropImg{
+  object-fit:cover!important;
+  object-position:var(--ha-crop-focus-x,50%) var(--ha-crop-focus-y,50%)!important;
+}
+
+/* Description et actions forment un seul bloc continu, exactement comme l'album. */
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) > .miniCardFrame > .miniBody{
+  margin:0!important;
+  padding-bottom:5px!important;
+  border:0!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+  background:#090c12!important;
+}
+html body #list.homeTimeline > .miniCard:not(.happyadMarketplaceDedicatedCardV856) > .miniCardFrame > .miniActions{
+  position:relative!important;
+  width:100%!important;
+  margin:0!important;
+  border:0!important;
+  border-top:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:#090c12!important;
+  border-radius:0!important;
+}
+
+/* Seul un groupe possède les petits points. Ils restent proches du cadre. */
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 .haAlbumFullDots{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  min-height:18px!important;
+  margin:0!important;
+  padding:4px 0 2px!important;
+  background:transparent!important;
+}
+html body #list.homeTimeline > .miniCard:not(.haAlbumFullPagerCard) > .haAlbumFullDots{display:none!important;}
+
+@media(max-width:390px){
+  :root{--ha981-feed-gap:7px;}
+  html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard):not(.happyadMarketplaceDedicatedCardV856) > .miniCardFrame{border-radius:18px!important;}
+}

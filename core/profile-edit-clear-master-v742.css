@@ -1,0 +1,46 @@
+/* Fyblic V742 — Modifier profil net, sans ancien voile au-dessus du panneau. */
+#profileEditBackdrop.show{
+  z-index:2147483000!important;
+  background:rgba(0,0,0,.68)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  filter:none!important;
+}
+#editPanel.show,
+#editPanel.happyadCleanPanel.show{
+  z-index:2147483001!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  filter:none!important;
+  -webkit-filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  isolation:isolate!important;
+}
+#editPanel.show *,
+#editPanel.happyadCleanPanel.show *{
+  filter:none!important;
+  -webkit-filter:none!important;
+}
+body:not(.haPhotoAdjustReallyOpenV742) #editPanel.show,
+body:not(.haPhotoAdjustReallyOpenV742) #editPanel.happyadCleanPanel.show{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+}
+body:not(.haPhotoAdjustReallyOpenV742) #happyadPhotoLoadingV438,
+body:not(.haPhotoAdjustReallyOpenV742) #happyadPhotoSavingV440{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+body:not(.haPhotoAdjustReallyOpenV742).haPhotoEditorFrontV439 #editPanel,
+body:not(.haPhotoAdjustReallyOpenV742).haPhotoSavedClosingV440 #editPanel,
+body:not(.haPhotoAdjustReallyOpenV742).haPhotoReturnProfileV441 #editPanel{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  display:block!important;
+}

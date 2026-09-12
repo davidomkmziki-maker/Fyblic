@@ -1,0 +1,19 @@
+HAPPYAD V984 — AUTEUR, ACTIONS ET ANCIENNES VIDÉOS
+Date : 30 août 2026
+
+1. En-tête des cartes
+   - Suppression du texte de secours « HAPPYAD » sous le nom de l'auteur.
+   - Un vrai lieu reste affiché lorsqu'il existe.
+   - Nom de l'auteur légèrement moins épais.
+
+2. Actions des cartes
+   - Icônes et compteurs inactifs en blanc clair.
+   - Les états actifs conservent leur couleur : J'aime, republication et favoris.
+
+3. Anciennes vidéos verticales
+   - Le système ne se fie plus au ratio carré de leur ancienne miniature.
+   - Les dimensions de la vidéo source sont apprises depuis ses métadonnées.
+   - Une vidéo verticale remplit alors la carte ; une horizontale reste entière.
+
+4. Photos
+   - Aucun changement du ratio, du recadrage ou de l'affichage des photos validé en V983.

@@ -1,0 +1,3340 @@
+<!doctype html>
+<html lang="fr" data-happyad-page="notifications">
+<head>
+<style id="happyad-profile-avatar-source-v995">
+/* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
+.avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
+.avatar>img,.commentAvatar>img,.commentAvatarSmall>img,.haCommentAvatar>img,.person-selector-avatar>img,.chat-avatar>img,.haProfileAvatar>img,.ha629Avatar>img,.ha629SharedPostAvatarV912>img,.haMentionAvatarV63>img,.haSearchAvatar>img,.happy-avatar>img,.hsvAvatar>img,.haV872Avatar>img,.haHomeFsAvatar>img,.hsvmAv>img,.haSamAv>img,#currentUserAvatar>img,#chatAvatar>img,#profileAvatar>img,#hsvAvatar>img{position:relative;z-index:1}
+#currentUserInitials{display:none!important}
+</style><script id="happyad-frame-first-paint-v623">
+(function(){
+  if(window.__HAPPYAD_FRAME_FIRST_PAINT_V623__)return;
+  window.__HAPPYAD_FRAME_FIRST_PAINT_V623__=true;
+  var sent=false,observer=null;
+  function embedded(){try{return !!(window.parent&&window.parent!==window);}catch(_e){return false;}}
+  function send(reason){
+    if(sent||!embedded())return false;
+    var body=document.body;if(!body)return false;
+    var useful=!!(body.firstElementChild||String(body.textContent||'').trim());
+    if(!useful&&reason!=='dom-ready'&&reason!=='safety')return false;
+    sent=true;try{if(observer)observer.disconnect();}catch(_e){}
+    try{window.parent.postMessage({type:'HAPPYAD_FRAME_BOOTSTRAP_READY_V623',reason:reason||'first-paint',path:location.pathname,at:Date.now()},'*');}catch(_e){}
+    return true;
+  }
+  function check(reason){
+    if(sent)return;
+    try{requestAnimationFrame(function(){requestAnimationFrame(function(){send(reason||'paint');});});}
+    catch(_e){setTimeout(function(){send(reason||'paint');},0);}
+  }
+  try{observer=new MutationObserver(function(){if(document.body&&document.body.firstElementChild)check('first-body-node');});observer.observe(document.documentElement,{childList:true,subtree:true});}catch(_e){}
+  document.addEventListener('DOMContentLoaded',function(){check('dom-ready');},{once:true});
+  setTimeout(function(){check('safety');},700);
+})();
+</script><script src="../core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry"></script><script src="../core/global-scroll-coordinator-v868.js?v=869-connection-phase2"></script><script src="../core/connection-work-coordinator-v869.js?v=869-connection-phase2"></script>
+<script src="../core/overlay-scroll-master-v662.js?v=905-p1-single-overlay-master"></script>
+<script src="../core/auth-frame-gate-v596.js?v=938-guest-passive"></script>
+<script src="../core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical"></script>
+<script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
+<script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
+<script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Notifications — Fyblic V735 Story exacte</title>
+  <!-- HAPPYAD_NOTIFICATION_CENTER_BADGES_MEDIA_V4 -->
+  <style>
+:root {
+  color-scheme: dark;
+  --bg: #03070d;
+  --bg-deep: #02050a;
+  --surface: #07111e;
+  --surface-2: #0a1523;
+  --surface-soft: rgba(9, 20, 34, 0.78);
+  --line: rgba(133, 158, 190, 0.15);
+  --line-strong: rgba(117, 153, 204, 0.28);
+  --text: #f6f8fd;
+  --muted: #9ca8bb;
+  --muted-2: #69768a;
+  --blue: #5365ff;
+  --blue-2: #1d9bff;
+  --orange: #ff8a35;
+  --pink: #ff4f93;
+  --green: #25d985;
+  --danger: #ff637f;
+  --safe-top: max(14px, env(safe-area-inset-top));
+  --safe-bottom: max(18px, env(safe-area-inset-bottom));
+  --header-height: 72px;
+  --radius: 20px;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+html { background: var(--bg-deep); }
+body {
+  margin: 0;
+  min-width: 280px;
+  background:
+    radial-gradient(circle at 82% -8%, rgba(38, 110, 255, .16), transparent 34%),
+    radial-gradient(circle at 0% 34%, rgba(255, 88, 145, .05), transparent 24%),
+    linear-gradient(180deg, #03070d 0%, #040a12 52%, #02060b 100%);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input { font: inherit; }
+button { color: inherit; }
+
+.notification-shell {
+  min-height: 100dvh;
+  width: min(100%, 760px);
+  margin: 0 auto;
+  background: linear-gradient(180deg, rgba(1, 5, 10, .12), rgba(3, 9, 16, .34));
+}
+
+.notification-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: calc(var(--header-height) + var(--safe-top));
+  padding: var(--safe-top) 18px 0;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(3, 7, 13, .98), rgba(3, 7, 13, .94));
+  border-bottom: 1px solid rgba(36, 139, 255, .35);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .22);
+  backdrop-filter: blur(18px);
+}
+.notification-header::after {
+  content: "";
+  position: absolute;
+  left: 45%;
+  right: 45%;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #2b9cff, transparent);
+  filter: drop-shadow(0 0 7px #2b9cff);
+}
+.notification-header h1 {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.28rem, 5vw, 1.7rem);
+  letter-spacing: -.025em;
+  font-weight: 800;
+}
+
+.icon-button {
+  appearance: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .16s ease, background .16s ease, border-color .16s ease;
+}
+.icon-button:active { transform: scale(.92); }
+.icon-button svg {
+  width: 29px;
+  height: 29px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.back-button{justify-self:start;color:#fff;border:1.5px solid rgba(255,255,255,.82);background:rgba(255,255,255,.035);box-shadow:none}
+.back-button:active{color:#fff;border-color:#fff;background:rgba(190,196,205,.16);transform:scale(.96) translateY(1px)}
+.filter-button {
+  justify-self: end;
+  width: 42px;
+  height: 42px;
+  color: #eef6ff;
+  border: 1px solid rgba(56, 130, 255, .54);
+  background: linear-gradient(145deg, rgba(9, 22, 39, .95), rgba(5, 12, 24, .95));
+  box-shadow: inset 0 0 20px rgba(42, 112, 255, .08), 0 0 18px rgba(40, 116, 255, .08);
+}
+.filter-button svg { width: 23px; height: 23px; }
+.filter-button.is-open {
+  border-color: rgba(255, 138, 53, .72);
+  box-shadow: 0 0 22px rgba(255, 138, 53, .15);
+}
+
+.filter-strip {
+  position: sticky;
+  top: calc(var(--header-height) + var(--safe-top));
+  z-index: 18;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  padding: 14px 18px 16px;
+  background: linear-gradient(180deg, rgba(3, 8, 14, .97), rgba(3, 8, 14, .92));
+  border-bottom: 1px solid rgba(117, 153, 204, .11);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.filter-strip::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  min-height: 42px;
+  padding: 0 19px;
+  border-radius: 999px;
+  border: 1px solid rgba(151, 169, 192, .34);
+  background: linear-gradient(180deg, rgba(15, 25, 39, .82), rgba(8, 15, 25, .88));
+  color: #e8edf5;
+  font-size: .96rem;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform .16s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.filter-chip:active { transform: scale(.96); }
+.filter-chip.is-active {
+  color: #fff;
+  border-color: #4f68ff;
+  background: linear-gradient(135deg, rgba(42, 59, 194, .96), rgba(29, 54, 145, .92));
+  box-shadow: 0 0 18px rgba(69, 86, 255, .28), inset 0 0 18px rgba(41, 155, 255, .14);
+}
+
+.notification-content { padding: 0 18px calc(30px + var(--safe-bottom)); }
+.feed-section { min-height: 170px; }
+.notification-list { display: grid; }
+
+.notification-item {
+  position: relative;
+  min-height: 128px;
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  isolation: isolate;
+}
+.notification-item::before {
+  content: "";
+  position: absolute;
+  inset: 8px -9px;
+  z-index: -1;
+  border-radius: 18px;
+  opacity: 0;
+  background: linear-gradient(90deg, rgba(35, 88, 172, .10), rgba(8, 17, 29, .02));
+  transition: opacity .18s ease;
+}
+.notification-item:active::before { opacity: 1; }
+.notification-item.is-unread .notification-copy strong { color: #fff; }
+.notification-item.is-unread::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 0 12px rgba(255, 138, 53, .78);
+  transform: translateY(-50%);
+}
+
+.notification-leading {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+}
+.avatar,
+.activity-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #111c2d, #060b13);
+  border: 1px solid rgba(111, 146, 193, .34);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+}
+.activity-icon svg {
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.activity-icon.orange { color: var(--orange); border-color: rgba(255, 138, 53, .44); background: radial-gradient(circle at 50% 40%, rgba(255, 138, 53, .14), transparent 64%), #0a1018; }
+.activity-icon.pink { color: var(--pink); border-color: rgba(255, 79, 147, .46); background: radial-gradient(circle at 50% 40%, rgba(255, 79, 147, .15), transparent 64%), #0a1018; }
+.activity-icon.blue { color: #6c8dff; border-color: rgba(78, 112, 255, .52); background: radial-gradient(circle at 50% 40%, rgba(78, 112, 255, .18), transparent 64%), #07101f; }
+.activity-icon.purple { color: #b17aff; border-color: rgba(165, 103, 255, .42); background: radial-gradient(circle at 50% 40%, rgba(165, 103, 255, .15), transparent 64%), #0c0c1b; }
+.avatar-badge {
+  position: absolute;
+  right: -1px;
+  bottom: 1px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  border: 3px solid var(--bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .30);
+}
+.avatar-badge.blue { background: linear-gradient(135deg, #4e7cff, #4854ea); }
+.avatar-badge.pink { background: linear-gradient(135deg, #ff5a9a, #f72e72); }
+.avatar-badge svg { width: 16px; height: 16px; fill: currentColor; stroke: none; }
+
+.notification-copy { min-width: 0; align-self: center; }
+.notification-copy p {
+  margin: 0;
+  color: #edf1f8;
+  font-size: clamp(1rem, 3.7vw, 1.13rem);
+  line-height: 1.35;
+  letter-spacing: -.015em;
+}
+.notification-copy strong { font-weight: 800; }
+.notification-copy .accent { color: #89b9ff; font-weight: 700; }
+.notification-copy time {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+.notification-tail {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 11px;
+}
+.notification-thumb {
+  width: 82px;
+  height: 82px;
+  display: block;
+  object-fit: cover;
+  border-radius: 15px;
+  border: 1px solid rgba(133, 158, 190, .24);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .30);
+}
+.follow-back,
+.suggestion-follow {
+  appearance: none;
+  border: 1px solid rgba(86, 104, 255, .90);
+  border-radius: 14px;
+  min-height: 48px;
+  padding: 0 22px;
+  background: linear-gradient(135deg, #4f61ff, #4454e8);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 9px 24px rgba(55, 69, 216, .22);
+  transition: transform .16s ease, opacity .16s ease, background .18s ease;
+}
+.follow-back:active,
+.suggestion-follow:active { transform: scale(.96); }
+.follow-back.is-following,
+.suggestion-follow.is-following {
+  background: transparent;
+  color: #7e91ff;
+  box-shadow: none;
+}
+.chevron {
+  width: 24px;
+  height: 24px;
+  color: #9eabbc;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.empty-state {
+  min-height: 260px;
+  padding: 44px 20px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 9px;
+  text-align: center;
+  color: var(--muted);
+}
+.empty-state[hidden] { display: none; }
+.empty-icon {
+  width: 70px;
+  height: 70px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #6685ff;
+  border: 1px solid rgba(84, 108, 255, .4);
+  background: rgba(55, 78, 174, .08);
+}
+.empty-icon svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.empty-state strong { color: #f1f4fb; font-size: 1.05rem; }
+.empty-state span { font-size: .92rem; }
+
+.suggestions-section {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.suggestions-section[hidden] { display: none; }
+.suggestions-section h2 {
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.18rem;
+  letter-spacing: -.015em;
+}
+.suggestions-section h2 span { color: #6580ff; text-shadow: 0 0 12px rgba(82, 105, 255, .54); }
+.suggestion-list { display: grid; }
+.suggestion-item {
+  min-height: 84px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto 32px;
+  gap: 14px;
+  align-items: center;
+  border-bottom: 1px solid rgba(133, 158, 190, .10);
+}
+.suggestion-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(133, 158, 190, .26);
+}
+.suggestion-copy { min-width: 0; }
+.suggestion-copy strong { display: block; font-size: 1rem; }
+.suggestion-copy span { display: block; margin-top: 4px; color: var(--muted); font-size: .88rem; }
+.suggestion-follow {
+  min-height: 42px;
+  min-width: 132px;
+  padding: 0 18px;
+  border-radius: 12px;
+  color: #7086ff;
+  background: transparent;
+  box-shadow: none;
+}
+.suggestion-follow.is-following { color: #fff; background: linear-gradient(135deg, #4f61ff, #4454e8); }
+.suggestion-dismiss {
+  appearance: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8f9aac;
+  font-size: 1.55rem;
+  cursor: pointer;
+}
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 2, 7, .62);
+  backdrop-filter: blur(4px);
+}
+.sheet-backdrop[hidden] { display: none; }
+.filter-sheet {
+  position: fixed;
+  z-index: 100;
+  left: 50%;
+  bottom: 0;
+  width: min(100%, 760px);
+  max-height: 84dvh;
+  padding: 10px 20px calc(22px + var(--safe-bottom));
+  border-radius: 26px 26px 0 0;
+  border: 1px solid rgba(117, 153, 204, .22);
+  background:
+    radial-gradient(circle at 90% 0%, rgba(55, 101, 255, .11), transparent 34%),
+    linear-gradient(180deg, #0b1522, #060c14);
+  box-shadow: 0 -22px 64px rgba(0, 0, 0, .52);
+  transform: translateX(-50%);
+  animation: sheet-in .22s ease both;
+}
+.filter-sheet[hidden] { display: none; }
+@keyframes sheet-in { from { transform: translate(-50%, 24px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+.sheet-handle { width: 42px; height: 4px; margin: 0 auto 16px; border-radius: 99px; background: rgba(174, 188, 209, .40); }
+.sheet-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.sheet-heading h2 { margin: 3px 0 0; font-size: 1.24rem; }
+.eyebrow { color: var(--orange); font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .11em; }
+.sheet-close { width: 38px; height: 38px; border: 1px solid rgba(133, 158, 190, .2); background: rgba(255, 255, 255, .02); }
+.sheet-close svg { width: 21px; height: 21px; }
+.setting-row {
+  position: relative;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+.setting-row strong { display: block; font-size: .98rem; }
+.setting-row small { display: block; margin-top: 5px; color: var(--muted); line-height: 1.35; }
+.setting-row-static { cursor: default; }
+.setting-value { color: #7f91ff; font-weight: 750; }
+.switch-input { position: absolute; opacity: 0; pointer-events: none; }
+.switch-control {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #253142;
+  border: 1px solid rgba(151, 169, 192, .22);
+  transition: background .18s ease;
+}
+.switch-control::after {
+  content: "";
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f4f7fb;
+  box-shadow: 0 3px 9px rgba(0, 0, 0, .35);
+  transition: transform .18s ease;
+}
+.switch-input:checked + .switch-control { background: linear-gradient(135deg, #4f61ff, #2f8fff); }
+.switch-input:checked + .switch-control::after { transform: translateX(22px); }
+.sheet-action {
+  appearance: none;
+  width: 100%;
+  min-height: 50px;
+  margin-top: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 138, 53, .44);
+  background: rgba(255, 138, 53, .08);
+  color: #ffad70;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.toast {
+  position: fixed;
+  z-index: 140;
+  left: 50%;
+  bottom: calc(22px + var(--safe-bottom));
+  max-width: min(90vw, 420px);
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(18, 28, 43, .96);
+  border: 1px solid rgba(133, 158, 190, .22);
+  color: #f5f8fd;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .35);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 10px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 560px) {
+  .notification-content { padding-inline: 14px; }
+  .notification-header { padding-inline: 12px; }
+  .filter-strip { padding-inline: 14px; }
+  .notification-item { grid-template-columns: 64px minmax(0, 1fr) auto; gap: 13px; min-height: 114px; }
+  .notification-leading { width: 64px; height: 64px; }
+  .avatar, .activity-icon { width: 60px; height: 60px; }
+  .activity-icon svg { width: 30px; height: 30px; }
+  .notification-thumb { width: 68px; height: 68px; border-radius: 13px; }
+  .follow-back { min-height: 44px; padding-inline: 15px; font-size: .9rem; }
+  .notification-tail { margin-right: 8px; }
+  .suggestion-item { grid-template-columns: 52px minmax(0, 1fr) auto 28px; gap: 10px; }
+  .suggestion-avatar { width: 48px; height: 48px; }
+  .suggestion-follow { min-width: 108px; padding-inline: 13px; }
+}
+
+@media (max-width: 400px) {
+  .notification-item { grid-template-columns: 58px minmax(0, 1fr) auto; gap: 11px; }
+  .notification-leading { width: 58px; height: 58px; }
+  .avatar, .activity-icon { width: 56px; height: 56px; }
+  .notification-thumb { width: 60px; height: 60px; }
+  .notification-copy p { font-size: .97rem; }
+  .follow-back { max-width: 126px; white-space: normal; line-height: 1.1; }
+  .suggestion-follow { min-width: 92px; }
+}
+
+
+/* ===== Fyblic RESPONSIVE + INTEGRATION V2 ===== */
+:root {
+  --page-pad: clamp(10px, 3.6vw, 18px);
+  --header-height: clamp(58px, 15vw, 70px);
+  --lead-size: clamp(50px, 16vw, 70px);
+  --thumb-size: clamp(54px, 18vw, 82px);
+}
+
+html {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior-y: contain;
+}
+
+.notification-shell {
+  width: 100%;
+  max-width: 760px;
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.notification-header {
+  min-width: 0;
+  height: calc(var(--header-height) + var(--safe-top));
+  padding: var(--safe-top) var(--page-pad) 0;
+  grid-template-columns: clamp(40px, 12vw, 48px) minmax(0, 1fr) clamp(40px, 12vw, 48px);
+}
+
+.notification-header h1 {
+  min-width: 0;
+  font-size: clamp(1.18rem, 6vw, 1.7rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-button {
+  width: clamp(38px, 11vw, 44px);
+  height: clamp(38px, 11vw, 44px);
+}
+
+.filter-button {
+  width: clamp(38px, 11vw, 42px);
+  height: clamp(38px, 11vw, 42px);
+}
+
+.filter-strip {
+  top: calc(var(--header-height) + var(--safe-top));
+  gap: clamp(7px, 2.2vw, 10px);
+  padding: clamp(9px, 2.8vw, 14px) var(--page-pad) clamp(10px, 3vw, 16px);
+  scroll-padding-inline: var(--page-pad);
+}
+
+.filter-chip {
+  min-height: clamp(36px, 10vw, 42px);
+  padding-inline: clamp(14px, 4.8vw, 19px);
+  font-size: clamp(.84rem, 3.8vw, .96rem);
+}
+
+.notification-content {
+  width: 100%;
+  min-width: 0;
+  padding: 0 var(--page-pad) calc(22px + var(--safe-bottom));
+}
+
+.notification-list,
+.feed-section,
+.suggestions-section,
+.suggestion-list {
+  min-width: 0;
+}
+
+.notification-item {
+  width: 100%;
+  min-width: 0;
+  min-height: clamp(94px, 27vw, 128px);
+  grid-template-columns: var(--lead-size) minmax(0, 1fr) auto;
+  gap: clamp(9px, 3vw, 18px);
+  padding: clamp(12px, 4vw, 18px) 0;
+}
+
+.notification-leading {
+  appearance: none;
+  width: var(--lead-size);
+  height: var(--lead-size);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+button.notification-leading {
+  cursor: pointer;
+}
+
+.profile-trigger,
+.publication-trigger,
+.suggestion-profile-trigger,
+.suggestion-name-trigger,
+.details-trigger {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-trigger:focus-visible,
+.publication-trigger:focus-visible,
+.suggestion-profile-trigger:focus-visible,
+.suggestion-name-trigger:focus-visible,
+.details-trigger:focus-visible {
+  outline: 2px solid var(--blue-2);
+  outline-offset: 3px;
+}
+
+.avatar,
+.activity-icon {
+  width: calc(var(--lead-size) - 4px);
+  height: calc(var(--lead-size) - 4px);
+}
+
+.avatar-badge {
+  width: clamp(24px, 8vw, 30px);
+  height: clamp(24px, 8vw, 30px);
+  border-width: clamp(2px, .8vw, 3px);
+}
+
+.notification-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notification-copy p {
+  max-width: 100%;
+  font-size: clamp(.91rem, 4.2vw, 1.13rem);
+  line-height: 1.32;
+}
+
+.notification-copy time {
+  margin-top: clamp(4px, 1.5vw, 6px);
+  font-size: clamp(.78rem, 3.5vw, .92rem);
+}
+
+.notification-tail {
+  min-width: 0;
+  max-width: min(40vw, 230px);
+  margin-right: clamp(5px, 2vw, 11px);
+}
+
+.publication-trigger,
+.details-trigger {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: clamp(11px, 3.5vw, 15px);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.notification-thumb {
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border-radius: clamp(11px, 3.5vw, 15px);
+}
+
+.follow-back {
+  min-height: clamp(40px, 11vw, 48px);
+  max-width: min(40vw, 220px);
+  padding-inline: clamp(12px, 4vw, 22px);
+  border-radius: clamp(11px, 3.5vw, 14px);
+  font-size: clamp(.78rem, 3.7vw, 1rem);
+  line-height: 1.12;
+  white-space: normal;
+}
+
+.suggestion-item {
+  width: 100%;
+  min-width: 0;
+  min-height: clamp(72px, 22vw, 84px);
+  grid-template-columns: clamp(44px, 14vw, 58px) minmax(0, 1fr) auto clamp(26px, 8vw, 32px);
+  gap: clamp(7px, 2.5vw, 14px);
+}
+
+.suggestion-profile-trigger,
+.suggestion-name-trigger {
+  appearance: none;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggestion-avatar {
+  width: clamp(42px, 13vw, 52px);
+  height: clamp(42px, 13vw, 52px);
+}
+
+.suggestion-copy,
+.suggestion-copy strong,
+.suggestion-copy span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-follow {
+  min-width: clamp(78px, 27vw, 132px);
+  min-height: clamp(38px, 10vw, 42px);
+  padding-inline: clamp(10px, 3.5vw, 18px);
+  font-size: clamp(.82rem, 3.8vw, 1rem);
+}
+
+.filter-sheet {
+  width: min(100%, 760px);
+  max-height: min(84dvh, 700px);
+  overflow-y: auto;
+  padding-inline: var(--page-pad);
+}
+
+@media (max-width: 380px) {
+  :root {
+    --page-pad: 10px;
+    --lead-size: 52px;
+    --thumb-size: 56px;
+  }
+
+  .notification-item {
+    gap: 9px;
+  }
+
+  .notification-item.has-follow-action {
+    grid-template-columns: var(--lead-size) minmax(0, 1fr);
+    grid-template-areas:
+      "lead copy"
+      "lead tail";
+    align-items: start;
+  }
+
+  .notification-item.has-follow-action .notification-leading { grid-area: lead; }
+  .notification-item.has-follow-action .notification-copy { grid-area: copy; }
+  .notification-item.has-follow-action .notification-tail {
+    grid-area: tail;
+    justify-content: flex-start;
+    max-width: 100%;
+    margin: 7px 0 0;
+  }
+
+  .notification-item.has-follow-action .follow-back {
+    width: auto;
+    max-width: 100%;
+    min-height: 38px;
+    padding-inline: 12px;
+  }
+
+  .suggestion-item {
+    grid-template-columns: 44px minmax(0, 1fr) auto 26px;
+  }
+
+  .suggestion-follow {
+    min-width: 74px;
+    padding-inline: 9px;
+  }
+}
+
+@media (max-width: 340px) {
+  .notification-item.is-unread::after { right: 1px; }
+}
+
+@media (max-width: 330px) {
+  :root {
+    --page-pad: 8px;
+    --lead-size: 48px;
+    --thumb-size: 50px;
+  }
+
+  .notification-header {
+    grid-template-columns: 38px minmax(0, 1fr) 38px;
+  }
+
+  .notification-header h1 {
+    font-size: 1.12rem;
+  }
+
+  .notification-copy p {
+    font-size: .88rem;
+  }
+
+  .notification-tail {
+    margin-right: 2px;
+  }
+
+  .suggestion-item {
+    grid-template-columns: 40px minmax(0, 1fr) auto 24px;
+    gap: 6px;
+  }
+
+  .suggestion-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .suggestion-follow {
+    min-width: 66px;
+    min-height: 36px;
+    padding-inline: 7px;
+    font-size: .76rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  :root {
+    --safe-top: max(6px, env(safe-area-inset-top));
+    --header-height: 52px;
+    --lead-size: 48px;
+    --thumb-size: 52px;
+  }
+
+  .filter-strip {
+    padding-block: 7px 9px;
+  }
+
+  .notification-item {
+    min-height: 78px;
+    padding-block: 9px;
+  }
+}
+/* ===== END Fyblic RESPONSIVE + INTEGRATION V2 ===== */
+
+
+/* ===== Fyblic PROFILE + PUBLICATION FIX V3 ===== */
+:root {
+  /* Colonne de profil suffisamment large pour garder le badge hors de la photo. */
+  --lead-size: clamp(68px, 19vw, 84px);
+  --profile-circle-size: clamp(50px, 14.5vw, 58px);
+  --profile-badge-size: clamp(20px, 6.5vw, 26px);
+  --publication-square-size: clamp(52px, 17vw, 78px);
+}
+
+.notification-leading {
+  overflow: visible;
+}
+
+.profile-avatar-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+}
+
+.avatar-frame {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--profile-circle-size);
+  height: var(--profile-circle-size);
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(145deg, #111c2d, #060b13);
+  border: 1px solid rgba(133, 169, 218, .42);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .32);
+  transform: translateZ(0);
+}
+
+.avatar-frame .avatar {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  display: block;
+  border: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center center;
+  box-shadow: none;
+  background: #0a1320;
+}
+
+.profile-avatar-shell .avatar-badge {
+  position: absolute;
+  right: 0;
+  bottom: clamp(3px, 1.3vw, 7px);
+  width: var(--profile-badge-size);
+  height: var(--profile-badge-size);
+  border: 0;
+  outline: clamp(2px, .8vw, 3px) solid var(--bg);
+  box-shadow: 0 5px 13px rgba(0, 0, 0, .42);
+  z-index: 3;
+}
+
+.profile-avatar-shell .avatar-badge svg {
+  width: 56%;
+  height: 56%;
+}
+
+/* Cadre carré unique pour toute action liée à une publication. */
+.publication-square {
+  appearance: none;
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--publication-square-size);
+  height: var(--publication-square-size);
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border-radius: clamp(10px, 3.4vw, 15px);
+  border: 1px solid rgba(133, 158, 190, .28);
+  background:
+    radial-gradient(circle at 72% 18%, rgba(61, 123, 255, .18), transparent 42%),
+    linear-gradient(145deg, #0d1a2b, #060c14);
+  color: #7da2ff;
+  box-shadow: 0 8px 23px rgba(0, 0, 0, .32);
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.publication-square::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .025);
+}
+
+.publication-square .notification-thumb {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center center;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #09121f;
+}
+
+.publication-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.publication-placeholder svg {
+  width: 40%;
+  height: 40%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.publication-like { color: #ff6aa4; border-color: rgba(255, 79, 147, .38); }
+.publication-comment { color: #6d8cff; border-color: rgba(83, 101, 255, .42); }
+.publication-favorite { color: #ff9b45; border-color: rgba(255, 138, 53, .42); }
+.publication-activity { color: #7f9dff; border-color: rgba(78, 112, 255, .40); }
+
+.notification-tail {
+  flex: 0 0 auto;
+}
+
+.suggestion-avatar-frame {
+  width: clamp(42px, 13vw, 52px);
+  height: clamp(42px, 13vw, 52px);
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid rgba(133, 158, 190, .30);
+  background: #0a1320;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, .24);
+}
+
+.suggestion-avatar-frame .suggestion-avatar {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  display: block;
+  border: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+@media (max-width: 380px) {
+  :root {
+    --lead-size: 66px;
+    --profile-circle-size: 48px;
+    --profile-badge-size: 20px;
+    --publication-square-size: 54px;
+  }
+
+  .notification-item:not(.has-follow-action) {
+    grid-template-columns: var(--lead-size) minmax(0, 1fr) var(--publication-square-size);
+  }
+}
+
+@media (max-width: 330px) {
+  :root {
+    --lead-size: 60px;
+    --profile-circle-size: 44px;
+    --profile-badge-size: 18px;
+    --publication-square-size: 48px;
+  }
+
+  .profile-avatar-shell .avatar-badge {
+    bottom: 5px;
+  }
+}
+/* ===== END Fyblic PROFILE + PUBLICATION FIX V3 ===== */
+
+
+/* ===== Fyblic BADGES + MEDIA FIT V4 ===== */
+:root {
+  --name-badge-size: clamp(15px, 4.7vw, 19px);
+}
+
+/* La colonne de gauche réserve le cercle et une poche distincte pour le badge d'action. */
+.profile-avatar-shell {
+  isolation: isolate;
+}
+
+.profile-avatar-shell::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: clamp(2px, 1vw, 6px);
+  width: calc(var(--profile-badge-size) + 4px);
+  height: calc(var(--profile-badge-size) + 4px);
+  border-radius: 50%;
+  background: var(--bg);
+  z-index: 1;
+}
+
+/* La photo occupe réellement tout le cercle, sans marge interne. */
+.avatar-frame,
+.suggestion-avatar-frame {
+  position: relative;
+  isolation: isolate;
+}
+
+.avatar-frame .avatar,
+.suggestion-avatar-frame .suggestion-avatar {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px) !important;
+  height: calc(100% + 2px) !important;
+  min-width: calc(100% + 2px) !important;
+  min-height: calc(100% + 2px) !important;
+  max-width: none;
+  display: block;
+  object-fit: cover !important;
+  object-position: center center;
+  padding: 0;
+  margin: 0;
+  transform: scale(1.025);
+  transform-origin: center;
+  background: #09111c;
+  z-index: 2;
+}
+
+.avatar-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(79, 97, 255, .34), transparent 45%),
+    linear-gradient(145deg, #142238, #08101b);
+  color: #eef4ff;
+  font-size: clamp(.78rem, 3.8vw, 1rem);
+  font-weight: 850;
+  letter-spacing: .02em;
+  z-index: 1;
+}
+
+.avatar-frame.is-loaded .avatar-fallback,
+.suggestion-avatar-frame.is-loaded .avatar-fallback {
+  opacity: 0;
+}
+
+.avatar-frame.is-error .avatar,
+.suggestion-avatar-frame.is-error .suggestion-avatar {
+  display: none;
+}
+
+.profile-avatar-shell .avatar-badge {
+  right: 0;
+  bottom: clamp(3px, 1.3vw, 7px);
+  z-index: 4;
+}
+
+/* Badge de compte Fyblic affiché près du nom, indépendant du badge d'action. */
+.profile-name-badge {
+  position: relative;
+  width: var(--name-badge-size);
+  height: var(--name-badge-size);
+  margin-left: .28em;
+  display: inline-block;
+  vertical-align: -.18em;
+  color: #fff;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  flex: 0 0 auto;
+  font-size: 0;
+  line-height: 1;
+  clip-path: polygon(50% 0%,58% 12%,71% 6%,76% 20%,91% 22%,88% 38%,100% 50%,88% 62%,91% 78%,76% 80%,71% 94%,58% 88%,50% 100%,42% 88%,29% 94%,24% 80%,9% 78%,12% 62%,0% 50%,12% 38%,9% 22%,24% 20%,29% 6%,42% 12%);
+}
+
+.profile-name-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: inherit;
+  z-index: 0;
+}
+
+.profile-name-badge::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -53%);
+  color: #fff;
+  font-size: calc(var(--name-badge-size) * .58);
+  font-weight: 1000;
+  line-height: 1;
+  text-shadow: 0 0 3px rgba(255,255,255,.78);
+  z-index: 1;
+}
+
+.profile-name-badge.blue::before,
+.profile-name-badge.bleu::before {
+  background: linear-gradient(135deg,#6fd4ff,#38b6ff,#0090ff);
+  box-shadow: 0 0 3px rgba(79,195,255,.48),0 0 8px rgba(0,120,255,.30);
+}
+
+.profile-name-badge.violet::before,
+.profile-name-badge.purple::before {
+  background: linear-gradient(135deg,#e9d5ff,#c084fc,#9333ea);
+  box-shadow: 0 0 3px rgba(147,51,234,.48),0 0 8px rgba(109,40,217,.30);
+}
+
+.profile-name-badge.yellow::before,
+.profile-name-badge.jaune::before {
+  background: linear-gradient(135deg,#ffe27a,#ffb020,#ff7a00);
+  box-shadow: 0 0 3px rgba(255,176,32,.48),0 0 8px rgba(255,122,0,.30);
+}
+
+.profile-name-badge.is-image {
+  display: inline-grid;
+  place-items: center;
+  clip-path: none;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.profile-name-badge.is-image::before,
+.profile-name-badge.is-image::after {
+  display: none;
+}
+
+.profile-name-badge img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.suggestion-name-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.suggestion-name-row strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Le carré publication reste strictement carré et l'image le remplit complètement. */
+.publication-square {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  contain: paint;
+}
+
+.publication-square .publication-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 1;
+  transition: opacity .15s ease;
+}
+
+.publication-square .notification-thumb,
+.publication-square .publication-media {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px) !important;
+  height: calc(100% + 2px) !important;
+  min-width: calc(100% + 2px) !important;
+  min-height: calc(100% + 2px) !important;
+  max-width: none;
+  display: block;
+  object-fit: cover !important;
+  object-position: center center;
+  border: 0;
+  border-radius: inherit;
+  padding: 0;
+  margin: 0;
+  transform: scale(1.015);
+  transform-origin: center;
+  background: #08111d;
+  z-index: 2;
+}
+
+.publication-square.is-loaded .publication-placeholder {
+  opacity: 0;
+}
+
+.publication-square.is-error .notification-thumb,
+.publication-square.is-error .publication-media {
+  display: none;
+}
+
+.publication-square.is-error .publication-placeholder {
+  opacity: 1;
+}
+
+/* Le badge et le point non lu ne doivent jamais être coupés sur petits téléphones. */
+.notification-leading,
+.profile-trigger,
+.suggestion-profile-trigger {
+  overflow: visible;
+}
+
+@media (max-width: 380px) {
+  :root {
+    --name-badge-size: 15px;
+  }
+}
+
+@media (max-width: 330px) {
+  :root {
+    --name-badge-size: 14px;
+  }
+}
+/* ===== END Fyblic BADGES + MEDIA FIT V4 ===== */
+
+
+
+
+/* ===== Fyblic COMPACT NOTIFICATIONS V5 ===== */
+:root {
+  --lead-size: clamp(60px, 17vw, 72px);
+  --profile-circle-size: clamp(46px, 13vw, 54px);
+  --profile-badge-size: clamp(18px, 5.8vw, 23px);
+  --publication-square-size: clamp(48px, 15.5vw, 68px);
+}
+
+/* Aucun trait visible entre les notifications. */
+.notification-item {
+  min-height: clamp(80px, 22vw, 102px);
+  padding: clamp(8px, 2.8vw, 12px) 0;
+  gap: clamp(8px, 2.4vw, 13px);
+  border-bottom: 0 !important;
+}
+
+/* Séparation obtenue uniquement par l'espace, sans ligne. */
+.notification-item + .notification-item {
+  margin-top: clamp(1px, .5vw, 3px);
+}
+
+.notification-item::before {
+  inset: 3px -6px;
+  border-radius: 15px;
+}
+
+.notification-copy p {
+  font-size: clamp(.88rem, 3.9vw, 1.03rem);
+  line-height: 1.28;
+}
+
+.notification-copy time {
+  margin-top: 4px;
+  font-size: clamp(.74rem, 3.2vw, .86rem);
+}
+
+.notification-tail {
+  margin-right: clamp(3px, 1.4vw, 7px);
+}
+
+.follow-back {
+  min-height: clamp(36px, 9.8vw, 42px);
+  padding-inline: clamp(10px, 3.2vw, 16px);
+  font-size: clamp(.76rem, 3.4vw, .9rem);
+}
+
+.profile-avatar-shell .avatar-badge {
+  bottom: clamp(2px, 1vw, 5px);
+}
+
+@media (max-width: 380px) {
+  :root {
+    --lead-size: 58px;
+    --profile-circle-size: 44px;
+    --profile-badge-size: 18px;
+    --publication-square-size: 48px;
+  }
+
+  .notification-item {
+    min-height: 76px;
+    padding-block: 7px;
+  }
+}
+
+@media (max-width: 330px) {
+  :root {
+    --lead-size: 54px;
+    --profile-circle-size: 42px;
+    --profile-badge-size: 17px;
+    --publication-square-size: 46px;
+  }
+
+  .notification-item {
+    min-height: 72px;
+    gap: 7px;
+  }
+}
+/* ===== Fyblic V888 — Mention Story -> Ajouter à votre story ===== */
+.story-mention-add-v888 {
+  margin-top: 8px;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid rgba(89,112,255,.82);
+  border-radius: 11px;
+  background: rgba(56,72,180,.14);
+  color: #8ea2ff;
+  font: 800 clamp(.72rem,3.1vw,.84rem)/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.story-mention-add-v888:active { background: rgba(72,91,215,.24); }
+.story-mention-add-v888.is-busy { opacity: .68; pointer-events: none; }
+.story-mention-add-v888.is-added {
+  border-color: rgba(255,255,255,.16);
+  background: rgba(255,255,255,.06);
+  color: #9da6b4;
+}
+@media (max-width:360px){.story-mention-add-v888{padding-inline:9px;font-size:.72rem}}
+/* ===== END Fyblic V888 ===== */
+
+/* ===== END Fyblic COMPACT NOTIFICATIONS V5 ===== */
+
+/* ===== Fyblic V887 — Suggestions identité profil complète ===== */
+.suggestion-item {
+  grid-template-columns: 52px minmax(0, 1fr) auto 28px !important;
+  gap: 10px !important;
+}
+.suggestion-profile-trigger {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  display: grid !important;
+  place-items: center !important;
+  justify-self: start;
+  border-radius: 50% !important;
+  overflow: visible !important;
+  line-height: 0;
+}
+.suggestion-avatar-frame {
+  display: block !important;
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  flex: 0 0 48px;
+}
+.suggestion-avatar-frame .suggestion-avatar {
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+.suggestion-follow {
+  min-width: 96px !important;
+  min-height: 38px !important;
+  padding-inline: 12px !important;
+  border-radius: 12px !important;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.suggestion-follow.is-busy { opacity: .72; pointer-events: none; }
+.suggestion-follow.is-following {
+  color: #dfe6ff !important;
+  border-color: rgba(112,134,255,.38) !important;
+  background: rgba(83,101,255,.10) !important;
+}
+@media (max-width: 380px) {
+  .suggestion-item {
+    grid-template-columns: 48px minmax(0, 1fr) auto 24px !important;
+    gap: 8px !important;
+  }
+  .suggestion-profile-trigger,
+  .suggestion-avatar-frame {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+  }
+  .suggestion-avatar-frame { flex-basis: 46px; }
+  .suggestion-follow {
+    min-width: 92px !important;
+    padding-inline: 10px !important;
+    font-size: .79rem !important;
+  }
+}
+/* ===== END Fyblic V887 ===== */
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+</style>
+
+<style id="fyblic-v1014-suggestions-moved-to-search">
+#suggestionsSection{display:none!important;}
+</style>
+
+<style id="happyad-v544-follow-profile-route-style">
+/* Les notifications Abonné sont des notifications de profil :
+   aucun carré média à droite. Toute la ligne ouvre le profil visiteur. */
+.notification-item.is-profile-notification {
+  grid-template-columns: var(--lead-size) minmax(0, 1fr) !important;
+  cursor: pointer;
+}
+.notification-item.is-profile-notification .notification-copy {
+  min-width: 0;
+  cursor: pointer;
+}
+.notification-item.is-profile-notification .notification-tail {
+  display: none !important;
+}
+</style>
+<meta name="theme-color" content="#080b10">
+<meta name="color-scheme" content="dark">
+<meta name="application-name" content="Fyblic">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fyblic">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="../core/fyblic-system-theme-v1022.css?v=1022-world-theme">
+</head>
+<body>
+  <div class="notification-shell" id="notificationShell">
+    <header class="notification-header">
+      <button class="icon-button back-button" id="backButton" type="button" data-happyad-internal-return-v591="1" aria-label="Revenir à la page précédente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      <h1>Notifications</h1>
+      <button class="icon-button filter-button" id="filterButton" type="button" aria-label="Options de filtrage" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h10M18 7h2M4 17h2M10 17h10M4 12h4M12 12h8"/>
+          <circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/><circle cx="10" cy="12" r="2"/>
+        </svg>
+      </button>
+    </header>
+
+    <nav class="filter-strip" id="filterStrip" aria-label="Catégories de notifications">
+      <button class="filter-chip is-active" type="button" data-filter="all">Toutes</button>
+      <button class="filter-chip" type="button" data-filter="like">Likes</button>
+      <button class="filter-chip" type="button" data-filter="follow">Abonnés</button>
+      <button class="filter-chip" type="button" data-filter="comment">Commentaires</button>
+      <button class="filter-chip" type="button" data-filter="favorite">Favoris</button>
+      <button class="filter-chip" type="button" data-filter="activity">Activité</button>
+      <button class="filter-chip" type="button" data-filter="system">Système</button>
+    </nav>
+
+    <main class="notification-content">
+      <section class="feed-section" aria-label="Liste des notifications">
+        <div class="notification-list" id="notificationList"></div>
+        <div class="empty-state" id="emptyState" hidden>
+          <div class="empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+          </div>
+          <strong>Aucune notification</strong>
+          <span>Cette catégorie est vide pour le moment.</span>
+        </div>
+      </section>
+
+      <section class="suggestions-section" id="suggestionsSection" aria-labelledby="suggestionsTitle">
+        <h2 id="suggestionsTitle"><span aria-hidden="true">✦</span> Suggestions</h2>
+        <div class="suggestion-list" id="suggestionList"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+  <section class="filter-sheet" id="filterSheet" role="dialog" aria-modal="true" aria-labelledby="filterSheetTitle" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-heading">
+      <div>
+        <span class="eyebrow">Affichage</span>
+        <h2 id="filterSheetTitle">Options des notifications</h2>
+      </div>
+      <button class="icon-button sheet-close" id="sheetClose" type="button" aria-label="Fermer">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <label class="setting-row">
+      <span>
+        <strong>Non lues uniquement</strong>
+        <small>Masquer les notifications déjà consultées</small>
+      </span>
+      <input class="switch-input" id="unreadOnly" type="checkbox">
+      <span class="switch-control" aria-hidden="true"></span>
+    </label>
+
+    <div class="setting-row setting-row-static">
+      <span>
+        <strong>Ordre d’affichage</strong>
+        <small>Les plus récentes apparaissent en premier</small>
+      </span>
+      <span class="setting-value">Récentes</span>
+    </div>
+
+    <button class="sheet-action" id="markAllRead" type="button">Tout marquer comme lu</button>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2"></script>
+  <script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'happyad-notification-center-state-v1';
+  const STORY_MENTION_ADDED_KEY_V888 = 'HAPPYAD_STORY_MENTION_ADDED_V888';
+  const STORY_REPOST_RETURN_ADDED_KEY_V895 = 'HAPPYAD_STORY_REPOST_RETURN_ADDED_V895';
+  try { localStorage.removeItem('happyad-notification-demo-v1'); } catch {}
+  /* V7 : données de démonstration supprimées. Le module attend les données réelles de Fyblic/Supabase. */
+
+  const ICONS = {
+    user: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>',
+    comment: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>',
+    chart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+    memory: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg>',
+    gallery: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6M8 9h.01"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>',
+    bell: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>',
+    star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3 6 7 .9-5 4.8 1.3 6.8L12 17.3 5.7 20.5 7 13.7 2 8.9 9 8Z"/></svg>',
+    bag: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+    chevron: '<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>',
+    verified: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7.7 12.4 2.8 2.8 5.9-6.1"/></svg>'
+  };
+
+  /* Données réelles injectées par Fyblic via HAPPYAD_NOTIFICATIONS_SET_DATA. */
+  let notifications = [];
+  let suggestions = [];
+  let notificationServerHasMore = true;
+
+  const state = loadState();
+  state.activeFilter = 'all';
+  state.unreadOnly = false;
+  let storyMentionAddedV888 = (() => {
+    try { const value = JSON.parse(localStorage.getItem(STORY_MENTION_ADDED_KEY_V888) || '{}'); return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+    catch { return {}; }
+  })();
+  let storyRepostReturnAddedV895 = (() => {
+    try { const value = JSON.parse(localStorage.getItem(STORY_REPOST_RETURN_ADDED_KEY_V895) || '{}'); return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+    catch { return {}; }
+  })();
+
+  const els = {
+    list: document.getElementById('notificationList'),
+    content: document.querySelector('.notification-content'),
+    empty: document.getElementById('emptyState'),
+    chips: [...document.querySelectorAll('.filter-chip')],
+    filterButton: document.getElementById('filterButton'),
+    backButton: document.getElementById('backButton'),
+    sheet: document.getElementById('filterSheet'),
+    backdrop: document.getElementById('sheetBackdrop'),
+    sheetClose: document.getElementById('sheetClose'),
+    unreadOnly: document.getElementById('unreadOnly'),
+    markAllRead: document.getElementById('markAllRead'),
+    suggestionsSection: document.getElementById('suggestionsSection'),
+    suggestionList: document.getElementById('suggestionList'),
+    toast: document.getElementById('toast')
+  };
+
+  function deferNotificationPaint(key, paint, delay = 50) {
+    try {
+      const coordinator = window.HappyadGlobalScrollCoordinatorV868;
+      if (coordinator && typeof coordinator.deferIfActive === 'function') {
+        return coordinator.deferIfActive('notification-' + String(key || 'paint'), paint, delay);
+      }
+    } catch {}
+    return false;
+  }
+
+  function loadState() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      return {
+        read: stored.read && typeof stored.read === 'object' ? stored.read : {},
+        following: stored.following && typeof stored.following === 'object' ? stored.following : {},
+        dismissed: stored.dismissed && typeof stored.dismissed === 'object' ? stored.dismissed : {}
+      };
+    } catch {
+      return { read: {}, following: {}, dismissed: {} };
+    }
+  }
+
+  function persist() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ read: state.read, following: state.following, dismissed: state.dismissed }));
+    } catch {
+      /* L'interface reste fonctionnelle même si le stockage local est bloqué par l'iframe ou le navigateur. */
+    }
+  }
+
+  function isUnread(item) {
+    return item.unread && !state.read[item.id];
+  }
+
+  function escapeAttr(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('"', '&quot;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+  }
+
+  function getNotification(id) {
+    return notifications.find(item => String(item.id) === String(id));
+  }
+
+  function markRead(id) {
+    if (!id) return;
+    state.read[id] = true;
+    persist();
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'HAPPYAD_NOTIFICATION_MARK_READ',
+          notificationId: String(id),
+          source: 'notification-center-v700-infinite-scroll'
+        }, '*');
+      }
+    } catch {}
+  }
+  const PUBLICATION_OPEN_REQUEST_KEY = 'HAPPYAD_NOTIFICATION_PUBLICATION_OPEN_V1';
+
+  function cleanValue(value) {
+    return String(value == null ? '' : value).trim();
+  }
+
+  function firstDefined(...values) {
+    for (const value of values) {
+      if (value !== undefined && value !== null && cleanValue(value) !== '') return value;
+    }
+    return '';
+  }
+
+  function readJsonStorage(key) {
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); }
+    catch { return null; }
+  }
+
+  function appWindow() {
+    try {
+      if (window.parent && window.parent !== window) return window.parent;
+    } catch {}
+    return window;
+  }
+
+  function directFallbackUrl(url) {
+    const clean = cleanValue(url);
+    if (!clean) return clean;
+    try {
+      const inModules = /\/modules\//i.test(location.pathname || '');
+      if (!inModules) return clean;
+      if (clean.startsWith('modules/')) return clean.slice('modules/'.length);
+      if (clean.startsWith('index.html')) return '../' + clean;
+    } catch {}
+    return clean;
+  }
+
+  function emitNavigation(type, detail) {
+    const payload = {
+      ...detail,
+      source: 'notification-center-v700-infinite-scroll',
+      timestamp: Date.now()
+    };
+
+    window.dispatchEvent(new CustomEvent(type, { detail: payload }));
+    window.dispatchEvent(new CustomEvent('HAPPYAD_NOTIFICATIONS_NAVIGATE', {
+      detail: { type, ...payload }
+    }));
+
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type, ...payload }, '*');
+      window.parent.postMessage({
+        type: 'HAPPYAD_NOTIFICATIONS_NAVIGATE',
+        navigationType: type,
+        ...payload
+      }, '*');
+    }
+  }
+
+  function openInternalUrl(url, extra = {}) {
+    const host = appWindow();
+    const navExtra = {
+      source: 'notification-center-v700-infinite-scroll',
+      ...extra
+    };
+
+    try {
+      if (host.HappyNavigation && typeof host.HappyNavigation.open === 'function') {
+        if (host.HappyNavigation.open(url, navExtra) !== false) return true;
+      }
+    } catch {}
+
+    try {
+      if (typeof host.happyadOpenInternalUrlV492 === 'function') {
+        if (host.happyadOpenInternalUrlV492(url, navExtra) !== false) return true;
+      }
+    } catch {}
+
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'HAPPYAD_OPEN_INTERNAL_URL',
+          url,
+          extra: navExtra,
+          source: 'notification-center-v700-infinite-scroll'
+        }, '*');
+        return true;
+      }
+    } catch {}
+
+    try {
+      location.href = directFallbackUrl(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function profileIdFrom(item) {
+    if (!item || typeof item !== 'object') return cleanValue(item);
+    return cleanValue(firstDefined(
+      item.profileId,
+      item.profile_id,
+      item.actorId,
+      item.actor_id,
+      item.actor_user_id,
+      item.fromUserId,
+      item.from_user_id,
+      item.senderId,
+      item.sender_id,
+      item.relatedUserId,
+      item.related_user_id,
+      item.userId,
+      item.user_id,
+      item.uid
+    ));
+  }
+
+  function normalizedProfile(item, uid) {
+    const id = cleanValue(uid || profileIdFrom(item));
+    const name = cleanValue(firstDefined(
+      item && item.profileName,
+      item && item.profile_name,
+      item && item.actorName,
+      item && item.actor_name,
+      item && item.display_name,
+      item && item.full_name,
+      item && item.name
+    )) || 'Utilisateur Fyblic';
+    const handle = cleanValue(firstDefined(
+      item && item.profileHandle,
+      item && item.profile_handle,
+      item && item.actorHandle,
+      item && item.actor_handle,
+      item && item.username,
+      item && item.handle
+    ));
+    const avatar = getAvatarSource(item || {});
+    const badge = firstDefined(
+      item && item.profileBadge,
+      item && item.profile_badge,
+      item && item.profileBadgeValue,
+      item && item.badge,
+      item && item.user_badge,
+      item && item.verification_badge,
+      item && item.badge_url,
+      item && item.verified_badge
+    );
+
+    return {
+      id,
+      user_id: id,
+      uid: id,
+      name,
+      full_name: name,
+      display_name: name,
+      handle,
+      username: handle.replace(/^@+/, ''),
+      avatar,
+      avatar_url: avatar,
+      badge,
+      user_badge: badge,
+      verified: !!(item && (item.verified || item.is_verified)),
+      __happyadUidLocked: true,
+      source: 'notification-center-v700-infinite-scroll'
+    };
+  }
+
+  function currentUserIds() {
+    const host = appWindow();
+    const ids = [];
+    const push = value => {
+      const clean = cleanValue(value).toLowerCase();
+      if (clean && !ids.includes(clean)) ids.push(clean);
+    };
+
+    try {
+      if (host.HappyProfile && typeof host.HappyProfile.currentIds === 'function') {
+        host.HappyProfile.currentIds().forEach(push);
+      }
+    } catch {}
+
+    try {
+      const user = host.HappyProfile && typeof host.HappyProfile.currentUser === 'function'
+        ? host.HappyProfile.currentUser()
+        : (typeof host.currentUser === 'function' ? host.currentUser() : null);
+      if (user) {
+        [user.id, user.user_id, user.uid, user.uuid, user.auth_id, user.auth_user_id,
+          user.account_uid, user.profile_id, user.email].forEach(push);
+      }
+    } catch {}
+
+    [
+      'HAPPYAD_LOGGED_USER',
+      'HAPPYAD_CURRENT_USER',
+      'HAPPYAD_USER',
+      'HAPPYAD_USER_V1',
+      'HAPPYAD_CENTRAL_USER_V10_CLEAN_STATS_FULL'
+    ].forEach(key => {
+      const user = readJsonStorage(key);
+      if (!user) return;
+      [user.id, user.user_id, user.uid, user.uuid, user.auth_id, user.auth_user_id,
+        user.account_uid, user.profile_id, user.email].forEach(push);
+    });
+
+    try { push(localStorage.getItem('HAPPYAD_AUTH_UID')); } catch {}
+    return ids;
+  }
+
+  function isOwnProfileId(uid) {
+    const id = cleanValue(uid);
+    if (!id) return false;
+    const host = appWindow();
+    try {
+      if (host.HappyProfile && typeof host.HappyProfile.isOwnUid === 'function') {
+        return !!host.HappyProfile.isOwnUid(id);
+      }
+    } catch {}
+    return currentUserIds().includes(id.toLowerCase());
+  }
+
+  function saveActiveVisitorProfile(profile) {
+    if (!profile || !profile.id) return;
+    try {
+      const uid = cleanValue(profile.id);
+      const identityKey = 'HAPPYAD_PROFILE_V854_VISITOR_' + uid + '_IDENTITY';
+      let previous = {};
+      try { previous = JSON.parse(localStorage.getItem(identityKey) || '{}') || {}; } catch {}
+      const warm = { ...previous, id: uid, user_id: uid };
+      const incomingName = cleanValue(firstDefined(profile.display_name, profile.full_name, profile.name));
+      if (incomingName && !['utilisateur happyad','utilisateur fyblic'].includes(incomingName.toLowerCase())) {
+        warm.name = incomingName;
+        warm.full_name = incomingName;
+        warm.display_name = incomingName;
+      }
+      const incomingHandle = cleanValue(firstDefined(profile.username, profile.handle)).replace(/^@+/, '');
+      if (incomingHandle) { warm.username = incomingHandle; warm.handle = incomingHandle; }
+      const incomingAvatar = cleanValue(firstDefined(profile.avatar_url, profile.avatar));
+      if (incomingAvatar) { warm.avatar = incomingAvatar; warm.avatar_url = incomingAvatar; }
+      const incomingBadge = cleanValue(firstDefined(profile.badge, profile.user_badge, profile.verification_badge, profile.verified_badge));
+      if (incomingBadge) { warm.badge = incomingBadge; warm.user_badge = incomingBadge; }
+      warm.__cachedAt = Date.now();
+      warm.__happyadSuggestionIdentityV887 = true;
+      localStorage.setItem(identityKey, JSON.stringify(warm));
+      localStorage.setItem('HAPPYAD_ACTIVE_PROFILE', JSON.stringify({ ...profile, ...warm, id: uid, user_id: uid }));
+      localStorage.setItem('HAPPYAD_ACTIVE_PROFILE_UID', uid);
+      localStorage.setItem('HAPPYAD_PUBLIC_PROFILE_ACTIVE_UID', uid);
+      sessionStorage.setItem('HAPPYAD_PROFILE_MASTER_MODE', 'visitor');
+      sessionStorage.setItem('HAPPYAD_PROFILE_MASTER_ACTIVE_UID', uid);
+      sessionStorage.setItem(
+        'HAPPYAD_PROFILE_MASTER_ACTIVE_URL',
+        'modules/visitor-profile.html?uid=' + encodeURIComponent(uid)
+      );
+    } catch {}
+  }
+
+  function clearVisitorProfileState() {
+    try {
+      localStorage.removeItem('HAPPYAD_ACTIVE_PROFILE');
+      localStorage.removeItem('HAPPYAD_ACTIVE_PROFILE_UID');
+      localStorage.removeItem('HAPPYAD_PUBLIC_PROFILE_ACTIVE_UID');
+      sessionStorage.setItem('HAPPYAD_PROFILE_MASTER_MODE', 'my');
+      sessionStorage.removeItem('HAPPYAD_PROFILE_MASTER_ACTIVE_UID');
+      sessionStorage.removeItem('HAPPYAD_PROFILE_MASTER_ACTIVE_URL');
+    } catch {}
+  }
+
+  function openProfile(itemOrProfile, notificationId = '') {
+    const item = itemOrProfile && typeof itemOrProfile === 'object'
+      ? itemOrProfile
+      : { profileId: itemOrProfile };
+    const profileId = profileIdFrom(item);
+    if (!profileId) {
+      showToast('Profil introuvable.');
+      return false;
+    }
+
+    const resolvedNotificationId = notificationId || cleanValue(item.id);
+    const profile = normalizedProfile(item, profileId);
+    const own = isOwnProfileId(profileId) || item.isOwnProfile === true || item.is_own_profile === true;
+
+    markRead(resolvedNotificationId);
+    emitNavigation('HAPPYAD_NOTIFICATION_OPEN_PROFILE', {
+      profileId,
+      profileName: profile.name,
+      profileType: own ? 'my' : 'visitor',
+      notificationId: resolvedNotificationId
+    });
+
+    const host = appWindow();
+    try {
+      if (host.HappyProfile) {
+        if (own && typeof host.HappyProfile.openMy === 'function') {
+          if (host.HappyProfile.openMy({ source: 'notification-center-v700-infinite-scroll' }) !== false) {
+            renderNotifications();
+            return true;
+          }
+        }
+        if (!own && typeof host.HappyProfile.openVisitor === 'function') {
+          if (host.HappyProfile.openVisitor(profileId, profile, {
+            source: 'notification-center-v700-infinite-scroll'
+          }) !== false) {
+            renderNotifications();
+            return true;
+          }
+        }
+      }
+    } catch {}
+
+    if (own) {
+      clearVisitorProfileState();
+      openInternalUrl('modules/my-profile.html', {
+        profileType: 'my',
+        profileId,
+        notificationId: resolvedNotificationId
+      });
+    } else {
+      saveActiveVisitorProfile(profile);
+      openInternalUrl(
+        'modules/visitor-profile.html?uid=' + encodeURIComponent(profileId),
+        {
+          profileType: 'visitor',
+          profileId,
+          profile,
+          notificationId: resolvedNotificationId
+        }
+      );
+    }
+
+    renderNotifications();
+    return true;
+  }
+
+  function publicationIdFrom(item) {
+    return cleanValue(firstDefined(
+      item && item.publicationId,
+      item && item.publication_id,
+      item && item.postId,
+      item && item.post_id,
+      item && item.happyadPostId,
+      item && item.happyad_post_id,
+      item && item.relatedPostId,
+      item && item.related_post_id,
+      item && item.targetPostId,
+      item && item.target_post_id
+    ));
+  }
+
+  function storyIdFrom(item) {
+    const metadata = item && item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+    const entityType = cleanValue(firstDefined(item && item.entity_type, item && item.entityType, metadata.entity_type)).toLowerCase();
+    const contentType = cleanValue(firstDefined(item && item.content_type, item && item.contentType, item && item.publicationType, item && item.publication_type, metadata.content_type, metadata.media_type)).toLowerCase();
+    return cleanValue(firstDefined(
+      item && item.storyId,
+      item && item.story_id,
+      metadata.story_id,
+      metadata.storyId,
+      entityType === 'story' ? item && item.entity_id : '',
+      contentType === 'story' ? item && item.post_id : ''
+    ));
+  }
+
+  function isStoryNotification(item) {
+    const type = cleanValue(firstDefined(item && item.notification_type, item && item.action, item && item.category)).toLowerCase();
+    return Boolean(storyIdFrom(item) && (type.includes('story') || cleanValue(firstDefined(item && item.entity_type, item && item.entityType)).toLowerCase() === 'story' || publicationTypeFrom(item) === 'story'));
+  }
+
+  function commentIdFrom(item) {
+    return cleanValue(firstDefined(
+      item && item.commentId,
+      item && item.comment_id,
+      item && item.targetCommentId,
+      item && item.target_comment_id,
+      item && item.metadata && item.metadata.comment_id,
+      item && item.metadata && item.metadata.commentId
+    ));
+  }
+
+  function parentCommentIdFrom(item) {
+    return cleanValue(firstDefined(
+      item && item.parentCommentId,
+      item && item.parent_comment_id,
+      item && item.parentId,
+      item && item.parent_id,
+      item && item.metadata && item.metadata.parent_id,
+      item && item.metadata && item.metadata.parentCommentId
+    ));
+  }
+
+  function publicationTypeFrom(item) {
+    return cleanValue(firstDefined(
+      item && item.publicationType,
+      item && item.publication_type,
+      item && item.postType,
+      item && item.post_type,
+      item && item.mediaType,
+      item && item.media_type,
+      item && item.kind,
+      item && item.type
+    )).toLowerCase();
+  }
+
+  function publicationActionFrom(item) {
+    const action = cleanValue(firstDefined(
+      item && item.publicationAction,
+      item && item.publication_action,
+      item && item.action,
+      item && item.category,
+      item && item.notification_type
+    )).toLowerCase();
+    if (action.includes('reply') || action.includes('réponse') || action.includes('reponse')) return 'reply';
+    if (action.includes('comment')) return 'comment';
+    if (action.includes('like') || action.includes('aime')) return 'like';
+    if (action.includes('favorite') || action.includes('favori')) return 'favorite';
+    if (action.includes('share') || action.includes('partag')) return 'share';
+    if (action.includes('repost') || action.includes('repub')) return 'repost';
+    return action || 'view';
+  }
+
+  function looksLikeVideo(item) {
+    const type = publicationTypeFrom(item);
+    if (/video|reel|clip|movie|mp4|webm|mov|m4v/.test(type)) return true;
+    if (item && (item.isVideo === true || item.is_video === true)) return true;
+    const media = cleanValue(firstDefined(
+      item && item.video_url,
+      item && item.videoUrl,
+      item && item.media_url,
+      item && item.mediaUrl,
+      item && item.url,
+      item && item.src
+    ));
+    return /\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(media);
+  }
+
+  function postFromLocalSources(postId) {
+    const host = appWindow();
+    const lists = [];
+    try { if (Array.isArray(host.ALL_POSTS)) lists.push(host.ALL_POSTS); } catch {}
+    try { if (Array.isArray(window.ALL_POSTS)) lists.push(window.ALL_POSTS); } catch {}
+
+    [
+      'HAPPYAD_GLOBAL_POSTS_CACHE_V1',
+      'HAPPYAD_HOME_POSTS_CACHE_V1',
+      'HAPPYAD_FAST_OPEN_VIDEO_V1',
+      'HAPPYAD_VIDEO_CACHE_STABLE_V1'
+    ].forEach(key => {
+      const raw = readJsonStorage(key);
+      if (Array.isArray(raw)) lists.push(raw);
+      else if (raw && Array.isArray(raw.posts)) lists.push(raw.posts);
+      else if (raw && Array.isArray(raw.items)) lists.push(raw.items);
+      else if (raw && Array.isArray(raw.list)) lists.push(raw.list);
+    });
+
+    for (const list of lists) {
+      const found = list.find(post => cleanValue(post && (post.id || post.post_id)) === postId);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  function supabaseClient() {
+    const host = appWindow();
+    try { if (typeof host.happyadSb === 'function') return host.happyadSb(); } catch {}
+    try { if (host.happyadSupabase) return host.happyadSupabase; } catch {}
+    try { if (host.supabaseClient) return host.supabaseClient; } catch {}
+    try { if (window.happyadSupabase) return window.happyadSupabase; } catch {}
+    return null;
+  }
+
+
+  function isStoryMentionV888(item) {
+    if (!item) return false;
+    const type = cleanValue(firstDefined(item.notification_type, item.action, item.type)).toLowerCase();
+    return (type === 'mention' || type === 'story_mention' || type === 'mention_story') && Boolean(storyIdFrom(item));
+  }
+
+  function storyMentionAlreadyAddedV888(sourceStoryId) {
+    return Boolean(storyMentionAddedV888[cleanValue(sourceStoryId)]);
+  }
+
+  function rememberStoryMentionAddedV888(sourceStoryId, createdStoryId) {
+    const source = cleanValue(sourceStoryId);
+    if (!source) return;
+    storyMentionAddedV888[source] = { storyId: cleanValue(createdStoryId), at: Date.now() };
+    try { localStorage.setItem(STORY_MENTION_ADDED_KEY_V888, JSON.stringify(storyMentionAddedV888)); } catch {}
+  }
+
+  async function addMentionedStoryV888(item, button) {
+    if (!isStoryMentionV888(item)) return false;
+    const sourceStoryId = storyIdFrom(item);
+    if (!sourceStoryId) return false;
+    if (storyMentionAlreadyAddedV888(sourceStoryId)) {
+      showToast('Cette story est déjà ajoutée.');
+      return true;
+    }
+
+    if (button) {
+      button.disabled = true;
+      button.classList.add('is-busy');
+      button.textContent = 'Ajout…';
+    }
+
+    try {
+      const client = supabaseClient();
+      if (!client || typeof client.rpc !== 'function') throw new Error('Connexion Fyblic indisponible.');
+      const result = await client.rpc('happyad_story_add_mentioned_to_story_v888', { p_source_story_id: sourceStoryId });
+      if (result && result.error) throw result.error;
+      let row = result && result.data;
+      if (Array.isArray(row)) row = row[0] || null;
+      if (row && row.happyad_story_add_mentioned_to_story_v888) row = row.happyad_story_add_mentioned_to_story_v888;
+
+      rememberStoryMentionAddedV888(sourceStoryId, row && (row.id || row.story_id));
+      markRead(item.id);
+      try {
+        const host = appWindow();
+        if (host && host.localStorage) {
+          host.localStorage.setItem('HAPPYAD_RADAR_REFRESH_NEEDED', '1');
+          host.localStorage.setItem('HAPPYAD_HOME_REFRESH_NEEDED', '1');
+        }
+      } catch {}
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            type: 'HAPPYAD_STORY_MENTION_REPOST_CREATED_V888',
+            detail: { story: row || {}, source_story_id: sourceStoryId, source: 'notification-center-v888' }
+          }, '*');
+        }
+      } catch {}
+      showToast('Ajoutée à votre story.');
+      renderNotifications();
+      return true;
+    } catch (error) {
+      const message = cleanValue(error && (error.message || error.details || error.hint || error));
+      if (/happyad_story_add_mentioned_to_story_v888|PGRST202|schema cache|function/i.test(message)) {
+        showToast('Active d’abord la fondation Story Mention V888 dans Supabase.');
+      } else if (/NOT_MENTIONED/i.test(message)) {
+        showToast('Cette story ne vous mentionne pas.');
+      } else if (/STORY_UNAVAILABLE/i.test(message)) {
+        showToast('Cette story a expiré ou n’est plus disponible.');
+      } else {
+        showToast('Ajout à la story impossible.');
+      }
+      if (button) {
+        button.disabled = false;
+        button.classList.remove('is-busy');
+        button.textContent = 'Ajouter à votre story';
+      }
+      return false;
+    }
+  }
+
+
+  function isStoryRepostReturnV895(item) {
+    if (!item) return false;
+    const type = cleanValue(firstDefined(item.notification_type, item.action, item.type)).toLowerCase();
+    const meta = item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+    return Boolean(storyIdFrom(item)) && (type === 'story_repost_return' || meta.story_repost_return === true || item.canAddStoryRepostReturn === true || item.can_add_story_repost_return === true);
+  }
+
+  function storyRepostReturnAlreadyAddedV895(sourceStoryId) {
+    return Boolean(storyRepostReturnAddedV895[cleanValue(sourceStoryId)]);
+  }
+
+  function rememberStoryRepostReturnAddedV895(sourceStoryId, createdStoryId) {
+    const source = cleanValue(sourceStoryId);
+    if (!source) return;
+    storyRepostReturnAddedV895[source] = { storyId: cleanValue(createdStoryId), at: Date.now() };
+    try { localStorage.setItem(STORY_REPOST_RETURN_ADDED_KEY_V895, JSON.stringify(storyRepostReturnAddedV895)); } catch {}
+  }
+
+  async function addStoryRepostReturnV895(item, button) {
+    if (!isStoryRepostReturnV895(item)) return false;
+    const sourceStoryId = storyIdFrom(item);
+    if (!sourceStoryId) return false;
+    if (storyRepostReturnAlreadyAddedV895(sourceStoryId)) {
+      showToast('Cette republication est déjà ajoutée.');
+      return true;
+    }
+    if (button) {
+      button.disabled = true;
+      button.classList.add('is-busy');
+      button.textContent = 'Ajout…';
+    }
+    try {
+      const client = supabaseClient();
+      if (!client || typeof client.rpc !== 'function') throw new Error('Connexion Fyblic indisponible.');
+      const result = await client.rpc('happyad_story_add_repost_return_v895', { p_source_story_id: sourceStoryId });
+      if (result && result.error) throw result.error;
+      let row = result && result.data;
+      if (Array.isArray(row)) row = row[0] || null;
+      if (row && row.happyad_story_add_repost_return_v895) row = row.happyad_story_add_repost_return_v895;
+      rememberStoryRepostReturnAddedV895(sourceStoryId, row && (row.id || row.story_id));
+      markRead(item.id);
+      try {
+        const host = appWindow();
+        if (host && host.localStorage) {
+          host.localStorage.setItem('HAPPYAD_RADAR_REFRESH_NEEDED', '1');
+          host.localStorage.setItem('HAPPYAD_HOME_REFRESH_NEEDED', '1');
+        }
+      } catch {}
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            type: 'HAPPYAD_STORY_REPOST_RETURN_CREATED_V895',
+            detail: { story: row || {}, source_story_id: sourceStoryId, source: 'notification-center-v895' }
+          }, '*');
+        }
+      } catch {}
+      showToast('Ajoutée à votre story.');
+      renderNotifications();
+      return true;
+    } catch (error) {
+      const message = cleanValue(error && (error.message || error.details || error.hint || error));
+      if (/happyad_story_add_repost_return_v895|PGRST202|schema cache|function/i.test(message)) showToast('Active d’abord le SQL Story Repost V895 dans Supabase.');
+      else if (/NOT_ORIGINAL_OWNER/i.test(message)) showToast('Seul l’auteur de la story originale peut faire ce retour.');
+      else if (/REPOST_LIMIT_REACHED/i.test(message)) showToast('La limite de republication est atteinte.');
+      else if (/STORY_UNAVAILABLE/i.test(message)) showToast('Cette story a expiré ou n’est plus disponible.');
+      else showToast('Ajout à la story impossible.');
+      if (button) {
+        button.disabled = false;
+        button.classList.remove('is-busy');
+        button.textContent = 'Ajouter à votre story';
+      }
+      return false;
+    }
+  }
+
+  async function resolvePublication(item) {
+    const postId = publicationIdFrom(item);
+    if (!postId) return item;
+
+    const local = postFromLocalSources(postId);
+    if (local) return { ...local, ...item, publicationId: postId };
+
+    try {
+      const client = supabaseClient();
+      if (client && typeof client.from === 'function') {
+        const result = await client.from('happyad_posts').select('*').eq('id', postId).maybeSingle();
+        if (result && !result.error && result.data) {
+          return { ...result.data, ...item, publicationId: postId };
+        }
+      }
+    } catch {}
+
+    return { ...item, publicationId: postId };
+  }
+
+  function storePublicationOpenRequest(item, route, action) {
+    try {
+      const request = {
+        publicationId: publicationIdFrom(item),
+        publicationType: publicationTypeFrom(item),
+        profileId: profileIdFrom(item),
+        action,
+        route,
+        notificationId: cleanValue(item && item.id),
+        t: Date.now()
+      };
+      localStorage.setItem(PUBLICATION_OPEN_REQUEST_KEY, JSON.stringify(request));
+      sessionStorage.setItem(PUBLICATION_OPEN_REQUEST_KEY, JSON.stringify(request));
+    } catch {}
+  }
+
+  const pendingExactStoryOpensV735 = new Set();
+
+  async function openStoryNotification(item) {
+    const storyId = storyIdFrom(item);
+    if (!storyId) {
+      showToast('Story introuvable.');
+      return false;
+    }
+    if (pendingExactStoryOpensV735.has(storyId)) return false;
+
+    pendingExactStoryOpensV735.add(storyId);
+    markRead(item && item.id);
+
+    const metadata = item && item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+    const detail = {
+      story_id: storyId,
+      id: storyId,
+      owner_id: cleanValue(firstDefined(item && item.storyOwnerId, item && item.story_owner_id, metadata.owner_id, metadata.user_id, metadata.creator_id)),
+      user_id: cleanValue(firstDefined(item && item.storyOwnerId, item && item.story_owner_id, metadata.user_id, metadata.owner_id, metadata.creator_id)),
+      notification_id: cleanValue(item && item.id),
+      source: 'notification-center-v735-exact-story',
+      author_name: cleanValue(firstDefined(item && item.author_name, item && item.profileName, metadata.author_name)),
+      media_url: cleanValue(firstDefined(item && item.media_url, item && item.mediaUrl, item && item.preview_url, item && item.previewUrl, metadata.media_url, metadata.preview_url)),
+      media_type: cleanValue(firstDefined(item && item.media_type, item && item.mediaType, metadata.media_type)),
+      description: cleanValue(firstDefined(item && item.description, item && item.caption, metadata.description, metadata.caption)),
+      created_at: cleanValue(firstDefined(item && item.created_at, metadata.created_at)),
+      expires_at: cleanValue(firstDefined(item && item.expires_at, metadata.expires_at))
+    };
+
+    try {
+      const host = appWindow();
+      const storyMaster = host && (host.HappyStoryV699 || host.HappyStoryV629);
+
+      if (storyMaster && typeof storyMaster.openExactNotification === 'function') {
+        await storyMaster.openExactNotification(detail);
+      } else if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'HAPPYAD_OPEN_EXACT_STORY_NOTIFICATION_V735',
+          detail
+        }, '*');
+      } else {
+        window.postMessage({
+          type: 'HAPPYAD_OPEN_EXACT_STORY_NOTIFICATION_V735',
+          detail
+        }, '*');
+      }
+    } catch {
+      showToast('Story indisponible. Réessayez.');
+    } finally {
+      pendingExactStoryOpensV735.delete(storyId);
+      renderNotifications();
+    }
+
+    return true;
+  }
+
+  function openHomeComment(item) {
+    const publicationId = publicationIdFrom(item);
+    const commentId = commentIdFrom(item);
+    if (!publicationId) {
+      showToast('Publication introuvable.');
+      return false;
+    }
+
+    markRead(item && item.id);
+    const payload = {
+      type: 'HAPPYAD_NOTIFICATION_OPEN_HOME_COMMENT',
+      publicationId,
+      postId: publicationId,
+      commentId,
+      parentCommentId: parentCommentIdFrom(item),
+      publicationType: publicationTypeFrom(item) || 'post',
+      action: publicationActionFrom(item) || 'comment',
+      notificationId: cleanValue(item && item.id),
+      source: 'notification-center-v700-infinite-scroll',
+      timestamp: Date.now()
+    };
+
+    try {
+      window.dispatchEvent(new CustomEvent('HAPPYAD_NOTIFICATION_OPEN_HOME_COMMENT', { detail: payload }));
+    } catch {}
+
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(payload, '*');
+      } else {
+        const host = appWindow();
+        if (host && typeof host.happyadOpenHomeCommentFromNotificationV545 === 'function') {
+          host.happyadOpenHomeCommentFromNotificationV545(payload);
+        }
+      }
+    } catch {}
+
+    renderNotifications();
+    return true;
+  }
+
+  function openHomePost(item) {
+    const publicationId = publicationIdFrom(item);
+    if (!publicationId) {
+      showToast('Publication introuvable.');
+      return false;
+    }
+
+    markRead(item && item.id);
+    const payload = {
+      type: 'HAPPYAD_NOTIFICATION_OPEN_HOME_POST',
+      publicationId,
+      postId: publicationId,
+      publicationType: publicationTypeFrom(item) || 'photo',
+      action: publicationActionFrom(item) || 'view',
+      notificationId: cleanValue(item && item.id),
+      source: 'notification-center-v700-infinite-scroll',
+      timestamp: Date.now()
+    };
+
+    try {
+      window.dispatchEvent(new CustomEvent('HAPPYAD_NOTIFICATION_OPEN_HOME_POST', { detail: payload }));
+    } catch {}
+
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(payload, '*');
+      } else {
+        const host = appWindow();
+        if (host && typeof host.happyadOpenHomePostFromNotificationV548 === 'function') {
+          host.happyadOpenHomePostFromNotificationV548(payload);
+        }
+      }
+    } catch {}
+
+    renderNotifications();
+    return true;
+  }
+
+  async function openPublication(item) {
+    const publicationId = publicationIdFrom(item);
+    if (!publicationId) {
+      showToast('Publication introuvable.');
+      return false;
+    }
+
+    const resolved = await resolvePublication(item || {});
+    const video = looksLikeVideo(resolved);
+    const action = publicationActionFrom(resolved);
+
+    /* V548 : toutes les actions d'une vidéo vont dans la centrale vidéo.
+       Toutes les actions d'une photo restent dans l'accueil. */
+    if (!video) {
+      if (action === 'comment' || action === 'reply') return openHomeComment(resolved);
+      return openHomePost(resolved);
+    }
+
+    markRead(item && item.id);
+    const params = new URLSearchParams();
+    params.set('post', publicationId);
+    params.set('from', 'notification');
+    if (item && item.id) params.set('notification', cleanValue(item.id));
+    if (action) params.set('action', action);
+    if (action === 'comment' || action === 'reply') {
+      params.set('comments', '1');
+      const commentId = commentIdFrom(resolved);
+      const parentCommentId = parentCommentIdFrom(resolved);
+      if (commentId) params.set('comment', commentId);
+      if (parentCommentId) params.set('parent', parentCommentId);
+    }
+    const route = 'modules/video.html?' + params.toString();
+
+    storePublicationOpenRequest(resolved, route, action);
+    emitNavigation('HAPPYAD_NOTIFICATION_OPEN_PUBLICATION', {
+      publicationId,
+      publicationType: 'video',
+      profileId: profileIdFrom(resolved),
+      action,
+      route,
+      commentId: commentIdFrom(resolved),
+      parentCommentId: parentCommentIdFrom(resolved),
+      notificationId: cleanValue(item && item.id)
+    });
+
+    openInternalUrl(route, {
+      publicationId,
+      publicationType: 'video',
+      publicationAction: action,
+      commentId: commentIdFrom(resolved),
+      parentCommentId: parentCommentIdFrom(resolved),
+      notificationId: cleanValue(item && item.id)
+    });
+    renderNotifications();
+    return true;
+  }
+function openDetails(item) {
+    if (!item) return false;
+
+    markRead(item.id);
+    emitNavigation('HAPPYAD_NOTIFICATION_OPEN_DETAILS', {
+      notificationId: item.id,
+      category: item.category,
+      systemId: item.systemId || item.system_id || ''
+    });
+    renderNotifications();
+    return true;
+  }
+
+  function renderNotifications() {
+    if (deferNotificationPaint('list', renderNotifications, 55)) return;
+    const visible = notifications.filter(item => {
+      const matchesCategory = state.activeFilter === 'all' || item.category === state.activeFilter;
+      const matchesUnread = !state.unreadOnly || isUnread(item);
+      return matchesCategory && matchesUnread;
+    });
+
+    const scrollMaster = window.HappyNotificationInfiniteScrollV700;
+    const scrollKey = `${state.activeFilter}|${state.unreadOnly ? 'unread' : 'all'}`;
+    let page = null;
+    let rendered = visible;
+    if (scrollMaster && typeof scrollMaster.begin === 'function') {
+      page = scrollMaster.begin({
+        key: scrollKey,
+        items: visible,
+        container: els.content,
+        list: els.list,
+        serverHasMore: notificationServerHasMore,
+        onAdvance: renderNotifications,
+        onNeedMore: () => {
+          try {
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({
+                type: 'HAPPYAD_NOTIFICATIONS_LOAD_MORE',
+                filter: state.activeFilter,
+                unreadOnly: state.unreadOnly,
+                source: 'notification-infinite-scroll-v700'
+              }, '*');
+            }
+          } catch {}
+        }
+      });
+      rendered = page.items;
+    }
+
+    els.list.innerHTML = rendered.map(renderNotificationItem).join('');
+    els.empty.hidden = visible.length > 0;
+    els.suggestionsSection.hidden = suggestions.length === 0 || !(state.activeFilter === 'all' || state.activeFilter === 'follow') || state.unreadOnly;
+
+    bindImageState(els.list);
+    if (scrollMaster && page && typeof scrollMaster.commit === 'function') scrollMaster.commit(page);
+
+    els.list.querySelectorAll('.notification-item').forEach(row => {
+      const activate = event => {
+        if (event && event.target.closest('button')) return;
+        const item = getNotification(row.dataset.id);
+        if (!item) return;
+
+        const category = cleanValue(firstDefined(item.action, item.category, item.notification_type)).toLowerCase();
+        if (category === 'follow' && profileIdFrom(item)) openProfile(item);
+        else if (storyIdFrom(item)) openStoryNotification(item);
+        else if (publicationIdFrom(item)) openPublication(item);
+        else if (profileIdFrom(item)) openProfile(item);
+        else openDetails(item);
+      };
+
+      row.addEventListener('click', activate);
+      row.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activate(event);
+        }
+      });
+    });
+
+    els.list.querySelectorAll('[data-open-profile]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        const item = getNotification(button.dataset.notificationId);
+        openProfile(item || button.dataset.openProfile, button.dataset.notificationId);
+      });
+    });
+
+    els.list.querySelectorAll('[data-open-story]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        const item = getNotification(button.dataset.notificationId);
+        if (item) openStoryNotification(item);
+      });
+    });
+
+    els.list.querySelectorAll('[data-open-publication]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        const item = getNotification(button.dataset.notificationId);
+        if (item) openPublication(item);
+      });
+    });
+
+    els.list.querySelectorAll('[data-open-details]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        const item = getNotification(button.dataset.notificationId);
+        if (item) openDetails(item);
+      });
+    });
+
+    els.list.querySelectorAll('[data-add-mentioned-story-v888]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const item = getNotification(button.dataset.notificationId);
+        if (item) addMentionedStoryV888(item, button);
+      });
+    });
+
+    els.list.querySelectorAll('[data-add-story-repost-return-v895]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const item = getNotification(button.dataset.notificationId);
+        if (item) addStoryRepostReturnV895(item, button);
+      });
+    });
+
+    els.list.querySelectorAll('[data-follow-notification]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        const id = button.dataset.followNotification;
+        state.following[id] = !state.following[id];
+        markRead(id);
+        persist();
+        renderNotifications();
+        showToast(state.following[id] ? 'Vous suivez maintenant ce profil.' : 'Abonnement annulé.');
+      });
+    });
+  }
+
+  function getPublicationIcon(item) {
+    if (item.publicationType === 'poll') return ICONS.chart;
+    if (item.publicationType === 'memory') return ICONS.memory;
+    if (item.publicationType === 'album') return ICONS.gallery;
+    if (item.category === 'like') return ICONS.heart;
+    if (item.category === 'comment') return ICONS.comment;
+    if (item.category === 'favorite') return ICONS.star;
+    return ICONS.gallery;
+  }
+
+  function firstMediaUrl(value, depth = 0, seen = new Set()) {
+    if (!value || depth > 4) return '';
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      return trimmed && !trimmed.startsWith('[object ') ? trimmed : '';
+    }
+
+    if (typeof value !== 'object' || seen.has(value)) return '';
+    seen.add(value);
+
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        const found = firstMediaUrl(entry, depth + 1, seen);
+        if (found) return found;
+      }
+      return '';
+    }
+
+    const directKeys = [
+      'thumbnailUrl', 'thumbnail_url', 'thumb', 'thumbnail',
+      'coverUrl', 'cover_url', 'previewUrl', 'preview_url',
+      'imageUrl', 'image_url', 'photoUrl', 'photo_url',
+      'mediaUrl', 'media_url', 'publicUrl', 'public_url',
+      'downloadUrl', 'download_url', 'src', 'url'
+    ];
+
+    for (const key of directKeys) {
+      const found = firstMediaUrl(value[key], depth + 1, seen);
+      if (found) return found;
+    }
+
+    const nestedKeys = [
+      'publication', 'post', 'media', 'mediaItem', 'media_item',
+      'mediaItems', 'media_items', 'attachments', 'images', 'photos',
+      'files', 'assets', 'content'
+    ];
+
+    for (const key of nestedKeys) {
+      const found = firstMediaUrl(value[key], depth + 1, seen);
+      if (found) return found;
+    }
+
+    return '';
+  }
+
+  function getPublicationImage(item) {
+    return firstMediaUrl([
+      item.thumb,
+      item.publicationImage,
+      item.publication_image,
+      item.thumbnail,
+      item.thumbnailUrl,
+      item.thumbnail_url,
+      item.coverUrl,
+      item.cover_url,
+      item.previewUrl,
+      item.preview_url,
+      item.mediaUrl,
+      item.media_url,
+      item.publication,
+      item.post,
+      item.media,
+      item.mediaItems,
+      item.media_items,
+      item.attachments,
+      item.images,
+      item.photos
+    ]);
+  }
+
+  function getAvatarSource(item) {
+    const uid = profileIdFrom(item);
+    const master = window.HappyProfileAvatarMasterV855R32 || window.HappyProfileAvatarMaster;
+    const entry = master && uid && master.getEntry && master.getEntry(uid);
+    if (entry && entry.known) return firstMediaUrl([entry.url]);
+    if (master && uid && master.resolve) { master.resolve(uid).catch(() => {}); return ''; }
+    return firstMediaUrl([
+      item.avatar,
+      item.profileAvatar,
+      item.profile_avatar,
+      item.avatarUrl,
+      item.avatar_url,
+      item.photoUrl,
+      item.photo_url,
+      item.profilePhoto,
+      item.profile_photo,
+      item.profile
+    ]);
+  }
+
+  function getInitials(name) {
+    const value = String(name || '?').trim();
+    const parts = value.split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    return parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
+  }
+
+  function getActionBadge(item) {
+    const byCategory = {
+      follow: 'user',
+      like: 'heart',
+      comment: 'comment',
+      reply: 'comment',
+      favorite: 'star',
+      activity: item.publicationType === 'poll' ? 'chart' : 'gallery'
+    };
+    return item.badge || byCategory[item.category] || 'user';
+  }
+
+  function getActionBadgeColor(item) {
+    if (item.badgeColor) return item.badgeColor;
+    if (item.category === 'like' || item.category === 'favorite') return 'pink';
+    return 'blue';
+  }
+
+  function isLikelyImageSource(value) {
+    if (typeof value !== 'string') return false;
+    const source = value.trim();
+    return /^(?:data:image\/|blob:|https?:\/\/|\/|\.\/|\.\.\/)/i.test(source);
+  }
+
+  function normalizeHappyadBadgeValue(value) {
+    const raw = cleanValue(value);
+    const lower = raw.toLowerCase();
+    if (!raw || ['aucun','none','false','0','1','true','null','undefined','no','non'].includes(lower)) return '';
+    return raw;
+  }
+
+  function getProfileBadgeValue(item) {
+    if (!item) return '';
+    return normalizeHappyadBadgeValue(firstDefined(
+      item.profileBadge,
+      item.profile_badge,
+      item.profileBadgeValue,
+      item.user_badge,
+      item.accountBadge,
+      item.account_badge,
+      item.verification_badge,
+      item.verified_badge
+    ));
+  }
+
+  function getProfileBadgeVariant(value) {
+    const badge = normalizeHappyadBadgeValue(value).toLowerCase();
+    if (!badge) return '';
+    if (/violet|purple|creator/.test(badge)) return 'violet';
+    if (/jaune|yellow|business|premium|seller/.test(badge)) return 'yellow';
+    return 'blue';
+  }
+
+  function getProfileBadgeUrl(item) {
+    const source = firstMediaUrl([
+      item.profileBadgeUrl,
+      item.profile_badge_url,
+      item.verificationBadgeUrl,
+      item.verification_badge_url,
+      item.verifiedBadgeUrl,
+      item.verified_badge_url,
+      item.accountBadgeUrl,
+      item.account_badge_url,
+      item.badgeImage,
+      item.badge_image,
+      typeof item.profileBadge === 'string' ? item.profileBadge : '',
+      typeof item.accountBadge === 'string' ? item.accountBadge : ''
+    ]);
+    return isLikelyImageSource(source) ? source : '';
+  }
+
+  function hasProfileBadge(item) {
+    if (!item) return false;
+    return Boolean(
+      getProfileBadgeUrl(item) ||
+      getProfileBadgeValue(item) ||
+      item.isVerified === true ||
+      item.is_verified === true ||
+      item.hasBadge === true ||
+      item.has_badge === true
+    );
+  }
+
+  function renderProfileNameBadge(item) {
+    if (!hasProfileBadge(item)) return '';
+    const badgeUrl = getProfileBadgeUrl(item);
+    if (badgeUrl) {
+      return `<span class="profile-name-badge is-image" title="Badge Fyblic officiel" aria-label="Badge Fyblic officiel"><img src="${escapeAttr(badgeUrl)}" alt="" loading="lazy" decoding="async"></span>`;
+    }
+    const rawBadge = getProfileBadgeValue(item);
+    const variant = getProfileBadgeVariant(rawBadge || 'blue');
+    return `<span class="profile-name-badge ${escapeAttr(variant)}" title="Badge Fyblic officiel" aria-label="Badge Fyblic officiel" data-happyad-badge="${escapeAttr(rawBadge)}"></span>`;
+  }
+
+  function renderNotificationHtml(item) {
+    const html = String(item.html || '');
+    const badge = renderProfileNameBadge(item);
+    if (!badge || html.includes('profile-name-badge')) return html;
+    return html.replace(/(<strong\b[^>]*>[\s\S]*?<\/strong>)/i, `$1${badge}`);
+  }
+
+  function renderAvatarFrame(name, source, classPrefix = '') {
+    const initials = escapeAttr(getInitials(name));
+    const imageClass = classPrefix === 'suggestion' ? 'suggestion-avatar' : 'avatar';
+    const frameClass = classPrefix === 'suggestion' ? 'suggestion-avatar-frame' : 'avatar-frame';
+    const sourceHtml = source
+      ? `<img class="${imageClass}" src="${escapeAttr(source)}" alt="" loading="lazy" decoding="async">`
+      : '';
+    return `<span class="${frameClass}"><span class="avatar-fallback" aria-hidden="true">${initials}</span>${sourceHtml}</span>`;
+  }
+
+  function renderPublicationVisual(item) {
+    const publicationImage = getPublicationImage(item);
+    const placeholder = `<span class="publication-placeholder" aria-hidden="true">${getPublicationIcon(item)}</span>`;
+    const image = publicationImage
+      ? `<img class="notification-thumb publication-media" src="${escapeAttr(publicationImage)}" alt="Aperçu de la publication" loading="lazy" decoding="async">`
+      : '';
+    return `${placeholder}${image}`;
+  }
+
+  function bindImageState(root) {
+    root.querySelectorAll('.avatar-frame .avatar, .suggestion-avatar-frame .suggestion-avatar, .publication-square .publication-media').forEach(image => {
+      const frame = image.closest('.avatar-frame, .suggestion-avatar-frame, .publication-square');
+      if (!frame) return;
+
+      const setLoaded = () => {
+        frame.classList.add('is-loaded');
+        frame.classList.remove('is-error');
+      };
+      const setError = () => {
+        frame.classList.add('is-error');
+        frame.classList.remove('is-loaded');
+      };
+
+      image.addEventListener('load', setLoaded, { once: true });
+      image.addEventListener('error', setError, { once: true });
+
+      if (image.complete) {
+        if (image.naturalWidth > 0) setLoaded();
+        else setError();
+      }
+    });
+  }
+
+  function renderNotificationItem(item) {
+    const unreadClass = isUnread(item) ? ' is-unread' : '';
+    const notificationCategory = cleanValue(firstDefined(item.action, item.category, item.notification_type)).toLowerCase();
+    const isProfileNotification = notificationCategory === 'follow';
+    const actionClass = isProfileNotification ? ' is-profile-notification' : '';
+    const profileId = escapeAttr(item.profileId || '');
+    const notificationId = escapeAttr(item.id);
+    const profileNameRaw = item.profileName || item.name || 'ce profil';
+    const profileName = escapeAttr(profileNameRaw);
+    const avatarSource = getAvatarSource(item);
+
+    const shouldRenderProfile = Boolean(item.profileId || avatarSource);
+    const leadingInner = shouldRenderProfile
+      ? `<span class="profile-avatar-shell">${renderAvatarFrame(profileNameRaw, avatarSource)}<span class="avatar-badge ${getActionBadgeColor(item)}">${ICONS[getActionBadge(item)] || ICONS.user}</span></span>`
+      : `<span class="activity-icon ${item.iconTone || 'blue'}">${ICONS[item.icon] || ICONS.bell}</span>`;
+
+    const leading = item.profileId
+      ? `<button class="notification-leading profile-trigger" type="button" data-open-profile="${profileId}" data-notification-id="${notificationId}" aria-label="Ouvrir le profil de ${profileName}">${leadingInner}</button>`
+      : `<div class="notification-leading">${leadingInner}</div>`;
+
+    let tail = '';
+    const storyId = storyIdFrom(item);
+    if (!isProfileNotification && storyId) {
+      tail = `<button class="publication-trigger publication-square publication-story" type="button" data-open-story="${escapeAttr(storyId)}" data-notification-id="${notificationId}" aria-label="Ouvrir la story">${renderPublicationVisual(item)}</button>`;
+    } else if (!isProfileNotification && item.publicationId) {
+      tail = `<button class="publication-trigger publication-square publication-${escapeAttr(item.category)}" type="button" data-open-publication="${escapeAttr(item.publicationId)}" data-notification-id="${notificationId}" aria-label="Ouvrir la publication">${renderPublicationVisual(item)}</button>`;
+    } else if (!isProfileNotification && getPublicationImage(item)) {
+      tail = `<span class="publication-square">${renderPublicationVisual(item)}</span>`;
+    } else if (!isProfileNotification && item.tail === 'chevron') {
+      tail = `<button class="details-trigger" type="button" data-open-details="${notificationId}" data-notification-id="${notificationId}" aria-label="Ouvrir">${ICONS.chevron}</button>`;
+    }
+
+    const mentionAdded = storyId && storyMentionAlreadyAddedV888(storyId);
+    const mentionAction = isStoryMentionV888(item)
+      ? `<button class="story-mention-add-v888${mentionAdded ? ' is-added' : ''}" type="button" data-add-mentioned-story-v888="${escapeAttr(storyId)}" data-notification-id="${notificationId}" ${mentionAdded ? 'disabled' : ''}>${mentionAdded ? 'Ajoutée à votre story' : 'Ajouter à votre story'}</button>`
+      : '';
+    const repostReturnAdded = storyId && storyRepostReturnAlreadyAddedV895(storyId);
+    const repostReturnAction = isStoryRepostReturnV895(item)
+      ? `<button class="story-mention-add-v888${repostReturnAdded ? ' is-added' : ''}" type="button" data-add-story-repost-return-v895="${escapeAttr(storyId)}" data-notification-id="${notificationId}" ${repostReturnAdded ? 'disabled' : ''}>${repostReturnAdded ? 'Ajoutée à votre story' : 'Ajouter à votre story'}</button>`
+      : '';
+
+    return `<article class="notification-item${unreadClass}${actionClass}" data-id="${notificationId}" data-category="${escapeAttr(item.category)}" tabindex="0">
+      ${leading}
+      <div class="notification-copy"><p>${renderNotificationHtml(item)}</p><time>${escapeAttr(item.time)}</time>${mentionAction}${repostReturnAction}</div>
+      ${tail ? `<div class="notification-tail">${tail}</div>` : ''}
+    </article>`;
+  }
+
+  function renderSuggestions() {
+    if (deferNotificationPaint('suggestions', renderSuggestions, 65)) return;
+    const visible = suggestions.filter(item => !state.dismissed[item.id]);
+    els.suggestionsSection.hidden = visible.length === 0
+      || !(state.activeFilter === 'all' || state.activeFilter === 'follow')
+      || state.unreadOnly;
+    els.suggestionList.innerHTML = visible.map(item => {
+      const profileId = escapeAttr(item.profileId || item.id);
+      const name = escapeAttr(item.name);
+      const avatarSource = getAvatarSource(item);
+      const badge = renderProfileNameBadge(item);
+      return `<article class="suggestion-item" data-suggestion-id="${escapeAttr(item.id)}">
+        <button class="suggestion-profile-trigger" type="button" data-suggestion-profile="${profileId}" data-profile-name="${name}" aria-label="Ouvrir le profil de ${name}">
+          ${renderAvatarFrame(item.name, avatarSource, 'suggestion')}
+        </button>
+        <button class="suggestion-name-trigger suggestion-copy" type="button" data-suggestion-profile="${profileId}" data-profile-name="${name}">
+          <span class="suggestion-name-row"><strong>${name}</strong>${badge}</span><span>Suggestions</span>
+        </button>
+        <button class="suggestion-follow${state.following[profileId] ? ' is-following' : ''}" type="button" data-suggestion-follow="${profileId}" data-profile-name="${name}" ${state.following[profileId] ? 'disabled' : ''}>${state.following[profileId] ? 'Abonné' : 'S’abonner'}</button>
+        <button class="suggestion-dismiss" type="button" data-suggestion-dismiss="${escapeAttr(item.id)}" aria-label="Retirer ${name}">×</button>
+      </article>`;
+    }).join('');
+
+    bindImageState(els.suggestionList);
+
+    els.suggestionList.querySelectorAll('[data-suggestion-profile]').forEach(button => {
+      button.addEventListener('click', () => {
+        const profileId = cleanValue(button.dataset.suggestionProfile);
+        const suggestion = suggestions.find(item => cleanValue(item && (item.profileId || item.profile_id || item.id)) === profileId);
+        openProfile(suggestion || { profileId, profileName: cleanValue(button.dataset.profileName) });
+      });
+    });
+
+    els.suggestionList.querySelectorAll('[data-suggestion-follow]').forEach(button => {
+      button.addEventListener('click', async event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const profileId = cleanValue(button.dataset.suggestionFollow);
+        if (!profileId || state.following[profileId] || button.disabled) return;
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.classList.add('is-busy');
+        button.textContent = 'Abonnement…';
+        try {
+          const host = appWindow();
+          const core = host.HappyProfileCoreV855R6 || host.HappyProfileCoreV855 || host.HappyProfileCoreV854;
+          let viewerId = '';
+          if (core && typeof core.authUser === 'function') {
+            const user = await core.authUser();
+            viewerId = cleanValue(user && user.id);
+          }
+          if (!viewerId) {
+            viewerId = currentUserIds().find(value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) || '';
+          }
+          if (!viewerId) throw new Error('Session utilisateur indisponible.');
+          if (viewerId === profileId) throw new Error('Impossible de s’abonner à son propre profil.');
+
+          if (core && typeof core.setFollowing === 'function') {
+            await core.setFollowing(viewerId, profileId, true);
+          } else {
+            const client = supabaseClient();
+            if (!client || typeof client.from !== 'function') throw new Error('Connexion Supabase indisponible.');
+            const result = await client.from('happyad_follows').upsert({
+              follower_id: viewerId,
+              creator_id: profileId,
+              created_at: new Date().toISOString()
+            }, { onConflict: 'follower_id,creator_id' });
+            if (result && result.error) throw result.error;
+          }
+
+          state.following[profileId] = true;
+          persist();
+          button.classList.remove('is-busy');
+          button.classList.add('is-following');
+          button.textContent = 'Abonné';
+          button.disabled = true;
+          showToast('Abonnement enregistré.');
+        } catch (error) {
+          button.disabled = false;
+          button.classList.remove('is-busy');
+          button.textContent = originalText || 'S’abonner';
+          showToast(cleanValue(error && error.message) || 'Abonnement impossible.');
+        }
+      });
+    });
+
+    els.suggestionList.querySelectorAll('[data-suggestion-dismiss]').forEach(button => {
+      button.addEventListener('click', () => {
+        const id = button.dataset.suggestionDismiss;
+        state.dismissed[id] = true;
+        persist();
+        renderSuggestions();
+      });
+    });
+  }
+
+  function setFilter(filter, chip) {
+    state.activeFilter = filter;
+    els.chips.forEach(item => item.classList.toggle('is-active', item === chip));
+    chip?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    renderNotifications();
+  }
+
+  function openSheet() {
+    els.sheet.hidden = false;
+    els.backdrop.hidden = false;
+    els.filterButton.classList.add('is-open');
+    els.filterButton.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSheet() {
+    els.sheet.hidden = true;
+    els.backdrop.hidden = true;
+    els.filterButton.classList.remove('is-open');
+    els.filterButton.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  let toastTimer = 0;
+  function showToast(message) {
+    window.clearTimeout(toastTimer);
+    els.toast.textContent = message;
+    els.toast.classList.add('is-visible');
+    toastTimer = window.setTimeout(() => els.toast.classList.remove('is-visible'), 2200);
+  }
+
+  els.chips.forEach(chip => chip.addEventListener('click', () => setFilter(chip.dataset.filter, chip)));
+  els.filterButton.addEventListener('click', openSheet);
+  els.sheetClose.addEventListener('click', closeSheet);
+  els.backdrop.addEventListener('click', closeSheet);
+  els.unreadOnly.addEventListener('change', () => {
+    state.unreadOnly = els.unreadOnly.checked;
+    renderNotifications();
+  });
+  els.markAllRead.addEventListener('click', () => {
+    notifications.forEach(item => { state.read[item.id] = true; });
+    persist();
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'HAPPYAD_NOTIFICATIONS_MARK_ALL_READ',
+          source: 'notification-center-v700-infinite-scroll'
+        }, '*');
+      }
+    } catch {}
+    renderNotifications();
+    closeSheet();
+    showToast('Toutes les notifications sont marquées comme lues.');
+  });
+  if (els.backButton) els.backButton.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    try {
+      if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'HAPPYAD_INTERNAL_BACK_REQUEST_V591', detail: { id: 'notification', source: 'notification-center-v591' } }, '*');
+    } catch {}
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !els.sheet.hidden) closeSheet();
+  });
+
+  window.HAPPYAD_NOTIFICATION_CENTER = {
+    setData(payload = {}) {
+      notificationServerHasMore = payload.hasMore !== false;
+      try {
+        if (window.HappyNotificationInfiniteScrollV700) window.HappyNotificationInfiniteScrollV700.notifyDataArrived();
+      } catch {}
+      if (Array.isArray(payload.notifications)) {
+        notifications = payload.notifications.map(raw => {
+          const id = cleanValue(firstDefined(raw.id, raw.notification_id, raw.event_id)) || ('notification-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+          const unread = raw.unread !== false && raw.is_read !== true && raw.read !== true;
+          if (unread) delete state.read[id];
+          else state.read[id] = true;
+          return {
+            ...raw,
+            id,
+            category: cleanValue(firstDefined(raw.category, raw.notification_type, raw.event_type, raw.type)).toLowerCase() || 'activity',
+            profileId: profileIdFrom(raw),
+            profileName: cleanValue(firstDefined(raw.profileName, raw.profile_name, raw.actorName, raw.actor_name, raw.display_name, raw.full_name, raw.name)),
+            publicationId: publicationIdFrom(raw),
+            publicationType: publicationTypeFrom(raw),
+            publicationAction: publicationActionFrom(raw),
+            storyId: storyIdFrom(raw),
+            story_id: storyIdFrom(raw),
+            unread
+          };
+        });
+        persist();
+      }
+      if (Array.isArray(payload.suggestions)) suggestions = payload.suggestions;
+      renderNotifications();
+      renderSuggestions();
+    },
+    refresh() {
+      renderNotifications();
+      renderSuggestions();
+    },
+    openProfile(profileId, profileName = '') {
+      openProfile({ profileId, profileName, id: '' });
+    },
+    openPublication(publicationId, publicationType = 'post', publicationAction = 'view') {
+      return openPublication({ publicationId, publicationType, publicationAction, id: '' });
+    },
+    openStory(storyId, ownerId = '', mediaUrl = '', mediaType = 'photo') {
+      return openStoryNotification({ storyId, story_id: storyId, storyOwnerId: ownerId, story_owner_id: ownerId, media_url: mediaUrl, preview_url: mediaUrl, media_type: mediaType, id: '' });
+    },
+    openHomeComment(publicationId, commentId = '', publicationType = 'post') {
+      return openHomeComment({ publicationId, commentId, publicationType, publicationAction: 'comment', category: 'comment', id: '' });
+    },
+    openHomePost(publicationId, publicationType = 'photo', publicationAction = 'view') {
+      return openHomePost({ publicationId, publicationType, publicationAction, id: '' });
+    },
+  };
+
+  function applyCanonicalNotificationAvatarV855R32(detail) {
+    detail = detail && typeof detail === 'object' ? detail : {};
+    const uid = cleanValue(detail.uid);
+    if (!uid || detail.known !== true) return;
+    const avatar = cleanValue(detail.avatarUrl || detail.avatar_url || detail.avatar);
+    const fields = ['avatar','avatar_url','avatarUrl','profileAvatar','profile_avatar','actorAvatar','actor_avatar','profilePhoto','profile_photo','photoUrl','photo_url'];
+    const patch = (item, suggestion) => {
+      if (!item || typeof item !== 'object') return;
+      const itemUid = profileIdFrom(item) || (suggestion ? cleanValue(item.profileId || item.id) : '');
+      if (itemUid !== uid) return;
+      fields.forEach(field => { if (Object.prototype.hasOwnProperty.call(item,field)) item[field] = avatar; });
+      item.avatar = avatar;item.avatar_url = avatar;item.__happyadAvatarKnownV855R32 = true;
+    };
+    notifications.forEach(item => patch(item,false));
+    suggestions.forEach(item => patch(item,true));
+    renderNotifications();renderSuggestions();
+  }
+  window.addEventListener('HAPPYAD_PROFILE_AVATAR_UPDATED_V855R32',event => applyCanonicalNotificationAvatarV855R32(event && event.detail),true);
+
+  window.addEventListener('message', event => {
+    const data = event.data;
+    if (!data || typeof data !== 'object') return;
+    if (data.type === 'HAPPYAD_NOTIFICATIONS_SET_DATA') {
+      window.HAPPYAD_NOTIFICATION_CENTER.setData(data.payload || data);
+    }
+    if (data.type === 'HAPPYAD_NOTIFICATIONS_REFRESH') {
+      window.HAPPYAD_NOTIFICATION_CENTER.refresh();
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            type: 'HAPPYAD_NOTIFICATIONS_REQUEST_DATA',
+            source: 'notification-center-v700-infinite-scroll'
+          }, '*');
+        }
+      } catch {}
+    }
+    if (data.type === 'HAPPYAD_NOTIFICATIONS_OPEN_PROFILE') {
+      window.HAPPYAD_NOTIFICATION_CENTER.openProfile(data.profileId || data.profile_id, data.profileName || data.profile_name || '');
+    }
+    if (data.type === 'HAPPYAD_NOTIFICATIONS_OPEN_PUBLICATION') {
+      window.HAPPYAD_NOTIFICATION_CENTER.openPublication(
+        data.publicationId || data.publication_id || data.postId || data.post_id,
+        data.publicationType || data.publication_type || data.postType || data.post_type || 'post',
+        data.publicationAction || data.publication_action || data.action || 'view'
+      );
+    }
+  });
+
+  renderNotifications();
+  renderSuggestions();
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'HAPPYAD_NOTIFICATION_CENTER_READY', source: 'notification-center-v700-infinite-scroll' }, '*');
+    }
+  } catch {}
+})();
+
+</script>
+
+<!-- Fyblic V603 — menu transparent et boutons internes fiables -->
+<link rel="stylesheet" href="../core/button-state-master-v604.css?v=604">
+<script src="../core/button-state-master-v604.js?v=604"></script>
+<script src="../core/internal-return-fast-v611.js?v=611"></script>
+
+<!-- Fyblic V997 GLOBAL COHERENCE -->
+<link rel="stylesheet" href="../core/happyad-global-coherence-v997.css?v=1000-global-coherence-no-story-overlay">
+<script src="../core/happyad-global-coherence-v997.js?v=1000-global-coherence-no-story-overlay"></script>
+</body>
+</html>

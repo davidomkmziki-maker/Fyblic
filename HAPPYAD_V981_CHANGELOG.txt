@@ -1,0 +1,15 @@
+HAPPYAD V981 — SINGLE CARD MEDIA MASTER
+
+Base source : HAPPYAD25 V979 uniquement. V980 non utilisé.
+
+Corrections :
+1. Une taille média canonique 4:5 pour les cartes photo et vidéo Accueil.
+2. Média plus court/large : contain sur fond noir ; média plus long/vertical : cover dans la carte, original entier en fullscreen.
+3. Album photo : une seule carte ; seuls les médias glissent horizontalement dans un viewport 4:5 stable.
+4. Header, description et actions d’un album ne sont plus dupliqués par slide.
+5. Publication individuelle : actions déplacées dans miniCardFrame, sans ligne entre description et actions.
+6. Espacement vertical des publications réduit à 7–8 px.
+7. Les points d’album restent le seul élément supplémentaire sous une carte groupée.
+8. Master V981 chargé dès le head et en dernier ; Service Worker versionné V981.
+
+Non modifié : Supabase, likes, commentaires, partage, repost, favoris, pagination, Realtime, navigation, fullscreen, Stories, Centrale vidéo.

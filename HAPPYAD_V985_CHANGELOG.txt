@@ -1,0 +1,21 @@
+HAPPYAD V985 — LOVE, TYPOGRAPHIE ET ABONNEMENT SUR CARTE
+
+1. CENTRALE VIDÉO
+- Le double-clic ajoute uniquement un like.
+- Si la vidéo est déjà aimée, le double-clic ne retire plus le like.
+- Le retrait du like reste possible uniquement avec le vrai bouton cœur.
+- Une bulle love rose apparaît exactement à l’endroit du double-clic.
+
+2. ÉCRITURES DES CARTES
+- Le nom du créateur, la date et les compteurs ont été légèrement allégés.
+- La description et les médias conservent leur affichage validé.
+
+3. ABONNEMENT DEPUIS UNE CARTE
+- Un petit + bleu est superposé à l’avatar des créateurs non suivis.
+- Le bouton est absent sur sa propre publication et sur les comptes déjà suivis.
+- Après un abonnement réussi, il devient ✔ vert puis disparaît.
+- Le bouton utilise le moteur d’abonnement Supabase déjà commun aux autres pages.
+
+4. PROTECTION PHOTO
+- Aucun changement du ratio, du cadrage, de l’object-fit ou du plein écran photo.
+- modules/photo.html reste inchangé.

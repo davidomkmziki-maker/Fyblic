@@ -1,0 +1,8 @@
+HAPPYAD V1005R3 — COMPTEURS ACCUEIL 16PX FINAL
+
+Base : V1005R2.
+Modification unique d'affichage :
+- Le verrou final du maître core/home-visual-maturity-master-v988.css passe de 18px à 16px.
+- Chiffres et suffixes K / M / D / MD restent à la même taille.
+- Aucun changement des icônes, boutons, graisse, positions, espacements ou zones tactiles.
+- Références de cache / Service Worker renouvelées uniquement pour charger ce correctif.

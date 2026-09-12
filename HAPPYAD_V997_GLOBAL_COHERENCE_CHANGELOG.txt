@@ -1,0 +1,53 @@
+HAPPYAD V997 — COHÉRENCE GLOBALE + RECHERCHE STORY + BADGE RADAR
+Date : 2026-09-01
+
+OBJECTIF
+Unifier la couleur de l'ensemble HAPPYAD autour d'une même surface gris-noir légèrement plus foncée, professionnaliser Recherche et stabiliser définitivement le couple nom + badge dans le Radar Story.
+
+CORRECTIONS
+1. RADAR STORY — NOM + BADGE
+- Le nom et le badge sont désormais deux zones séparées.
+- Le badge garde toujours sa largeur et ne peut plus être coupé par le débordement du nom.
+- Si le nom est trop long, seule la partie nom reçoit « … » juste avant le badge.
+- Compatible avec les rerenders du Radar et l'injection tardive des badges.
+
+2. RECHERCHE — INTERFACE PROFESSIONNELLE
+- Page Recherche alignée sur la surface globale HAPPYAD.
+- Header, champ, sections, profils et publications simplifiés et compactés.
+- Suppression de l'effet de grosses cartes empilées; listes avec séparateurs légers.
+- Bouton « Voir » rendu discret; hiérarchie texte/avatar plus propre.
+- Nom + badge également protégés contre la coupure dans Recherche.
+
+3. RECHERCHE — CONTOUR STORY RÉEL
+- Aucun contour Story sur un profil sans Story active.
+- Contour multicolore uniquement lorsqu'une Story active existe.
+- Contour gris lorsque toutes les Stories disponibles du profil sont déjà vues.
+- Clic/touche Entrée-Espace directement sur l'avatar ouvre la Story; le reste de la ligne continue d'ouvrir le profil.
+- Interception en capture pour éviter le conflit avatar Story / ouverture profil.
+- Les Stories du cache Radar sont utilisées immédiatement.
+- Une vérification Supabase légère et groupée complète l'état Story pour les profils visibles dans Recherche qui ne sont pas présents dans les 20 Stories initiales du Radar.
+
+4. COULEUR MONDIALE
+- Nouvelle base commune : #0d1117, légèrement plus foncée que l'ancien Accueil #11151b.
+- Surfaces secondaires harmonisées autour de #111720 / #151c26 / #19222d.
+- Variables existantes (--bg, --panel, --surface, --card, etc.) réalignées sans réécrire les moteurs métier.
+- Accueil, Assistance, Chat, Messages, Notifications, Profils, Modifier profil, Statistiques, Publier, Paramètres, Partage et récupération de compte reçoivent la même famille de couleurs.
+- Les viewers Photo/Vidéo/Live gardent le noir pur uniquement dans la zone média, car il est fonctionnel pour le contenu.
+
+5. CACHE / PWA
+- Service Worker passé à happyad-pwa-v997-global-coherence-search-story-20260901.
+- Les deux nouveaux masters V997 sont ajoutés à l'app shell afin d'éviter de conserver une ancienne apparence après mise à jour.
+
+NOUVEAUX MASTERS
+- core/happyad-global-coherence-v997.css
+- core/happyad-global-coherence-v997.js
+
+VALIDATION TECHNIQUE
+- Syntaxe JS validée avec node --check.
+- 18 fichiers HTML parsés et vérifiés avec marqueur de page + chargement V997.
+- Test composant navigateur isolé :
+  * profil avec Story => contour présent;
+  * profil sans Story => aucun contour;
+  * clic avatar Story => ouverture Story confirmée;
+  * nom Radar restructuré avec badge séparé;
+  * couleur calculée du fond global => rgb(13,17,23).

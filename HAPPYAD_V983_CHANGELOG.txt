@@ -1,0 +1,38 @@
+HAPPYAD V983 — CARTES, FULLSCREEN ET ACTIONS
+Date : 30 août 2026
+
+1. Cartes Accueil
+   - Les libellés automatiques « Publication HAPPYAD » et « Publication » sont masqués.
+   - Aucun bloc texte vide n'est conservé quand une publication n'a ni titre réel,
+     ni description, ni lieu/catégorie.
+   - Le viewport média passe au format fixe 3:4 afin d'occuper un peu plus d'espace.
+
+2. Voir plus des cartes photo
+   - Ouvre directement le fullscreen sur la photo active.
+   - La description complète est déjà déployée à l'ouverture.
+
+3. Centrale vidéo
+   - Un double-clic ou double-tap sur la vidéo active utilise l'action J'aime réelle.
+   - Un deuxième double-clic ou double-tap retire le J'aime.
+
+4. Couvertures vidéo dans l'Accueil
+   - Une couverture verticale remplit le viewport fixe de la carte (cover).
+   - Une couverture horizontale conserve son format exact (contain), avec fond noir
+     lorsque nécessaire.
+
+5. Actions de la Centrale vidéo
+   - Fonds, ombres, ombres de texte et filtres supprimés derrière les actions.
+
+6. Commentaires photo
+   - Les panneaux de commentaires sont placés devant les fullscreen Accueil,
+     Profil et Centrale photo, avec interaction directe.
+
+7. Favoris
+   - L'icône active est remplie en orange dans les cartes, fullscreen Accueil/Profil,
+     Centrale photo et Centrale vidéo.
+
+Contrôles effectués
+   - Syntaxe des fichiers JavaScript externes.
+   - Syntaxe des 99 scripts JavaScript intégrés aux pages modifiées.
+   - Vérification des sélecteurs finaux, des niveaux z-index et du cache PWA V983.
+   - Vérification de la structure du ZIP sans dossier parent supplémentaire.

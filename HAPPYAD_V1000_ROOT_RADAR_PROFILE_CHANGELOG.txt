@@ -1,0 +1,36 @@
+HAPPYAD V1000 — RADAR À LA SOURCE + PALETTE PROFIL CANONIQUE
+
+1. NOMS ET BADGES DES STORIES
+- Le moteur canonique core/story-master-v699.js crée désormais directement deux zones :
+  le vrai nom rétractable et le badge non rétractable.
+- Un nom court ou normal reste affiché entièrement.
+- Seul un nom réellement trop long reçoit automatiquement « … ».
+- Le badge conserve toujours sa largeur et reste visible quand la donnée badge existe.
+- Le moteur Story possède son fallback de badge ; il ne dépend plus du chargement tardif
+  de badgeMarkHtml pour afficher un badge déjà présent dans le cache.
+
+2. POINT VERT DU RADAR
+- Le marqueur <i class="typeDot story"> n'est plus créé par le moteur Story maître.
+- Les anciens chemins de rendu encore verrouillés ne créent plus ce marqueur non plus.
+- Il n'existe donc plus de point vert à cacher après la peinture : aucun flash au démarrage.
+
+3. AUCUNE SURCOUCHE TARDIVE
+- Le MutationObserver V999 qui réécrivait les noms après affichage a été retiré.
+- La feuille V999 qui cachait le point vert après affichage a été retirée du chargement.
+- Les deux anciens fichiers V999 sont de simples fichiers vides de compatibilité pour
+  d'éventuelles anciennes pages encore en cache ; ils ne modifient plus le DOM ni le CSS.
+- La responsabilité visuelle du Radar est revenue au seul moteur Story maître.
+
+4. COULEUR MON PROFIL / PROFIL VISITEUR
+- Le fond canonique des deux profils est maintenant exactement celui de l'Accueil :
+  #0d1117, dès la première peinture, pendant le squelette et après le chargement.
+- Le hero et la barre d'onglets utilisent cette même base pour éviter une page noire différente.
+- Le menu flottant de Mon profil n'a pas été modifié.
+
+5. CACHE
+- Le Service Worker passe en V1000.
+- Les URLs du moteur Story, de la feuille Profil et de Mon profil ont été versionnées
+  pour empêcher le retour d'une ancienne peinture depuis le cache.
+
+Aucune donnée Supabase, Story, publication, profil, compteur, média ou navigation n'a été modifiée.
+

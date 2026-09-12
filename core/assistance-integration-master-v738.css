@@ -1,0 +1,66 @@
+/* Fyblic V855R34 — squelette Assistance central à chaque ouverture. */
+#happyadAssistanceHostV738.happyadAssistanceHostV738{
+  position:fixed;inset:0;z-index:2147481200;display:block;overflow:hidden;
+  background:#050a12;color-scheme:dark;isolation:isolate;contain:layout paint style;
+  opacity:0;visibility:hidden;pointer-events:none;
+}
+#happyadAssistanceHostV738.happyadAssistanceHostV738.show{
+  opacity:1;visibility:visible;pointer-events:auto;
+}
+#happyadAssistanceHostV738 .happyadAssistanceFrameV738{
+  position:absolute;inset:0;width:100%;height:100%;border:0;display:block;
+  z-index:1;background:#050a12;opacity:0;visibility:hidden;pointer-events:none;
+}
+#happyadAssistanceHostV738.ready .happyadAssistanceFrameV738{
+  opacity:1;visibility:visible;pointer-events:auto;
+}
+#happyadAssistanceHostV738 .happyadAssistanceLoadingV738{
+  position:absolute;inset:0;z-index:2;display:block;overflow:hidden;
+  background:linear-gradient(180deg,#07111d 0,#050a12 44%,#03070d 100%);
+  color:#9aabc2;font:800 12px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+#happyadAssistanceHostV738.ready .happyadAssistanceLoadingV738{display:none}
+.haAssistanceSkeletonV855R34{position:relative;width:min(100%,720px);height:100%;min-height:100%;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px calc(env(safe-area-inset-bottom,0px) + 76px);box-sizing:border-box;overflow:hidden}
+.haAssistanceSkeletonTopV855R34{height:54px;display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:11px;border-bottom:1px solid rgba(126,164,201,.09)}
+.haAssistanceSkeletonBackV855R34,.haAssistanceSkeletonActionV855R34{width:36px;height:36px;border-radius:50%}
+.haAssistanceSkeletonHeadingV855R34{display:grid;gap:7px;align-content:center}
+.haAssistanceSkeletonHeadingV855R34 b{width:148px;height:13px;border-radius:7px}
+.haAssistanceSkeletonHeadingV855R34 em{width:92px;height:7px;border-radius:999px}
+.haAssistanceSkeletonBodyV855R34{padding:17px 0 8px;display:grid;gap:14px}
+.haAssistanceSkeletonWelcomeV855R34{display:grid;grid-template-columns:46px minmax(0,1fr);align-items:center;gap:11px;padding:13px;border:1px solid rgba(130,174,214,.10);border-radius:17px;background:rgba(11,24,38,.70)}
+.haAssistanceSkeletonWelcomeV855R34>i{width:46px;height:46px;border-radius:50%}
+.haAssistanceSkeletonWelcomeV855R34>span{display:grid;gap:8px}
+.haAssistanceSkeletonWelcomeV855R34 b{width:58%;height:11px;border-radius:6px}
+.haAssistanceSkeletonWelcomeV855R34 em{width:86%;height:8px;border-radius:6px}
+.haAssistanceSkeletonChoicesV855R34{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.haAssistanceSkeletonChoicesV855R34 i{height:38px;border-radius:12px}
+.haAssistanceSkeletonCardV855R34{display:grid;gap:10px;padding:15px;border:1px solid rgba(130,174,214,.10);border-radius:17px;background:rgba(8,18,29,.66)}
+.haAssistanceSkeletonCardV855R34 b{width:42%;height:11px;border-radius:6px}
+.haAssistanceSkeletonCardV855R34 span{width:94%;height:8px;border-radius:5px}
+.haAssistanceSkeletonCardV855R34 span.short{width:68%}
+.haAssistanceSkeletonRowsV855R34{display:grid;gap:8px}
+.haAssistanceSkeletonRowsV855R34 article{display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:11px;min-height:60px;padding:10px 12px;border:1px solid rgba(130,174,214,.08);border-radius:15px;background:rgba(9,19,31,.56)}
+.haAssistanceSkeletonRowsV855R34 article>i{width:38px;height:38px;border-radius:12px}
+.haAssistanceSkeletonRowsV855R34 article>span{display:grid;gap:7px}
+.haAssistanceSkeletonRowsV855R34 article b{width:48%;height:10px;border-radius:6px}
+.haAssistanceSkeletonRowsV855R34 article em{width:77%;height:7px;border-radius:5px}
+.haAssistanceSkeletonComposerV855R34{position:absolute;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 13px);height:48px;display:grid;grid-template-columns:34px minmax(0,1fr) 36px;align-items:center;gap:9px;padding:5px 7px;border:1px solid rgba(130,174,214,.12);border-radius:18px;background:#09131f}
+.haAssistanceSkeletonComposerV855R34 i,.haAssistanceSkeletonComposerV855R34 b{width:34px;height:34px;border-radius:50%}
+.haAssistanceSkeletonComposerV855R34 span{height:10px;border-radius:999px}
+.haAssistanceSkeletonBackV855R34,.haAssistanceSkeletonActionV855R34,.haAssistanceSkeletonHeadingV855R34 b,.haAssistanceSkeletonHeadingV855R34 em,.haAssistanceSkeletonWelcomeV855R34>i,.haAssistanceSkeletonWelcomeV855R34 b,.haAssistanceSkeletonWelcomeV855R34 em,.haAssistanceSkeletonChoicesV855R34 i,.haAssistanceSkeletonCardV855R34 b,.haAssistanceSkeletonCardV855R34>span,.haAssistanceSkeletonRowsV855R34 article>i,.haAssistanceSkeletonRowsV855R34 article b,.haAssistanceSkeletonRowsV855R34 article em,.haAssistanceSkeletonComposerV855R34>i,.haAssistanceSkeletonComposerV855R34>span,.haAssistanceSkeletonComposerV855R34>b{display:block;position:relative;overflow:hidden;background:#142335}
+.haAssistanceSkeletonBackV855R34:after,.haAssistanceSkeletonActionV855R34:after,.haAssistanceSkeletonHeadingV855R34 b:after,.haAssistanceSkeletonHeadingV855R34 em:after,.haAssistanceSkeletonWelcomeV855R34>i:after,.haAssistanceSkeletonWelcomeV855R34 b:after,.haAssistanceSkeletonWelcomeV855R34 em:after,.haAssistanceSkeletonChoicesV855R34 i:after,.haAssistanceSkeletonCardV855R34 b:after,.haAssistanceSkeletonCardV855R34>span:after,.haAssistanceSkeletonRowsV855R34 article>i:after,.haAssistanceSkeletonRowsV855R34 article b:after,.haAssistanceSkeletonRowsV855R34 article em:after,.haAssistanceSkeletonComposerV855R34>i:after,.haAssistanceSkeletonComposerV855R34>span:after,.haAssistanceSkeletonComposerV855R34>b:after{content:"";position:absolute;inset:0;transform:translateX(-115%);background:linear-gradient(90deg,transparent,rgba(139,187,232,.13),transparent);animation:haAssistanceSkeletonSweepV855R34 .88s ease-in-out infinite}
+#happyadAssistanceHostV738.closing,
+#happyadAssistanceHostV738.closingDirectV757{
+  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+  background:transparent!important;
+}
+#happyadAssistanceHostV738.closing .happyadAssistanceFrameV738,
+#happyadAssistanceHostV738.closingDirectV757 .happyadAssistanceFrameV738{
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+}
+#happyadAssistanceHostV738.closing .happyadAssistanceLoadingV738,
+#happyadAssistanceHostV738.closingDirectV757 .happyadAssistanceLoadingV738{display:none!important}
+html.happyadAssistanceOpenV738,body.happyadAssistanceOpenV738{overflow:hidden!important;overscroll-behavior:none!important}
+@keyframes haAssistanceSkeletonSweepV855R34{55%,100%{transform:translateX(115%)}}
+@media(max-height:560px){.haAssistanceSkeletonRowsV855R34 article:nth-child(3){display:none}.haAssistanceSkeletonBodyV855R34{gap:10px;padding-top:12px}}
+@media(prefers-reduced-motion:reduce){.haAssistanceSkeletonV855R34 :after{animation:none!important}}

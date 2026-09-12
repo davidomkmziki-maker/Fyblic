@@ -1,0 +1,219 @@
+/* Fyblic V618 — menu inférieur unique et léger.
+   Design V608/V609 conservé, moteur de rendu allégé pour le scroll Android.
+*/
+/* Fyblic V608 — dock compact, noir fumé léger et réellement transparent.
+   - hauteur visuelle réduite
+   - fond léger, sans panneau lourd
+   - la page active couvre toujours l'Accueil derrière les autres modules
+   - compatible avec le masquage automatique V608
+*/
+:root{
+  --happyad-main-dock-height:50px;
+  --happyad-main-dock-safe:env(safe-area-inset-bottom,0px);
+  --happyad-main-dock-total:calc(var(--happyad-main-dock-height) + var(--happyad-main-dock-safe));
+  --happyad-dock-smoke-top:rgba(4,6,9,.34);
+  --happyad-dock-smoke-bottom:rgba(4,6,9,.56);
+}
+
+/* L'Accueil garde seulement la réserve réellement nécessaire. */
+.app{padding-bottom:calc(var(--happyad-main-dock-total) + 4px)!important}
+
+.bottom.happyadMainDockV585{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:0!important;
+  z-index:1000035!important;
+  width:min(520px,100%)!important;
+  max-width:520px!important;
+  min-height:var(--happyad-main-dock-total)!important;
+  height:var(--happyad-main-dock-total)!important;
+  padding:1px 4px calc(1px + var(--happyad-main-dock-safe))!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  align-items:start!important;
+  gap:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:linear-gradient(to bottom,var(--happyad-dock-smoke-top),var(--happyad-dock-smoke-bottom))!important;
+  background-color:rgba(4,6,9,.46)!important;
+  box-shadow:0 -2px 10px rgba(0,0,0,.14)!important;
+  isolation:isolate!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  transform:translate(-50%,0)!important;
+  opacity:1!important;
+  visibility:visible!important;
+  transition:transform .20s cubic-bezier(.22,.72,.22,1),opacity .12s ease,visibility 0s linear 0s!important;
+  will-change:transform!important;
+  contain:layout paint style!important;
+  backface-visibility:hidden!important;
+  -webkit-backface-visibility:hidden!important;
+}
+
+.bottom.happyadMainDockV585 .nav{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  position:relative!important;
+  min-width:0!important;
+  width:100%!important;
+  height:46px!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding:2px 1px 1px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  color:#f3f5f8!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:1px!important;
+  font:850 8.4px/1 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif!important;
+  letter-spacing:0!important;
+  text-align:center!important;
+  cursor:pointer!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  touch-action:manipulation!important;
+  box-shadow:none!important;
+  outline:none!important;
+  filter:none!important;
+  translate:0 0!important;
+  scale:1!important;
+  transition:translate .07s ease,scale .07s ease,color .07s ease,filter .07s ease!important;
+}
+
+/* Aucun fond pendant le clic ou l'état actif. */
+.bottom.happyadMainDockV585 .nav:active,
+.bottom.happyadMainDockV585 .nav.active,
+.bottom.happyadMainDockV585 .nav[class*="happyadButtonPressed"]{
+  background:transparent!important;
+  background-image:none!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+.bottom.happyadMainDockV585 .nav:active,
+.bottom.happyadMainDockV585 .nav[class*="happyadButtonPressed"]{
+  color:#fff!important;
+  filter:brightness(1.18)!important;
+  translate:0 1px!important;
+  scale:.95!important;
+}
+.bottom.happyadMainDockV585 .nav.active{color:#fff!important}
+.bottom.happyadMainDockV585 .mainDockLabel{color:rgba(255,255,255,.72)!important;font-size:8.4px!important;line-height:1!important}
+.bottom.happyadMainDockV585 .nav.active .mainDockLabel{color:#fff!important;font-weight:1000!important}
+
+.bottom.happyadMainDockV585 .mainDockIcon{
+  width:23px!important;
+  height:23px!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+  color:inherit!important;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))!important;
+}
+.bottom.happyadMainDockV585 .mainDockIcon svg{width:21px!important;height:21px!important}
+.bottom.happyadMainDockV585 .mainDockPublishIcon{
+  width:25px!important;
+  height:25px!important;
+  border-radius:8px!important;
+  filter:none!important;
+}
+.bottom.happyadMainDockV585 .mainDockPublishIcon svg{width:16px!important;height:16px!important}
+.bottom.happyadMainDockV585 .navBadge{border-color:rgba(4,6,9,.78)!important}
+
+/* Les modules actifs couvrent tout l'écran : la transparence du dock montre la page active, jamais l'Accueil. */
+body.happyadMainDockVisible:not([data-happyad-main-page="home"]) #happyadAppShell{
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  max-height:none!important;
+  background:#000!important;
+}
+body.happyadMainDockVisible:not([data-happyad-main-page="home"]) #happyadAppShell .happyadAppFrame{
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
+  background:#000!important;
+}
+#happyadDockSurfaceV604{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+html.happyadParentAppLockedV604,body.happyadParentAppLockedV604{overflow:hidden!important;overscroll-behavior:none!important}
+
+/* Toute la barre descend hors écran. */
+body.happyadDockAutoHiddenV618 .bottom.happyadMainDockV585{
+  transform:translate(-50%,calc(100% + 8px))!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  transition:transform .20s cubic-bezier(.4,0,1,1),opacity .10s ease,visibility 0s linear .20s!important;
+}
+
+body:not(.happyadMainDockVisible) .bottom.happyadMainDockV585,
+body.happyadPublishFullscreenV586 .bottom.happyadMainDockV585,
+body.haHomePhotoFsLock .bottom.happyadMainDockV585,
+body.happyadPhotoSurfaceV591 .bottom.happyadMainDockV585,
+body.happyadInternalScreenOpenV591 .bottom.happyadMainDockV585{
+  display:none!important;
+  pointer-events:none!important;
+}
+
+@media(max-width:360px){
+  :root{--happyad-main-dock-height:48px}
+  .bottom.happyadMainDockV585 .nav{height:44px!important;min-height:44px!important}
+  .bottom.happyadMainDockV585 .mainDockIcon{width:22px!important;height:22px!important}
+  .bottom.happyadMainDockV585 .mainDockIcon svg{width:20px!important;height:20px!important}
+  .bottom.happyadMainDockV585 .mainDockLabel{font-size:8px!important}
+}
+@media(prefers-reduced-motion:reduce){.bottom.happyadMainDockV585{transition:none!important}}
+
+
+/* Fyblic V609 — agrandissement ciblé des boutons du dock V608.
+   Aucun changement du fond, de la hauteur, du masquage automatique ou des routes. */
+.bottom.happyadMainDockV585 .nav{
+  padding:1px 1px 0!important;
+  gap:1px!important;
+  overflow:visible!important;
+}
+.bottom.happyadMainDockV585 .mainDockIcon{
+  width:29px!important;
+  height:29px!important;
+}
+.bottom.happyadMainDockV585 .mainDockIcon svg{
+  width:27px!important;
+  height:27px!important;
+}
+.bottom.happyadMainDockV585 .mainDockPublishIcon{
+  width:31px!important;
+  height:31px!important;
+  border-radius:9px!important;
+}
+.bottom.happyadMainDockV585 .mainDockPublishIcon svg{
+  width:21px!important;
+  height:21px!important;
+}
+.bottom.happyadMainDockV585 .mainDockLabel{
+  font-size:9.1px!important;
+  line-height:1!important;
+}
+.bottom.happyadMainDockV585 .navBadge{
+  right:calc(50% - 28px)!important;
+}
+@media(max-width:360px){
+  .bottom.happyadMainDockV585 .mainDockIcon{width:26px!important;height:26px!important}
+  .bottom.happyadMainDockV585 .mainDockIcon svg{width:25px!important;height:25px!important}
+  .bottom.happyadMainDockV585 .mainDockPublishIcon{width:29px!important;height:29px!important}
+  .bottom.happyadMainDockV585 .mainDockPublishIcon svg{width:20px!important;height:20px!important}
+  .bottom.happyadMainDockV585 .mainDockLabel{font-size:8.6px!important}
+}
+
+
+/* Pendant un mouvement, aucune propriété coûteuse autre que la translation du dock n'est recalculée. */
+body.happyadDockScrollActiveV618 .bottom.happyadMainDockV585{
+  box-shadow:0 -1px 7px rgba(0,0,0,.12)!important;
+}

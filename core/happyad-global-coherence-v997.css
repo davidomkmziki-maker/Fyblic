@@ -1,0 +1,278 @@
+/* Fyblic V1000 — palette globale + recherche.
+   Présentation uniquement : aucune donnée métier, aucun compteur ni média n'est modifié. */
+:root{
+  --ha997-bg:#0d1117;
+  --ha997-bg-rgb:13,17,23;
+  --ha997-surface:#111720;
+  --ha997-surface-2:#151c26;
+  --ha997-surface-3:#19222d;
+  --ha997-line:rgba(255,255,255,.065);
+  --ha997-line-strong:rgba(255,255,255,.115);
+  --ha997-text:#f7f9fc;
+  --ha997-muted:#929ca9;
+  --ha997-muted-2:#6f7986;
+  --ha997-orange:#ff941f;
+
+  /* Les moteurs existants continuent d'utiliser leurs variables, mais reçoivent
+     désormais une seule famille de surfaces cohérente. */
+  --ha988-home-surface:var(--ha997-bg)!important;
+  --ha988-home-surface-rgb:var(--ha997-bg-rgb)!important;
+  --ha988-home-surface-raised:var(--ha997-surface-2)!important;
+  --bg:var(--ha997-bg)!important;
+  --bg-deep:#090d12!important;
+  --bg-soft:var(--ha997-surface)!important;
+  --panel:var(--ha997-surface)!important;
+  --panel2:var(--ha997-surface-2)!important;
+  --panel-2:var(--ha997-surface-2)!important;
+  --panel3:var(--ha997-surface-3)!important;
+  --panel-3:var(--ha997-surface-3)!important;
+  --surface:var(--ha997-surface)!important;
+  --surface-2:var(--ha997-surface-2)!important;
+  --surface-3:var(--ha997-surface-3)!important;
+  --surface-4:var(--ha997-surface-3)!important;
+  --card:var(--ha997-surface)!important;
+  --card-2:var(--ha997-surface-2)!important;
+  --line:var(--ha997-line)!important;
+}
+
+html,body{color-scheme:dark}
+
+/* Pages de système : une seule base gris-noir, légèrement plus foncée que l'Accueil précédent. */
+html[data-happyad-page="home"],html[data-happyad-page="home"] body,
+html[data-happyad-page="assistance"],html[data-happyad-page="assistance"] body,
+html[data-happyad-page="chat"],html[data-happyad-page="chat"] body,
+html[data-happyad-page="messages"],html[data-happyad-page="messages"] body,
+html[data-happyad-page="notifications"],html[data-happyad-page="notifications"] body,
+html[data-happyad-page="my-profile"],html[data-happyad-page="my-profile"] body,
+html[data-happyad-page="visitor-profile"],html[data-happyad-page="visitor-profile"] body,
+html[data-happyad-page="user"],html[data-happyad-page="user"] body,
+html[data-happyad-page="profile-edit"],html[data-happyad-page="profile-edit"] body,
+html[data-happyad-page="profile-stats"],html[data-happyad-page="profile-stats"] body,
+html[data-happyad-page="publish"],html[data-happyad-page="publish"] body,
+html[data-happyad-page="settings"],html[data-happyad-page="settings"] body,
+html[data-happyad-page="share"],html[data-happyad-page="share"] body,
+html[data-happyad-page="reset-password"],html[data-happyad-page="reset-password"] body{
+  background:var(--ha997-bg)!important;
+  background-color:var(--ha997-bg)!important;
+}
+
+html[data-happyad-page="home"] body>.app,
+html[data-happyad-page="assistance"] .app,
+html[data-happyad-page="chat"] .app,
+html[data-happyad-page="messages"] .app,
+html[data-happyad-page="notifications"] .app,
+html[data-happyad-page="my-profile"] .app,
+html[data-happyad-page="visitor-profile"] .app,
+html[data-happyad-page="user"] .app,
+html[data-happyad-page="profile-edit"] .app,
+html[data-happyad-page="profile-stats"] .app,
+html[data-happyad-page="publish"] .app,
+html[data-happyad-page="settings"] .app,
+html[data-happyad-page="share"] .app{
+  background-color:var(--ha997-bg)!important;
+}
+
+/* Les viewers média conservent le noir là où il sert réellement au contenu. */
+html[data-happyad-page="photo"],html[data-happyad-page="photo"] body,
+html[data-happyad-page="video"],html[data-happyad-page="video"] body,
+html[data-happyad-page="live"],html[data-happyad-page="live"] body,
+html[data-happyad-page="map"],html[data-happyad-page="map"] body{
+  background-color:var(--ha997-bg)!important;
+}
+html[data-happyad-page="photo"] .photoStage,
+html[data-happyad-page="photo"] .screen,
+html[data-happyad-page="video"] .reel,
+html[data-happyad-page="video"] .media,
+html[data-happyad-page="live"] .camera,
+html[data-happyad-page="live"] .studio{background-color:#000!important}
+
+/* Les grands fonds décoratifs des pages utilitaires ne doivent plus créer une autre identité couleur. */
+html[data-happyad-page="assistance"] body,
+html[data-happyad-page="chat"] body,
+html[data-happyad-page="messages"] body,
+html[data-happyad-page="notifications"] body,
+html[data-happyad-page="profile-edit"] body,
+html[data-happyad-page="profile-stats"] .app,
+html[data-happyad-page="settings"] body{
+  background-image:none!important;
+}
+
+/* Accueil : la surface maître devient la nouvelle palette globale. */
+html[data-happyad-page="home"] body>.app,
+html[data-happyad-page="home"] body>.app>.top,
+html[data-happyad-page="home"] #happyadAppShell{
+  background:var(--ha997-bg)!important;
+  background-color:var(--ha997-bg)!important;
+  background-image:none!important;
+}
+
+/* ---------- Recherche : plein écran cohérent, compact et sans empilement de cartes lourdes. ---------- */
+#happyadSmartSearchV427{
+  background:var(--ha997-bg)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+#happyadSmartSearchV427 .haSearchBox{
+  width:100%!important;
+  max-width:680px!important;
+  margin:0 auto!important;
+  background:var(--ha997-bg)!important;
+  padding:0 0 calc(env(safe-area-inset-bottom,0px) + 6px)!important;
+}
+#happyadSmartSearchV427 .haSearchHead,
+#happyadSmartSearchV427 .haSearchInputWrap{
+  width:100%!important;
+  background:var(--ha997-bg)!important;
+  border-color:var(--ha997-line)!important;
+}
+#happyadSmartSearchV427 .haSearchHead{
+  min-height:74px!important;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 11px!important;
+  align-items:center!important;
+}
+#happyadSmartSearchV427 .haSearchHead b{
+  color:var(--ha997-text)!important;
+  font-size:22px!important;
+  font-weight:800!important;
+  letter-spacing:-.5px!important;
+}
+#happyadSmartSearchV427 .haSearchClose{
+  width:42px!important;height:42px!important;min-width:42px!important;
+  background:var(--ha997-surface-2)!important;
+  border:1px solid var(--ha997-line)!important;
+  color:#f4f7fb!important;
+  font-size:28px!important;
+  font-weight:700!important;
+  box-shadow:none!important;
+}
+#happyadSmartSearchV427 .haSearchInputWrap{padding:9px 18px 13px!important}
+#happyadSmartSearchV427 .haSearchInput{
+  height:46px!important;
+  border-radius:15px!important;
+  border:1px solid var(--ha997-line-strong)!important;
+  background:#090d13!important;
+  color:var(--ha997-text)!important;
+  padding:0 14px!important;
+  font-size:14px!important;
+  font-weight:650!important;
+  box-shadow:none!important;
+}
+#happyadSmartSearchV427 .haSearchInput::placeholder{color:#727c89!important;opacity:1!important}
+#happyadSmartSearchV427 .haSearchResults{
+  padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 82px)!important;
+  background:var(--ha997-bg)!important;
+}
+#happyadSmartSearchV427 .haSearchSection{margin:0 0 15px!important}
+#happyadSmartSearchV427 .haSearchSectionTitle{
+  margin:4px 2px 7px!important;
+  padding:0 0 5px!important;
+  color:var(--ha997-orange)!important;
+  font-size:12px!important;
+  font-weight:850!important;
+  letter-spacing:.25px!important;
+  text-transform:uppercase!important;
+  border-bottom:1px solid var(--ha997-line)!important;
+}
+#happyadSmartSearchV427 .haSearchUsersGrid,
+#happyadSmartSearchV427 .haSearchPostsList{gap:0!important}
+#happyadSmartSearchV427 .haSearchUser,
+#happyadSmartSearchV427 .haSearchPost{
+  min-height:68px!important;
+  padding:9px 4px!important;
+  border:0!important;
+  border-bottom:1px solid var(--ha997-line)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#happyadSmartSearchV427 .haSearchUser:last-child,
+#happyadSmartSearchV427 .haSearchPost:last-child{border-bottom-color:transparent!important}
+#happyadSmartSearchV427 .haSearchUserTop{gap:10px!important;align-items:center!important}
+#happyadSmartSearchV427 .haSearchAvatar{
+  position:relative!important;
+  width:52px!important;height:52px!important;min-width:52px!important;flex-basis:52px!important;
+  border:0!important;
+  padding:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+  cursor:default!important;
+}
+#happyadSmartSearchV427 .haSearchAvatar img,
+#happyadSmartSearchV427 .haSearchAvatar>span{
+  width:100%!important;height:100%!important;
+  border-radius:50%!important;
+  object-fit:cover!important;object-position:center!important;
+  background:var(--ha997-surface-2)!important;
+  box-shadow:0 0 0 1px var(--ha997-line-strong)!important;
+}
+/* Contour uniquement si une Story active existe. */
+#happyadSmartSearchV427 .haSearchAvatar.haSearchStoryRingV997{
+  padding:2.5px!important;
+  cursor:pointer!important;
+  background:conic-gradient(from 18deg,#ff941f,#ff3f68,#8c55ff,#2f93ff,#30ce91,#ff941f)!important;
+}
+#happyadSmartSearchV427 .haSearchAvatar.haSearchStoryRingV997.story-seen{
+  background:#505965!important;
+}
+#happyadSmartSearchV427 .haSearchAvatar.haSearchStoryRingV997 img,
+#happyadSmartSearchV427 .haSearchAvatar.haSearchStoryRingV997>span{
+  box-shadow:0 0 0 2px var(--ha997-bg)!important;
+}
+#happyadSmartSearchV427 .haSearchUserText{padding-right:6px!important}
+#happyadSmartSearchV427 .haSearchUserText b,
+#happyadSmartSearchV427 .haSearchPostText b{
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  color:var(--ha997-text)!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  line-height:1.15!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+#happyadSmartSearchV427 .haSearchNameTextV997{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#happyadSmartSearchV427 .haSearchNameBadgeV997{
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  overflow:visible!important;
+}
+#happyadSmartSearchV427 .haSearchUserText span:not(.haSearchNameTextV997):not(.haSearchNameBadgeV997),
+#happyadSmartSearchV427 .haSearchPostText>span{
+  color:var(--ha997-muted)!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  margin-top:4px!important;
+}
+#happyadSmartSearchV427 .haSearchUser em{
+  border:0!important;
+  background:transparent!important;
+  color:var(--ha997-orange)!important;
+  padding:8px 5px!important;
+  border-radius:10px!important;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+#happyadSmartSearchV427 .haSearchThumb{
+  width:50px!important;height:50px!important;min-width:50px!important;
+  border-radius:12px!important;
+  background:#070a0f!important;
+  box-shadow:0 0 0 1px var(--ha997-line)!important;
+}
+#happyadSmartSearchV427 .haSearchThumbVideo{background:rgba(0,0,0,.20)!important}
+#happyadSmartSearchV427 .haSearchUser:active,
+#happyadSmartSearchV427 .haSearchPost:active{background:rgba(255,255,255,.035)!important;transform:none!important}
+
+@media(max-width:390px){
+  #happyadSmartSearchV427 .haSearchHead{padding-left:14px!important;padding-right:14px!important}
+  #happyadSmartSearchV427 .haSearchInputWrap{padding-left:14px!important;padding-right:14px!important}
+  #happyadSmartSearchV427 .haSearchResults{padding-left:12px!important;padding-right:12px!important}
+  #happyadSmartSearchV427 .haSearchAvatar{width:48px!important;height:48px!important;min-width:48px!important;flex-basis:48px!important}
+}

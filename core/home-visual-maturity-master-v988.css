@@ -1,0 +1,962 @@
+/* Fyblic V988R8 — AJUSTEMENT OPTIQUE FINAL DU TRIANGLE PLAY
+   Couche de présentation uniquement : aucun clic, compteur, média, album,
+   chargement, route ou état de données n'est modifié.
+
+   Contrat visuel :
+   - une surface gris-noir continue, sans panneaux empilés ;
+   - aucune silhouette, ligne ou distance visible entre les publications ;
+   - textes plus calmes et hiérarchisés ;
+   - actions équilibrées, lisibles et tactiles sans fond permanent ;
+   - noir pur conservé uniquement dans les médias quand il est nécessaire. */
+
+:root{
+  --ha988-home-surface:#11151b;
+  --ha988-home-surface-rgb:17,21,27;
+  --ha988-home-surface-raised:#191e26;
+  --ha988-home-media:#000;
+  --ha988-home-text:#fff;
+  --ha988-home-text-soft:#9aa3ae;
+  --ha988-home-text-muted:#737d89;
+  --ha988-home-line:rgba(255,255,255,.055);
+  --ha988-home-line-strong:rgba(255,255,255,.105);
+  --ha988-home-blue:#2f93ff;
+  --ha988-home-orange:#ff941f;
+  --ha988-home-like:#ff3f68;
+  --ha988-home-repost:#35cf91;
+  --ha988-home-favorite:#f4c95d;
+  --ha988-home-font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+}
+
+/* 1. Surface générale : aucune alternance noir / gris entre les publications. */
+html,
+html body,
+html body > .app{
+  background:var(--ha988-home-surface)!important;
+  background-color:var(--ha988-home-surface)!important;
+  background-image:none!important;
+  color:var(--ha988-home-text)!important;
+}
+html body > .app,
+html body > .app button,
+html body > .app input{
+  font-family:var(--ha988-home-font)!important;
+}
+
+/* 2. Barre supérieure intégrée à la même surface. */
+html.happyadBootRestoringPageV16ZJ body,
+html.happyadPushDirectBootV38E4,
+html.happyadPushDirectBootV38E4 body,
+html.happyadSharedDirectBootV713,
+html.happyadSharedDirectBootV713 body,
+html body #happyadAppShell{
+  background:var(--ha988-home-surface)!important;
+  background-color:var(--ha988-home-surface)!important;
+  background-image:none!important;
+}
+html body > .app > .top{
+  background:var(--ha988-home-surface)!important;
+  background-image:none!important;
+  border:0!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html body .happyadHomeWordmark img{
+  filter:none!important;
+  opacity:.98!important;
+}
+html body .happyadHomeActions .round,
+html body .happyadHomeActions .searchRound,
+html body .happyadHomeActions .homeNotificationRound{
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+  color:var(--ha988-home-text)!important;
+}
+html body .happyadHomeActions .round:active,
+html body .happyadHomeActions .searchRound:active,
+html body .happyadHomeActions .homeNotificationRound:active{
+  background:rgba(255,255,255,.055)!important;
+  border-color:transparent!important;
+  transform:scale(.94)!important;
+}
+html body .searchIcon,
+html body .homeNotificationIcon{
+  width:26px!important;
+  height:26px!important;
+  flex:0 0 26px!important;
+  display:block!important;
+  line-height:0!important;
+}
+html body .searchIcon svg,
+html body .homeNotificationIcon svg{
+  width:26px!important;
+  height:26px!important;
+  display:block!important;
+  stroke:currentColor!important;
+  stroke-width:2.08!important;
+  filter:none!important;
+}
+html body .homeNotificationBadge{
+  border-color:var(--ha988-home-surface)!important;
+  background:#ff3f68!important;
+  font-size:10px!important;
+  font-weight:750!important;
+  box-shadow:none!important;
+}
+
+/* 3. Recherche : contraste utile sans créer une seconde carte. */
+html body .homeSearchPanel{
+  margin:6px 0 10px!important;
+}
+html body .homeSearchInput{
+  height:44px!important;
+  border:1px solid var(--ha988-home-line-strong)!important;
+  border-radius:14px!important;
+  background:var(--ha988-home-surface-raised)!important;
+  color:var(--ha988-home-text)!important;
+  font-size:14px!important;
+  font-weight:500!important;
+  letter-spacing:0!important;
+  box-shadow:none!important;
+}
+html body .homeSearchInput::placeholder{
+  color:var(--ha988-home-text-muted)!important;
+  opacity:1!important;
+}
+html body .homeSearchInput:focus{
+  border-color:rgba(47,147,255,.72)!important;
+  outline:2px solid rgba(47,147,255,.14)!important;
+  outline-offset:0!important;
+}
+
+/* 4. Carré publicitaire : surface spéciale, mais sans contour ni ombre lourde. */
+html body .sponsorStrip{
+  background:var(--ha988-home-media)!important;
+  border:0!important;
+  border-radius:18px!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+html body .sponsorStrip .sponsorAd,
+html body .sponsorStrip .sponsorThumb,
+html body .sponsorStrip .happyadFixedRadarAd,
+html body .sponsorStrip .happyadFixedRadarAd .sponsorThumb{
+  border:0!important;
+  border-radius:18px!important;
+  box-shadow:none!important;
+}
+html body .sponsorCreatorFloat{
+  border-color:rgba(255,255,255,.72)!important;
+  box-shadow:0 2px 10px rgba(0,0,0,.32)!important;
+}
+
+/* 5. Radar : textes et contrôles plus calmes, anneaux Story conservés. */
+html body .radarBlock{
+  background:var(--ha988-home-surface)!important;
+  border:0!important;
+  box-shadow:none!important;
+  margin-top:6px!important;
+  margin-bottom:10px!important;
+}
+html body .radarHead{
+  margin-bottom:7px!important;
+}
+html body .radarTitle{
+  color:var(--ha988-home-text-soft)!important;
+  font-size:13.5px!important;
+  font-weight:600!important;
+  line-height:1.2!important;
+  letter-spacing:.01em!important;
+}
+html body .radarTitle b{
+  color:#f3b75f!important;
+  font-weight:700!important;
+}
+html body .mapLite{
+  min-height:30px!important;
+  padding:6px 10px!important;
+  border:1px solid var(--ha988-home-line-strong)!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  color:#f3b75f!important;
+  font-size:10.5px!important;
+  font-weight:600!important;
+  box-shadow:none!important;
+}
+html body .mapLite:active{
+  background:rgba(255,148,31,.08)!important;
+  border-color:rgba(255,148,31,.28)!important;
+}
+html body .radarName,
+html body #homeRadarStoryMasterV629 .haStoryRadarUnitV629 .radarName{
+  color:var(--ha988-home-text)!important;
+  font-size:11px!important;
+  font-weight:600!important;
+  line-height:1.12!important;
+}
+html body .radarMeta,
+html body #homeRadarStoryMasterV629 .haStoryRadarUnitV629 .radarMeta{
+  color:var(--ha988-home-text-muted)!important;
+  font-size:10px!important;
+  font-weight:500!important;
+  line-height:1.15!important;
+}
+html body .radarAvatar,
+html body .radarAvatar img,
+html body .radarAvatar .radarInitial{
+  box-shadow:none!important;
+}
+html body .radarAvatar.add{
+  background:transparent!important;
+  border:1.5px solid rgba(47,147,255,.82)!important;
+  box-shadow:inset 0 0 0 2px var(--ha988-home-surface)!important;
+}
+html body .radarAvatar.add span{
+  color:var(--ha988-home-blue)!important;
+  font-weight:500!important;
+  text-shadow:none!important;
+}
+html body .typeDot,
+html body .radarStoryCount{
+  border-color:var(--ha988-home-surface)!important;
+}
+
+/* 6. Fil continu : aucune bande, bordure, ombre ou silhouette de carte. */
+html body #list.homeTimeline{
+  gap:0!important;
+  row-gap:0!important;
+  background:var(--ha988-home-surface)!important;
+  background-image:none!important;
+}
+html body #list.homeTimeline > .miniCard,
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard),
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard):not(.happyadMarketplaceDedicatedCardV856),
+html body #list.homeTimeline > .haAlbumFullPagerCard,
+html body #list.homeTimeline > .happyadMarketplaceDedicatedCardV856{
+  background:var(--ha988-home-surface)!important;
+  background-image:none!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+html body #list.homeTimeline > .miniCard + .miniCard{
+  border-top:0!important;
+}
+html body #list.homeTimeline > .miniCard > .miniCardFrame,
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard) > .miniCardFrame,
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard):not(.happyadMarketplaceDedicatedCardV856) > .miniCardFrame,
+html body #list.homeTimeline .haAlbumFullSlide .miniCardFrame,
+html body #list.homeTimeline > .happyadMarketplaceDedicatedCardV856 > .miniCardFrame{
+  background:var(--ha988-home-surface)!important;
+  background-image:none!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+/* Les anciennes règles V981/V983 ciblaient les publications normales avec
+   deux :not(), donc elles gardaient une priorité supérieure à V988R1.
+   Cette règle de même portée impose enfin la surface propre des annonces. */
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard):not(.happyadMarketplaceDedicatedCardV856) > .miniCardFrame > .miniTop,
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard):not(.happyadMarketplaceDedicatedCardV856) > .miniCardFrame > .miniBody,
+html body #list.homeTimeline > .miniCard:not(.happyadSkeletonCard):not(.happyadMarketplaceDedicatedCardV856) > .miniCardFrame > .miniActions{
+  background:var(--ha988-home-surface)!important;
+  background-color:var(--ha988-home-surface)!important;
+  background-image:none!important;
+  border:0!important;
+  border-color:transparent!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+
+/* 7. Auteur : hiérarchie lisible, date volontairement moins grasse. */
+html body #list.homeTimeline .miniTop{
+  min-height:56px!important;
+  height:auto!important;
+  padding:9px 14px!important;
+  gap:10px!important;
+  background:var(--ha988-home-surface)!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:var(--ha988-home-text)!important;
+}
+html body #list.homeTimeline .miniTop .avatar{
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  min-height:38px!important;
+  flex-basis:38px!important;
+  background:var(--ha988-home-surface-raised)!important;
+  box-shadow:none!important;
+}
+html body #list.homeTimeline .miniTop .creator b{
+  color:var(--ha988-home-text)!important;
+  font-size:15px!important;
+  font-weight:700!important;
+  line-height:1.12!important;
+  letter-spacing:-.10px!important;
+  text-shadow:none!important;
+}
+html body #list.homeTimeline .miniTop .creator span{
+  color:var(--ha988-home-text-soft)!important;
+  font-size:11.5px!important;
+  font-weight:500!important;
+  line-height:1.15!important;
+  margin-top:2px!important;
+  text-shadow:none!important;
+}
+html body #list.homeTimeline .miniTop .miniPostDate{
+  color:#87919d!important;
+  font-size:11.5px!important;
+  font-weight:500!important;
+  line-height:1.15!important;
+  letter-spacing:0!important;
+  margin-right:0!important;
+  padding-top:0!important;
+  align-self:center!important;
+  text-shadow:none!important;
+}
+html body #list.homeTimeline .haPostMoreV613E{
+  color:var(--ha988-home-text-soft)!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+html body .happyadHomeAvatarFollowV986{
+  border-color:var(--ha988-home-surface)!important;
+  box-shadow:none!important;
+}
+
+/* 8. Média : géométrie et object-fit restent sous l'autorité V982. */
+html body #list.homeTimeline .miniMedia,
+html body #list.homeTimeline .haAlbumMediaViewportV981,
+html body #list.homeTimeline .haAlbumSingleMedia,
+html body #list.homeTimeline .happyadAlbumSlide{
+  background:var(--ha988-home-media)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+html body #list.homeTimeline .play{
+  display:grid!important;
+  place-items:center!important;
+  width:56px!important;
+  height:56px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.82)!important;
+  color:transparent!important;
+  font-size:0!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.30)!important;
+  -webkit-backdrop-filter:blur(2px)!important;
+  backdrop-filter:blur(2px)!important;
+}
+html body #list.homeTimeline .play::before{
+  content:""!important;
+  display:block!important;
+  width:15px!important;
+  height:18px!important;
+  margin:0!important;
+  border:0!important;
+  background:#000!important;
+  clip-path:polygon(0 0,100% 50%,0 100%)!important;
+  -webkit-clip-path:polygon(0 0,100% 50%,0 100%)!important;
+  transform:translate(2px,7px)!important;
+  transform-origin:center!important;
+  filter:none!important;
+}
+html body #list.homeTimeline .videoHint{
+  left:12px!important;
+  top:12px!important;
+  padding:5px 8px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:8px!important;
+  background:rgba(var(--ha988-home-surface-rgb),.70)!important;
+  color:#eef1f5!important;
+  font-size:10px!important;
+  font-weight:600!important;
+  line-height:1!important;
+  text-shadow:none!important;
+  box-shadow:none!important;
+}
+html body #list.homeTimeline .happyadVideoViewsBadge{
+  left:12px!important;
+  bottom:10px!important;
+  padding:4px 7px!important;
+  border:0!important;
+  border-radius:7px!important;
+  background:rgba(0,0,0,.50)!important;
+  color:#f7f8fa!important;
+  font-size:12.5px!important;
+  font-weight:600!important;
+  line-height:1!important;
+  text-shadow:none!important;
+  box-shadow:none!important;
+}
+html body #list.homeTimeline .happyadVideoViewsCount{
+  font-size:12.5px!important;
+  font-weight:600!important;
+}
+
+/* 9. Titres, descriptions et informations : trois niveaux clairs. */
+html body #list.homeTimeline .miniBody,
+html body #list.homeTimeline .miniBody.haSocialBodyV983{
+  min-height:0!important;
+  margin:0!important;
+  padding:9px 14px 4px!important;
+  background:var(--ha988-home-surface)!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:var(--ha988-home-text)!important;
+}
+html body #list.homeTimeline .miniTitle{
+  min-height:0!important;
+  margin:0!important;
+  color:var(--ha988-home-text)!important;
+  font-size:14.5px!important;
+  font-weight:700!important;
+  line-height:1.28!important;
+  letter-spacing:-.06px!important;
+  text-shadow:none!important;
+}
+html body #list.homeTimeline .miniDesc{
+  margin-top:3px!important;
+  color:var(--ha988-home-text)!important;
+  font-size:14px!important;
+  font-weight:400!important;
+  line-height:1.36!important;
+  letter-spacing:0!important;
+  overflow-wrap:anywhere!important;
+  text-shadow:none!important;
+}
+html body #list.homeTimeline .miniMeta{
+  min-height:0!important;
+  margin-top:5px!important;
+  color:var(--ha988-home-text-muted)!important;
+  font-size:11.5px!important;
+  font-weight:500!important;
+  line-height:1.25!important;
+  text-shadow:none!important;
+}
+html body #list.homeTimeline .miniSeeMore{
+  min-height:28px!important;
+  margin:1px 0 0!important;
+  padding:3px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--ha988-home-orange)!important;
+  font-size:12.5px!important;
+  font-weight:600!important;
+  line-height:1.2!important;
+  box-shadow:none!important;
+}
+html body #list.homeTimeline .happyadMentionLink{
+  color:#55a8ff!important;
+  font-weight:600!important;
+  text-decoration:none!important;
+}
+
+/* 10. Actions : les 5 fonctions d'origine restent visibles et équilibrées. */
+html body #list.homeTimeline .miniActions,
+html body #list.homeTimeline .haAlbumFullSlide .miniActions{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  align-items:center!important;
+  gap:0!important;
+  width:100%!important;
+  min-height:50px!important;
+  margin:0!important;
+  padding:2px 10px 4px!important;
+  background:var(--ha988-home-surface)!important;
+  background-image:none!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  overflow:hidden!important;
+}
+html body #list.homeTimeline .miniActions .actionBtn,
+html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:44px!important;
+  height:44px!important;
+  margin:0!important;
+  padding:0 2px!important;
+  gap:5px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  color:var(--ha988-home-text)!important;
+  opacity:1!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+  transition:background-color .10s ease,transform .08s ease,color .10s ease!important;
+}
+html body #list.homeTimeline .miniActions .actionBtn:active,
+html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn:active{
+  background:rgba(255,255,255,.055)!important;
+  transform:scale(.95)!important;
+}
+html body #list.homeTimeline .miniActions .actionBtn.fav,
+html body #list.homeTimeline .miniActions [data-card-act="fav"],
+html body #list.homeTimeline .haAlbumFullSlide .miniActions [data-card-act="fav"]{
+  display:flex!important;
+}
+html body #list.homeTimeline .miniActions .haLineIcon,
+html body #list.homeTimeline .miniActions .haLineIcon svg,
+html body #list.homeTimeline .haAlbumFullSlide .miniActions .haLineIcon,
+html body #list.homeTimeline .haAlbumFullSlide .miniActions .haLineIcon svg{
+  width:24px!important;
+  height:24px!important;
+  flex:0 0 24px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.9!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+  filter:none!important;
+}
+html body #list.homeTimeline .miniActions .haSharePlaneSvg path,
+html body #list.homeTimeline .haAlbumFullSlide .miniActions .haSharePlaneSvg path{
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.9!important;
+}
+html body #list.homeTimeline .miniActions .actionBtn small,
+html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn small{
+  display:block!important;
+  min-width:0!important;
+  max-width:3.8em!important;
+  color:var(--ha988-home-text)!important;
+  font-size:12.5px!important;
+  font-weight:600!important;
+  line-height:1!important;
+  font-variant-numeric:tabular-nums!important;
+  letter-spacing:0!important;
+  text-shadow:none!important;
+}
+html body #list.homeTimeline .miniActions [data-card-act="like"].on{
+  color:var(--ha988-home-like)!important;
+}
+html body #list.homeTimeline .miniActions [data-card-act="like"].on .haLikeIcon svg,
+html body #list.homeTimeline .miniActions [data-card-act="like"].on .haLikeIcon svg path{
+  fill:currentColor!important;
+  stroke:currentColor!important;
+}
+html body #list.homeTimeline .miniActions [data-card-act="repost"].on{
+  color:var(--ha988-home-repost)!important;
+}
+html body #list.homeTimeline .miniActions [data-card-act="fav"].on,
+html body #list.homeTimeline .miniActions [data-card-act="fav"][aria-pressed="true"]{
+  color:var(--ha988-home-favorite)!important;
+}
+html body #list.homeTimeline .miniActions [data-card-act="fav"].on svg,
+html body #list.homeTimeline .miniActions [data-card-act="fav"].on svg path,
+html body #list.homeTimeline .miniActions [data-card-act="fav"][aria-pressed="true"] svg,
+html body #list.homeTimeline .miniActions [data-card-act="fav"][aria-pressed="true"] svg path{
+  fill:currentColor!important;
+  stroke:currentColor!important;
+}
+html body #list.homeTimeline .miniActions .actionBtn.on small{
+  color:currentColor!important;
+}
+html body #list.homeTimeline .miniActions .haCommentsDisabledV63,
+html body #list.homeTimeline .miniActions [aria-disabled="true"]{
+  opacity:.42!important;
+}
+
+/* 11. Albums : points fins superposés au bas de l'image, sans créer de barre. */
+html body #list.homeTimeline > .haAlbumFullPagerCard.haAlbumSingleCardV981 > .miniCardFrame > .haAlbumMediaViewportV981 > .haAlbumFullDots{
+  position:absolute!important;
+  left:50%!important;
+  bottom:7px!important;
+  z-index:24!important;
+  transform:translateX(-50%)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  width:auto!important;
+  min-width:0!important;
+  min-height:5px!important;
+  height:5px!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  pointer-events:none!important;
+}
+html body #list.homeTimeline .haAlbumFullDots span,
+html body #list.homeTimeline .happyadAlbumDots span{
+  width:5px!important;
+  height:5px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.54)!important;
+  box-shadow:none!important;
+  opacity:1!important;
+  transition:width .16s ease,background-color .16s ease!important;
+}
+html body #list.homeTimeline .haAlbumFullDots span.on,
+html body #list.homeTimeline .happyadAlbumDots span.on{
+  width:13px!important;
+  background:var(--ha988-home-orange)!important;
+}
+html body #list.homeTimeline .happyadAlbumBadge{
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:8px!important;
+  background:rgba(0,0,0,.52)!important;
+  color:#fff!important;
+  font-size:11.5px!important;
+  font-weight:600!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+/* 12. Annonces Marketplace : même fil, CTA conservé comme élément fonctionnel. */
+html body #list.homeTimeline .happyadMarketplaceDedicatedCardV856 .happyadMarketplaceHomeTagV856,
+html body #list.homeTimeline .happyadMarketplaceHomeCardV828 .happyadMarketplaceHomeTagV828{
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#ffad63!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  letter-spacing:.07em!important;
+  box-shadow:none!important;
+}
+html body #list.homeTimeline .happyadMarketplaceCtaRowV856{
+  min-height:54px!important;
+  margin:0!important;
+  padding:6px 14px 10px!important;
+  background:var(--ha988-home-surface)!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+html body #list.homeTimeline .happyadMarketplaceShareOnlyV857{
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  border:1px solid var(--ha988-home-line-strong)!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  color:var(--ha988-home-text)!important;
+  box-shadow:none!important;
+}
+html body #list.homeTimeline .happyadMarketplaceCardCtaV856{
+  min-height:42px!important;
+  padding:0 14px!important;
+  border:1px solid rgba(255,148,31,.34)!important;
+  border-radius:12px!important;
+  background:rgba(255,148,31,.09)!important;
+  color:#ffb46d!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  box-shadow:none!important;
+}
+html body #list.homeTimeline .happyadMarketplaceShareOnlyV857:active,
+html body #list.homeTimeline .happyadMarketplaceCardCtaV856:active{
+  transform:scale(.96)!important;
+}
+
+/* 13. Chargements : aucune carte grise ou arrondie ne réapparaît au premier rendu. */
+html body #list.happyadHomeBootSkeleton,
+html body #list .happyadHomeProgressiveSentinelV764,
+html body #list .happyadHomeMediaProgressV764{
+  background:var(--ha988-home-surface)!important;
+  color:var(--ha988-home-text-muted)!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+html body #list.happyadHomeBootSkeleton .happyadSkeletonCard{
+  background:var(--ha988-home-surface)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+html body #list .happyadHomeAutoLoaderV921{
+  color:var(--ha988-home-text-muted)!important;
+  font-size:11.5px!important;
+  font-weight:600!important;
+}
+html body #list .happyadHomeAutoLoaderV921 i,
+html body #list .happyadHomeProgressiveSentinelV764 i{
+  border-color:rgba(255,255,255,.15)!important;
+  border-top-color:var(--ha988-home-orange)!important;
+}
+
+/* 14. Navigation Accueil : même surface, séparation légère et aucun panneau lourd. */
+html body:not([data-happyad-main-page]) .bottom.happyadMainDockV585,
+html body[data-happyad-main-page="home"] .bottom.happyadMainDockV585{
+  background:var(--ha988-home-surface)!important;
+  background-color:var(--ha988-home-surface)!important;
+  border-top:0!important;
+  box-shadow:none!important;
+}
+html body:not([data-happyad-main-page]) .bottom.happyadMainDockV585 .mainDockLabel,
+html body[data-happyad-main-page="home"] .bottom.happyadMainDockV585 .mainDockLabel{
+  color:var(--ha988-home-text-muted)!important;
+  font-weight:500!important;
+}
+html body:not([data-happyad-main-page]) .bottom.happyadMainDockV585 .nav.active .mainDockLabel,
+html body[data-happyad-main-page="home"] .bottom.happyadMainDockV585 .nav.active .mainDockLabel{
+  color:var(--ha988-home-text)!important;
+  font-weight:700!important;
+}
+
+/* Clavier et accessibilité : contour visible uniquement au clavier. */
+html body > .app button:focus-visible,
+html body > .app a:focus-visible{
+  outline:2px solid rgba(47,147,255,.82)!important;
+  outline-offset:2px!important;
+}
+
+@media(max-width:390px){
+  html body #list.homeTimeline .miniTop{
+    min-height:53px!important;
+    padding:8px 12px!important;
+    gap:9px!important;
+  }
+  html body #list.homeTimeline .miniTop .avatar{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+    min-height:36px!important;
+    flex-basis:36px!important;
+  }
+  html body #list.homeTimeline .miniTop .creator b{font-size:14.5px!important;}
+  html body #list.homeTimeline .miniTop .creator span,
+  html body #list.homeTimeline .miniTop .miniPostDate{font-size:11px!important;}
+  html body #list.homeTimeline .miniBody,
+  html body #list.homeTimeline .miniBody.haSocialBodyV983{padding:8px 12px 4px!important;}
+  html body #list.homeTimeline .miniTitle{font-size:14px!important;}
+  html body #list.homeTimeline .miniDesc{font-size:13.5px!important;}
+  html body #list.homeTimeline .miniActions,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions{padding-left:7px!important;padding-right:7px!important;}
+  html body #list.homeTimeline .miniActions .actionBtn,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn{gap:4px!important;}
+  html body #list.homeTimeline .miniActions .actionBtn small,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn small{font-size:12px!important;max-width:3.35em!important;}
+}
+
+@media(max-width:350px){
+  html body #list.homeTimeline .miniActions .haLineIcon,
+  html body #list.homeTimeline .miniActions .haLineIcon svg,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions .haLineIcon,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions .haLineIcon svg{
+    width:22px!important;
+    height:22px!important;
+    flex-basis:22px!important;
+  }
+  html body #list.homeTimeline .miniActions .actionBtn small,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn small{
+    font-size:11.5px!important;
+    max-width:3em!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  html body #list.homeTimeline .miniActions .actionBtn,
+  html body .happyadHomeActions .round{
+    transition:none!important;
+  }
+}
+
+/* Fyblic V988R9 — geste social mature + Voir plus intégré sans déplacer les actions.
+   - Publication normale : description 2 lignes, Voir plus sur la 2e ligne.
+   - Annonce : description 3 lignes, Voir plus sur la 3e ligne.
+   - Double tap média : love visuel identique à la centrale vidéo, sans cercle. */
+html body #list.homeTimeline .happyadInlineDescWrapV991,
+html body #list.homeTimeline .happyadMarketplaceDescWrapV991{
+  position:relative!important;
+  min-width:0!important;
+  width:100%!important;
+}
+html body #list.homeTimeline .happyadInlineDescWrapV991 .happyadInlineDescV991{
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:2!important;
+  overflow:hidden!important;
+  max-height:calc(1.36em * 2)!important;
+}
+html body #list.homeTimeline .happyadMarketplaceDescWrapV991 .happyadMarketplaceDescV856{
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:3!important;
+  overflow:hidden!important;
+  max-height:calc(1.36em * 3)!important;
+}
+html body #list.homeTimeline .happyadInlineMoreV991,
+html body #list.homeTimeline .happyadMarketplaceMoreV991{
+  position:absolute!important;
+  right:0!important;
+  bottom:0!important;
+  z-index:3!important;
+  min-height:0!important;
+  height:1.36em!important;
+  margin:0!important;
+  padding:0 0 0 18px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:linear-gradient(90deg,rgba(var(--ha988-home-surface-rgb),0) 0%,rgba(var(--ha988-home-surface-rgb),.96) 26%,var(--ha988-home-surface) 48%)!important;
+  color:var(--ha988-home-orange)!important;
+  font:inherit!important;
+  font-size:13px!important;
+  font-weight:650!important;
+  line-height:1.36!important;
+  white-space:nowrap!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  touch-action:manipulation!important;
+}
+html body #list.homeTimeline .happyadInlineMoreV991[hidden],
+html body #list.homeTimeline .happyadMarketplaceMoreV991[hidden]{display:none!important;}
+html body #list.homeTimeline .happyadMarketplaceDescWrapV991.expanded .happyadMarketplaceDescV856{
+  display:block!important;
+  -webkit-line-clamp:unset!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+html body #list.homeTimeline .happyadMarketplaceDescWrapV991.expanded .happyadMarketplaceMoreV991{
+  position:static!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  height:auto!important;
+  margin-top:2px!important;
+  padding:2px 0!important;
+  background:transparent!important;
+}
+
+/* Love double-tap : forme SVG arrondie, grand coeur + échos + 4 confirmations dispersées. */
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveBurstV991{
+  position:absolute!important;
+  inset:0!important;
+  z-index:28!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+  contain:layout paint!important;
+}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveMainV991{
+  position:absolute!important;
+  left:var(--ha-home-love-x,50%)!important;
+  top:var(--ha-home-love-y,50%)!important;
+  width:132px!important;
+  height:132px!important;
+  transform:translate(-50%,-50%)!important;
+  overflow:visible!important;
+}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveMainV991 svg{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  display:block!important;
+  width:124px!important;
+  height:124px!important;
+  fill:#ff315f!important;
+  stroke:none!important;
+  transform-origin:center!important;
+  opacity:0;
+}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveCoreV991{
+  animation:happyadHomeLoveCoreV991 1.02s cubic-bezier(.18,.82,.24,1) forwards!important;
+}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveEchoV991{
+  fill:#ff5b86!important;
+  animation-duration:1.08s!important;
+  animation-timing-function:cubic-bezier(.18,.82,.24,1)!important;
+  animation-fill-mode:forwards!important;
+}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveEchoV991.e1{animation-name:happyadHomeLoveEchoLeftV991!important;}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveEchoV991.e2{animation-name:happyadHomeLoveEchoRightV991!important;animation-delay:.035s!important;}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveSparkV991{
+  position:absolute!important;
+  display:block!important;
+  width:27px!important;
+  height:27px!important;
+  opacity:0;
+  transform:translate(-50%,-50%) scale(.25) rotate(var(--ha-home-love-rotate,0deg));
+  animation:happyadHomeLoveSparkV991 .92s cubic-bezier(.2,.78,.24,1) forwards!important;
+}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveSparkV991 svg{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  fill:#ff4775!important;
+  stroke:none!important;
+}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveSparkV991.s1{left:17%!important;top:25%!important;--ha-home-love-rotate:-13deg;--ha-home-love-float-x:-7px;animation-delay:.02s!important;}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveSparkV991.s2{left:76%!important;top:22%!important;--ha-home-love-rotate:11deg;--ha-home-love-float-x:8px;animation-delay:.08s!important;}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveSparkV991.s3{left:20%!important;top:70%!important;--ha-home-love-rotate:8deg;--ha-home-love-float-x:-5px;animation-delay:.14s!important;}
+html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveSparkV991.s4{left:74%!important;top:73%!important;--ha-home-love-rotate:-9deg;--ha-home-love-float-x:7px;animation-delay:.20s!important;}
+@keyframes happyadHomeLoveCoreV991{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.34) rotate(-7deg)}
+  19%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(1deg)}
+  44%{opacity:1;transform:translate(-50%,-50%) scale(.98) rotate(0)}
+  76%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.08)}
+}
+@keyframes happyadHomeLoveEchoLeftV991{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.38) rotate(-8deg)}
+  24%{opacity:.30;transform:translate(-66%,-50%) scale(1.02) rotate(-10deg)}
+  67%{opacity:.18;transform:translate(-72%,-48%) scale(1.12) rotate(-12deg)}
+  100%{opacity:0;transform:translate(-78%,-45%) scale(1.22) rotate(-14deg)}
+}
+@keyframes happyadHomeLoveEchoRightV991{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.38) rotate(7deg)}
+  24%{opacity:.24;transform:translate(-34%,-52%) scale(.98) rotate(9deg)}
+  67%{opacity:.14;transform:translate(-28%,-50%) scale(1.09) rotate(11deg)}
+  100%{opacity:0;transform:translate(-23%,-47%) scale(1.18) rotate(13deg)}
+}
+@keyframes happyadHomeLoveSparkV991{
+  0%{opacity:0;transform:translate(-50%,-38%) scale(.25) rotate(var(--ha-home-love-rotate,0deg))}
+  22%{opacity:1;transform:translate(-50%,-50%) scale(1.08) rotate(var(--ha-home-love-rotate,0deg))}
+  66%{opacity:.94;transform:translate(calc(-50% + var(--ha-home-love-float-x,0px)),calc(-50% - 10px)) scale(1) rotate(var(--ha-home-love-rotate,0deg))}
+  100%{opacity:0;transform:translate(calc(-50% + var(--ha-home-love-float-x,0px)),calc(-50% - 28px)) scale(.92) rotate(var(--ha-home-love-rotate,0deg))}
+}
+html body #list.homeTimeline .happyadHomeDoubleTapPulseV991 [data-card-act="like"] .haLineIcon{
+  animation:happyadHomeDoubleTapPulseV991 .24s ease-out!important;
+}
+@keyframes happyadHomeDoubleTapPulseV991{0%{transform:scale(.78)}55%{transform:scale(1.22)}100%{transform:scale(1)}}
+@media(max-width:390px){
+  html body #list.homeTimeline .happyadInlineMoreV991,
+  html body #list.homeTimeline .happyadMarketplaceMoreV991{font-size:12.5px!important;}
+}
+@media(prefers-reduced-motion:reduce){
+  html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveCoreV991,
+  html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveEchoV991,
+  html body :is(#list.homeTimeline,#happyadHomePhotoFullscreen .haHomeFsAlbumTrack) .happyadHomeLoveSparkV991{animation-duration:.42s!important;animation-delay:0s!important;}
+}
+
+/* Fyblic V1006 — compteurs Accueil verrouillés à 15 px.
+   Le maître visuel V988 est chargé après le maître d'actions.
+   Chiffres et suffixes K/M/D/MD partagent exactement la même taille. */
+html body #list.homeTimeline .miniActions .actionBtn small,
+html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn small{
+  font-size:15px!important;
+}
