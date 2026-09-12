@@ -2,7 +2,7 @@
   "name": "Fyblic",
   "short_name": "Fyblic",
   "description": "Fyblic — réseau social.",
-  "start_url": "./index.html?source=pwa&v=1023",
+  "start_url": "./index.html?source=pwa&v=1024",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -11,79 +11,79 @@
   "lang": "fr",
   "icons": [
     {
-      "src": "./icons/happyad-icon-v535center1-48.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-48.png",
       "sizes": "48x48",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-72.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-96.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-128.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-144.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-152.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-180.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-180.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-192.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-384.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-512.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-maskable-192.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-maskable-512.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "./icons/happyad-icon-v535center1-source.png",
+      "src": "./icons/fyblic-pwa-icon-v1024-source.png",
       "sizes": "1254x1254",
       "type": "image/png",
       "purpose": "any maskable"
@@ -96,7 +96,7 @@
       "url": "./index.html?app=video&v=851r12-ecriture-stable",
       "icons": [
         {
-          "src": "./icons/happyad-icon-v535center1-192.png",
+          "src": "./icons/fyblic-pwa-icon-v1024-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -108,7 +108,7 @@
       "url": "./index.html?app=profile&v=851r12-ecriture-stable",
       "icons": [
         {
-          "src": "./icons/happyad-icon-v535center1-192.png",
+          "src": "./icons/fyblic-pwa-icon-v1024-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
