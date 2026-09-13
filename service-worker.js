@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1024-splash-icon-unified-20260912';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1028-install-notice-visible-20260913';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -13,7 +13,7 @@ var HAPPYAD_VAPID_PUBLIC_KEY = 'BA3UgDp8-6VYN6nZgSNX14LeZVLK6FesJgLXVytEKkKgplK_
 var HAPPYAD_APP_SHELL = [
   './',
   './index.html',
-  './index.html?v=v1023-system-surface-unified',
+  './index.html?v=v1028-install-notice-visible',
   './manifest.webmanifest',
   './core/fyblic-system-theme-v1022.css?v=1022-world-theme',
   './icons/fyblic-logo-exact-v1021.png',
@@ -45,8 +45,8 @@ var HAPPYAD_APP_SHELL = [
   './core/home-card-layout-master-v982.css?v=986-professional-icons-love',
   './core/home-visual-maturity-master-v988.css?v=1006-action-count-15',
   './core/action-counters-global-v1006.css?v=1006-counts-15-video-home-size',
-  './core/happyad-global-coherence-v997.css?v=1023-system-surface-unified',
-  './core/happyad-global-coherence-v997.js?v=1000-global-coherence-no-story-overlay',
+  './core/happyad-global-coherence-v997.css?v=1025-search-suggestion-story',
+  './core/happyad-global-coherence-v997.js?v=1025-search-suggestion-story',
   './core/happyad-search-nav-v998.css?v=1005r4-search-primary-name-white-locked',
   './core/story-name-presence-master-v999.css?v=999-story-name-presence-off',
   './core/story-name-presence-master-v999.js?v=999-story-name-presence-off',
@@ -60,11 +60,11 @@ var HAPPYAD_APP_SHELL = [
   './core/master-registry.js?v=974-p1-module-lifecycle-registry',
   './core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry',
   './modules/happyad-chat.html?v=974-p1-module-lifecycle-registry',
-  './modules/message-center.html?mode=inbox&source=p1-module-lifecycle&v=974-p1-module-lifecycle-registry',
+  './modules/message-center.html?mode=inbox&source=p1-module-lifecycle&v=1026-avatar-cover',
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
   './modules/assistance.html?v=974-p1-module-lifecycle-registry',
-  './modules/video.html?v=1006-counts-15-video-home-size',
+  './modules/video.html?v=1027-sound-notice-up',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
   './modules/publish.html?v=1001-public-publication-wording',

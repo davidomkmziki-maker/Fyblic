@@ -36,7 +36,7 @@ function probeSearchStories(){
   clearTimeout(storyProbeTimer);storyProbeTimer=0;
   var root=document.getElementById('happyadSmartSearchV427');if(!root||!root.classList.contains('on'))return;
   var now=Date.now(),ids=[];
-  root.querySelectorAll('.haSearchUser[data-ha-profile-uid]').forEach(function(row){var id=clean(row.getAttribute('data-ha-profile-uid'));if(id&&ids.indexOf(id)<0&&(!storyProbeStamp[id]||now-storyProbeStamp[id]>30000))ids.push(id)});
+  root.querySelectorAll('.haSearchUser[data-ha-profile-uid],.haSearchSuggestionProfileV1015[data-ha-profile-uid]').forEach(function(row){var id=clean(row.getAttribute('data-ha-profile-uid'));if(id&&ids.indexOf(id)<0&&(!storyProbeStamp[id]||now-storyProbeStamp[id]>30000))ids.push(id)});
   ids=ids.slice(0,20);if(!ids.length)return;ids.forEach(function(id){storyProbeStamp[id]=now});
   var c=null;try{c=typeof window.happyadSb==='function'?window.happyadSb():(window.happyadSupabase||null)}catch(_e){}if(!c||!c.from)return;
   Promise.resolve(c.from('happyad_stories').select('*').in('user_id',ids).eq('is_active',true).order('created_at',{ascending:false}).limit(60)).then(function(r){
@@ -46,8 +46,8 @@ function probeSearchStories(){
 function scheduleStoryProbe(){clearTimeout(storyProbeTimer);storyProbeTimer=setTimeout(probeSearchStories,240)}
 function decorateSearch(){
   var root=document.getElementById('happyadSmartSearchV427');if(!root)return;
-  root.querySelectorAll('.haSearchUser[data-ha-profile-uid]').forEach(function(row){
-    var av=row.querySelector('.haSearchAvatar');if(!av)return;
+  root.querySelectorAll('.haSearchUser[data-ha-profile-uid],.haSearchSuggestionProfileV1015[data-ha-profile-uid]').forEach(function(row){
+    var av=row.querySelector('.haSearchAvatar,.haSearchSuggestionAvatarV1014');if(!av)return;
     var st=stateFor(row.getAttribute('data-ha-profile-uid'));
     av.classList.toggle('haSearchStoryRingV997',!!st);
     av.classList.toggle('story-seen',!!(st&&st.seen));
@@ -71,8 +71,8 @@ function openSearchStory(av){
 function run(){raf=0;decorateSearch()}
 function schedule(){if(raf)return;raf=requestAnimationFrame(run)}
 function bind(){
-  document.addEventListener('click',function(e){var av=e.target&&e.target.closest&&e.target.closest('#happyadSmartSearchV427 .haSearchAvatar.haSearchStoryRingV997');if(!av)return;e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openSearchStory(av)},true);
-  document.addEventListener('keydown',function(e){if(e.key!=='Enter'&&e.key!==' ')return;var av=e.target&&e.target.closest&&e.target.closest('#happyadSmartSearchV427 .haSearchAvatar.haSearchStoryRingV997');if(!av)return;e.preventDefault();e.stopPropagation();openSearchStory(av)},true);
+  document.addEventListener('click',function(e){var av=e.target&&e.target.closest&&e.target.closest('#happyadSmartSearchV427 .haSearchAvatar.haSearchStoryRingV997,#happyadSmartSearchV427 .haSearchSuggestionAvatarV1014.haSearchStoryRingV997');if(!av)return;e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openSearchStory(av)},true);
+  document.addEventListener('keydown',function(e){if(e.key!=='Enter'&&e.key!==' ')return;var av=e.target&&e.target.closest&&e.target.closest('#happyadSmartSearchV427 .haSearchAvatar.haSearchStoryRingV997,#happyadSmartSearchV427 .haSearchSuggestionAvatarV1014.haSearchStoryRingV997');if(!av)return;e.preventDefault();e.stopPropagation();openSearchStory(av)},true);
   try{new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true})}catch(_e){}
   document.addEventListener('happyad:stories-master-sync-v924',schedule,true);
   window.addEventListener('storage',schedule,true);

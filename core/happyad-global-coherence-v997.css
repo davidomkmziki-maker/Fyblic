@@ -212,6 +212,19 @@ html[data-happyad-page="home"] #happyadAppShell{
   cursor:pointer!important;
   background:conic-gradient(from 18deg,#ff941f,#ff3f68,#8c55ff,#2f93ff,#30ce91,#ff941f)!important;
 }
+#happyadSmartSearchV427 .haSearchSuggestionAvatarV1014.haSearchStoryRingV997{
+  padding:2px!important;
+  background:linear-gradient(#090d14,#090d14) padding-box,linear-gradient(135deg,#ff8a00,#ff3f8e 48%,#365cff) border-box!important;
+  border:2px solid transparent!important;
+  cursor:pointer!important;
+}
+#happyadSmartSearchV427 .haSearchSuggestionAvatarV1014.haSearchStoryRingV997.story-seen{
+  background:linear-gradient(#090d14,#090d14) padding-box,linear-gradient(135deg,#747d8b,#424a56) border-box!important;
+}
+#happyadSmartSearchV427 .haSearchSuggestionAvatarV1014.haSearchStoryRingV997 img,
+#happyadSmartSearchV427 .haSearchSuggestionAvatarV1014.haSearchStoryRingV997>span{
+  width:100%!important;height:100%!important;border-radius:50%!important;
+}
 #happyadSmartSearchV427 .haSearchAvatar.haSearchStoryRingV997.story-seen{
   background:#505965!important;
 }

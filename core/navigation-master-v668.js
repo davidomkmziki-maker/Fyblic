@@ -42,7 +42,7 @@
     profile_public:'modules/visitor-profile.html',
     video:'modules/video.html?v=986-base-video-text',
     photo:'modules/photo.html',
-    message:'modules/message-center.html?mode=inbox&source=v738-assistance&v=966-view-once-persistent-hide',
+    message:'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover',
     publish:'modules/publish.html?v=1001-public-publication-wording',
     map:'modules/map.html'
   };
@@ -673,7 +673,7 @@
       if(!key)return null;
       if(key==='video'||key==='videos'||key==='vidéos')return {view:'video',url:'modules/video.html',source:'url'};
       if(key==='photo'||key==='photos')return {view:'photo',url:'modules/photo.html',source:'url'};
-      if(key==='message'||key==='messages')return {view:'message',url:'modules/message-center.html?mode=inbox&source=url&v=966-view-once-persistent-hide',source:'url'};
+      if(key==='message'||key==='messages')return {view:'message',url:'modules/message-center.html?mode=inbox&source=url&v=1026-avatar-cover',source:'url'};
       if(key==='profile'||key==='profil'||key==='myprofile')return {view:'profile',url:'modules/my-profile.html',source:'url'};
       if(key==='publish'||key==='publier')return {view:'publish',url:'modules/publish.html',source:'url'};
       if(key==='map'||key==='carte')return {view:'map',url:'modules/map.html',source:'url'};
@@ -785,7 +785,7 @@
   function persistentMainUrl(page){
     page=String(page||'');
     if(page==='video')return 'modules/video.html?v=986-base-video-text';
-    if(page==='message')return 'modules/message-center.html?mode=inbox&source=v738-assistance&v=966-view-once-persistent-hide';
+    if(page==='message')return 'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover';
     if(page==='profile')return 'modules/my-profile.html?v=1001-profile-identity-scale';
     if(page==='profile_public')return VISITOR_PROFILE_PRELOAD_URL_V601;
     if(page==='publish')return 'modules/publish.html?v=1001-public-publication-wording';

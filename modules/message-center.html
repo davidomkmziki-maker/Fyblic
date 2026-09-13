@@ -265,6 +265,11 @@
     }
     .brand.has-photo img{display:block}
     .brand.has-photo span{display:none}
+    #currentUserAvatar.brand.has-photo{
+      background-color:#06111f!important;
+      background-image:conic-gradient(from 210deg,#20a8ff,#22f0c7,#9b5cff,#ff49cf,#20a8ff)!important;
+    }
+    #currentUserAvatar.brand.has-photo::before{background:#06111f!important}
     .brand span{
       position:relative;
       z-index:1;
@@ -291,10 +296,10 @@
 
     .head-text{min-width:0;flex:1 1 auto;overflow:hidden}
     .title{
-      font-size:27px;
-      line-height:1;
-      font-weight:900;
-      letter-spacing:-1.05px;
+      font-size:21px;
+      line-height:1.08;
+      font-weight:850;
+      letter-spacing:-.45px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
@@ -344,7 +349,22 @@
     .happyad-badge::after{content:"✓";position:absolute;left:50%;top:50%;transform:translate(-50%,-53%);z-index:1;color:#fff;font-size:10px;font-weight:1000;line-height:1;text-shadow:0 0 3px rgba(255,255,255,.78)}
     .happyad-badge.blue::before{background:linear-gradient(135deg,#6fd4ff,#38b6ff,#0090ff);box-shadow:0 0 3px rgba(79,195,255,.48),0 0 8px rgba(0,120,255,.30)}
     .happyad-badge.violet::before{background:linear-gradient(135deg,#e9d5ff,#c084fc,#9333ea);box-shadow:0 0 3px rgba(147,51,234,.48),0 0 8px rgba(109,40,217,.30)}
-    .title-line .happyad-badge{width:20px;height:20px;flex-basis:20px;transform:translateY(2px)}
+    .title-line .happyad-badge{width:16px;height:16px;flex-basis:16px;transform:translateY(0)}
+    .title-line .happyad-badge::after{font-size:8px}
+    .brand.happyadDefaultProfileAvatarV989{
+      background:linear-gradient(#06111f,#06111f) padding-box,conic-gradient(from 210deg,#20a8ff,#22f0c7,#9b5cff,#ff49cf,#20a8ff) border-box!important;
+    }
+    .brand.happyadDefaultProfileAvatarV989::before{
+      inset:3px;z-index:0;background-color:#fff!important;
+      background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%)!important;
+      background-repeat:no-repeat!important;background-size:100% 100%!important;background-position:center!important;
+    }
+    #currentUserAvatar.brand.has-photo{
+      background-color:transparent!important;
+      background-image:conic-gradient(from 210deg,#20a8ff,#22f0c7,#9b5cff,#ff49cf,#20a8ff)!important;
+    }
+    #currentUserAvatar.brand.has-photo::before{background:#06111f!important;background-image:none!important}
+    #currentUserAvatar.brand.has-photo img{z-index:2!important;background:#06111f!important}
     .chat-name-line .happyad-badge{width:17px;height:17px;flex-basis:17px}
     .topline .happyad-badge{width:15px;height:15px;flex-basis:15px;transform:translateY(0)}
     .subtitle{
@@ -1989,7 +2009,7 @@
       .topbar{padding-left:10px;padding-right:9px;gap:8px}
       .brand{width:42px;height:42px}
       .brand span{font-size:16px}
-      .title{font-size:24px}
+      .title{font-size:20px}
       .subtitle{font-size:11px}
       .icon-btn{width:35px;height:35px}
       .icon{width:23px;height:23px}
@@ -2046,7 +2066,7 @@
     }
 
     @media (max-width:330px){
-      .title{font-size:22px}
+      .title{font-size:19px}
       .row{min-height:56px;padding:7px 8px}
       .avatar{width:40px;height:40px;min-width:40px;max-width:40px;min-height:40px;max-height:40px;font-size:16px}
       .name{font-size:15.5px}
