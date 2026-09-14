@@ -23,7 +23,33 @@ function mediaCandidate(row,hint){
   const media=firstMediaValue(row.marketplace_cover_url||row.marketplaceCoverUrl||row.home_media_url||row.homeMediaUrl||row.media_url||row.mediaUrl||row.media_path||row.mediaPath||row.image_url||row.imageUrl||row.photo_url||row.photoUrl||row.video_url_compressed||row.videoUrlCompressed||row.compressed_video_url||row.compressedVideoUrl||row.video_url_original||row.videoUrlOriginal||row.original_video_url||row.originalVideoUrl||row.video_url||row.videoUrl||row.media_urls||row.mediaUrls||row.images||row.photos||row.files||row.gallery||row.medias||row.media||row.marketplace_media||row.marketplaceMedia);
   let value=video?(poster||media):(media||poster);if(video&&!poster&&/\.(mp4|webm|mov|m4v)(?:$|[?#])/i.test(media))value='';return absoluteMedia(value);
 }
-function allowedRemote(url){try{const u=new URL(url);return u.protocol==='https:';}catch(_e){return false;}}
+const MAX_SOURCE_BYTES=12*1024*1024;
+const ALLOWED_IMAGE_TYPES=new Set([
+  'image/jpeg','image/png','image/webp','image/gif','image/avif'
+]);
+function allowedRemote(url){
+  try{
+    if(!SUPABASE.ready)return false;
+    const candidate=new URL(url);
+    const project=new URL(SUPABASE.url);
+    return candidate.protocol==='https:'&&
+      candidate.hostname===project.hostname&&
+      candidate.port===''&&
+      candidate.username===''&&
+      candidate.password===''&&
+      candidate.pathname.startsWith('/storage/v1/object/public/happyad-media/');
+  }catch(_e){return false;}
+}
+async function readImageResponse(response){
+  if(!response||!response.ok)throw new Error('SOURCE_UNAVAILABLE');
+  const type=clean(response.headers&&response.headers.get('content-type')).split(';')[0].toLowerCase();
+  if(!ALLOWED_IMAGE_TYPES.has(type))throw new Error('SOURCE_TYPE_REFUSED');
+  const declared=Number(response.headers&&response.headers.get('content-length')||0);
+  if(declared>MAX_SOURCE_BYTES)throw new Error('SOURCE_TOO_LARGE');
+  const bytes=Buffer.from(await response.arrayBuffer());
+  if(!bytes.length||bytes.length>MAX_SOURCE_BYTES)throw new Error('SOURCE_TOO_LARGE');
+  return bytes;
+}
 async function loadPost(postId){if(!postId||!SUPABASE.ready)return null;try{const url=SUPABASE.url+'/rest/v1/happyad_posts?id=eq.'+encodeURIComponent(postId)+'&select=*&limit=1';const r=await fetchFast(url,{headers:{apikey:SUPABASE.publishableKey,Authorization:'Bearer '+SUPABASE.publishableKey,Accept:'application/json'}},1700);if(!r.ok)return null;const a=await r.json();return Array.isArray(a)&&a[0]?a[0]:null;}catch(_e){return null;}}
 async function logoBadge(size){
   size=size||88;
@@ -45,7 +71,7 @@ async function fallbackCard(video){
 }
 async function adaptiveCard(input,video){
   const W=1200,H=900;
-  const normalized=await sharp(input,{failOn:'none'}).rotate().toBuffer();
+  const normalized=await sharp(input,{failOn:'error',limitInputPixels:40000000,sequentialRead:true}).rotate().toBuffer();
   const background=await sharp(normalized).resize(W,H,{fit:'cover',position:'centre'}).blur(30).modulate({brightness:.54,saturation:.82}).jpeg({quality:80}).toBuffer();
   /* V882: la vraie publication reste entiere. Aucun crop du media principal. */
   const foreground=await sharp(normalized).resize(W-34,H-34,{fit:'contain',position:'centre',background:{r:0,g:0,b:0,alpha:0}}).png().toBuffer();
@@ -70,10 +96,16 @@ function imagePostId(event){
   const parts=clean(event&&event.path).split('/').filter(Boolean).map(decodePart),i=parts.indexOf('share-image');return i>=0&&parts[i+1]?clean(parts[i+1]):'';
 }
 exports.handler=async function(event){
-  const q=event.queryStringParameters||{},postId=imagePostId(event),hint=clean(q.type);let row=null,source=clean(q.image),video=/video|reel|clip|^v$/i.test(hint);
+  const method=clean(event&&event.httpMethod||'GET').toUpperCase();
+  if(method!=='GET'&&method!=='HEAD')return {statusCode:405,headers:{Allow:'GET, HEAD','Cache-Control':'no-store'},body:''};
+  const q=event.queryStringParameters||{},postId=imagePostId(event).slice(0,128),hint=clean(q.type),origin=originOf(event);let row=null,source='',video=/video|reel|clip|^v$/i.test(hint);
+  if(clean(q.image)){
+    const canonical=origin+'/share-image/'+encodeURIComponent(postId)+'/r20?type='+(video?'video':'photo');
+    return {statusCode:302,headers:{Location:canonical,'Cache-Control':'no-store'},body:''};
+  }
   try{
-    if(!source||!allowedRemote(source)){row=await loadPost(postId);if(row)video=isVideoRow(row,hint);source=mediaCandidate(row||{},video?'video':'photo');}
-    if(source&&allowedRemote(source)){const r=await fetchFast(source,{headers:{Accept:'image/avif,image/webp,image/*,*/*;q=0.8'}},2800);if(r.ok){const input=Buffer.from(await r.arrayBuffer());const out=await adaptiveCard(input,video);return {statusCode:200,isBase64Encoded:true,headers:{'Content-Type':'image/jpeg','Cache-Control':'public, max-age=86400, s-maxage=31536000, immutable','Access-Control-Allow-Origin':'*'},body:out.toString('base64')};}}
+    row=await loadPost(postId);if(row)video=isVideoRow(row,hint);source=mediaCandidate(row||{},video?'video':'photo');
+    if(source&&allowedRemote(source)){const r=await fetchFast(source,{headers:{Accept:'image/avif,image/webp,image/png,image/jpeg,image/gif'}},2800);const input=await readImageResponse(r);const out=await adaptiveCard(input,video);return {statusCode:200,isBase64Encoded:true,headers:{'Content-Type':'image/jpeg','Cache-Control':'public, max-age=86400, s-maxage=31536000, immutable','Access-Control-Allow-Origin':'*','X-Content-Type-Options':'nosniff'},body:method==='HEAD'?'':out.toString('base64')};}
   }catch(_e){}
-  const out=await fallbackCard(video);return {statusCode:200,isBase64Encoded:true,headers:{'Content-Type':'image/jpeg','Cache-Control':'public, max-age=20, s-maxage=45, stale-while-revalidate=180','Access-Control-Allow-Origin':'*'},body:out.toString('base64')};
+  const out=await fallbackCard(video);return {statusCode:200,isBase64Encoded:true,headers:{'Content-Type':'image/jpeg','Cache-Control':'public, max-age=20, s-maxage=45, stale-while-revalidate=180','Access-Control-Allow-Origin':'*','X-Content-Type-Options':'nosniff'},body:method==='HEAD'?'':out.toString('base64')};
 };

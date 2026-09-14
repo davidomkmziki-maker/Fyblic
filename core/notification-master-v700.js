@@ -641,7 +641,7 @@
       }
     }catch(_followError){}
     if(!ids.length)return [];
-    var profiles=await c.from('profiles').select('*').in('id',ids);
+    var profiles=await c.from('happyad_profiles_public_v1').select('*').in('id',ids);
     if(profiles&&profiles.error)throw profiles.error;
     var map=Object.create(null);
     (profiles&&Array.isArray(profiles.data)?profiles.data:[]).forEach(function(row){var id=clean(row&&row.id);if(isUuid(id))map[id]=row;});

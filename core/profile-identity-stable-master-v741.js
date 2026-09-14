@@ -124,7 +124,7 @@
       var uid=currentUid();if(!uid)return;
       var provisional=merge(uid,{});persist(provisional,'local-repair-v741');
       var c=client();if(!c||!c.from)return;
-      var q=await c.from('profiles').select('*').eq('id',uid).maybeSingle();
+      var q=await c.from('happyad_profiles_public_v1').select('*').eq('id',uid).maybeSingle();
       if(q&&q.error){console.warn('Fyblic V741 profile refresh kept local identity',q.error);return;}
       if(q&&q.data){
         /* La réponse réseau peut tomber au milieu d'un nouveau scroll. */

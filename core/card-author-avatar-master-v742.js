@@ -204,9 +204,9 @@
     var rows=[],primaryOk=false;
     for(var i=0;i<ids.length;i+=40){
       var part=ids.slice(i,i+40);
-      try{var r=await c.from('profiles').select('*').in('id',part);if(r&&!r.error&&Array.isArray(r.data)){primaryOk=true;rows=rows.concat(r.data);}}catch(_e){}
+      try{var r=await c.from('happyad_profiles_public_v1').select('*').in('id',part);if(r&&!r.error&&Array.isArray(r.data)){primaryOk=true;rows=rows.concat(r.data);}}catch(_e){}
       var missing=part.filter(function(id){return !rows.some(function(x){return clean(x&&x.id)===id||clean(x&&x.user_id)===id;});});
-      if(missing.length){try{var r2=await c.from('profiles').select('*').in('user_id',missing);if(r2&&!r2.error&&Array.isArray(r2.data))rows=rows.concat(r2.data);}catch(_e2){}}
+      if(missing.length){try{var r2=await c.from('happyad_profiles_public_v1').select('*').in('user_id',missing);if(r2&&!r2.error&&Array.isArray(r2.data))rows=rows.concat(r2.data);}catch(_e2){}}
     }
     if(AVATAR_MASTER&&primaryOk&&AVATAR_MASTER.primeProfiles)AVATAR_MASTER.primeProfiles(rows,ids,{source:'card-author-profile-fetch',markMissing:true,broadcast:true});
     return rows;

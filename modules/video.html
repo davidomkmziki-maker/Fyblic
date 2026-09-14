@@ -281,7 +281,7 @@
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <script src="../core/follow-master-v855r34.js?v=986-professional-icons-love"></script>
 <script src="../core/video-cover-editor-master-v693.js?v=972-p1-single-client"></script>
-<script src="../core/post-options-master-v693.js?v=972-p1-single-client"></script>
+<script src="../core/post-options-master-v693.js?v=1030-profiles-privacy"></script>
 
 
 <style id="happyad-v5-avatar-circle-display-fix">
@@ -793,7 +793,7 @@ async function enrichAuthorProfiles(c,arr){
   try{
     const ids=[...new Set((arr||[]).map(p=>p.creatorId||p.user_id||'').filter(Boolean))];
     if(!c||!ids.length)return arr;
-    const {data,error}=await c.from('profiles').select('id,full_name,username,avatar_url,badge').in('id',ids);
+    const {data,error}=await c.from('happyad_profiles_public_v1').select('id,full_name,username,avatar_url,badge').in('id',ids);
     if(error||!data)return arr;
     const avatarMaster=window.HappyProfileAvatarMasterV855R32||window.HappyProfileAvatarMaster;if(avatarMaster&&avatarMaster.primeProfiles)avatarMaster.primeProfiles(data,ids,{source:'video-author-profiles',markMissing:true});
     const byId={};(data||[]).forEach(p=>{byId[String(p.id)]=p});
@@ -1002,7 +1002,7 @@ async function enrichVideoCommentProfiles(roots){
   function walk(list){(list||[]).forEach(x=>{if(x&&x.authorId&&ids.indexOf(String(x.authorId))<0)ids.push(String(x.authorId));walk(x.replies||[]);});}
   walk(roots); if(!ids.length)return roots;
   try{
-    const {data,error}=await c.from('profiles').select('id,full_name,username,avatar_url,badge').in('id',ids);
+    const {data,error}=await c.from('happyad_profiles_public_v1').select('id,full_name,username,avatar_url,badge').in('id',ids);
     if(error||!data)return roots;
     const avatarMaster=window.HappyProfileAvatarMasterV855R32||window.HappyProfileAvatarMaster;if(avatarMaster&&avatarMaster.primeProfiles)avatarMaster.primeProfiles(data,ids,{source:'video-comment-profiles',markMissing:true});
     const by={};(data||[]).forEach(pr=>by[String(pr.id)]=pr);
@@ -1101,7 +1101,7 @@ function happyadFastVideoCommentAuthorV68(){const local=currentUser()||{};const 
 async function resolveVideoCommentAuthor(){
   const local=currentUser()||{};let user=null,profile=null;try{user=await happyadAuthUser();}catch(_e){}
   const uid=String((user&&user.id)||local.id||local.user_id||localStorage.getItem('HAPPYAD_AUTH_UID')||'').trim();
-  const c=happyadSb();if(c&&uid){try{const q=await c.from('profiles').select('id,full_name,username,avatar_url,badge').eq('id',uid).maybeSingle();if(q&&!q.error)profile=q.data||null;}catch(_e){}}
+  const c=happyadSb();if(c&&uid){try{const q=await c.from('happyad_profiles_public_v1').select('id,full_name,username,avatar_url,badge').eq('id',uid).maybeSingle();if(q&&!q.error)profile=q.data||null;}catch(_e){}}
   const avatarMaster=window.HappyProfileAvatarMasterV855R32||window.HappyProfileAvatarMaster;if(profile&&avatarMaster&&avatarMaster.primeFromProfile)avatarMaster.primeFromProfile(profile,{source:'video-comment-author'});const avatarEntry=avatarMaster&&avatarMaster.getEntry&&avatarMaster.getEntry(uid);
   return {id:uid,name:(profile&&profile.full_name)||local.name||local.full_name||(user&&user.user_metadata&&user.user_metadata.full_name)||(user&&user.email)||'Utilisateur Fyblic',avatar:avatarEntry&&avatarEntry.known?(avatarEntry.url||''):(local.avatar||local.avatar_url||''),badge:(profile&&profile.badge)||local.badge||'',handle:(profile&&profile.username)?('@'+String(profile.username).replace(/^@+/,'')):(local.handle||local.username||'')};
 }
@@ -2135,7 +2135,7 @@ $('commentList').onclick=async e=>{const mention=e.target.closest('[data-happyad
     const c=client(); if(!c) return;
     try{
       const {data:{user}}=await c.auth.getUser(); if(!user) return;
-      const {data:p}=await c.from('profiles').select('*').eq('id',user.id).maybeSingle(); if(!p) return;
+      const {data:p}=await c.from('happyad_profiles_public_v1').select('*').eq('id',user.id).maybeSingle(); if(!p) return;
       let u={}; try{u=JSON.parse(localStorage.getItem(USER_KEY)||'{}')}catch(e){}
       u=Object.assign({},u,{id:user.id,name:p.full_name||u.name||'Utilisateur Fyblic',handle:String(p.username||p.handle||u.handle||'happyad').replace(/^@+/,''),avatar:p.avatar_url||u.avatar||'',bio:p.bio||u.bio||'',badge:normBadge(p.badge),role:String(p.role||u.role||'user').toLowerCase()});
       localStorage.setItem(USER_KEY,JSON.stringify(u));

@@ -3361,6 +3361,21 @@
     function isOwnListingV933(offer={}){const uid=currentUserUidV933(),owner=listingOwnerUidV933(offer);return !!uid&&!!owner&&uid===owner}
     function listingPausedV933(offer={}){const status=normalize(offer.listing_status||offer.status||'active');return offer.is_active===false||/^(paused|inactive|unavailable)$/.test(status)}
     function ownerListingStatusLabelV933(offer={}){return listingPausedV933(offer)?'Indisponible':'Active'}
+    async function refreshOwnerListingAvailabilityV1029(offer={}){
+      if(!isOwnListingV933(offer))return false;
+      const client=resolveSupabaseClient(),id=String(offer.id||'').trim();if(!client||!id)return false;
+      try{
+        const response=await client.from('happyad_posts').select('listing_status,is_active,deleted_at').eq('id',id).limit(1);
+        if(response?.error)return false;
+        const row=Array.isArray(response?.data)?response.data[0]:response?.data;if(!row)return false;
+        const previousPaused=listingPausedV933(offer);
+        offer.listing_status=String(row.listing_status||'active').toLowerCase();offer.status=offer.listing_status;offer.is_active=row.is_active!==false;offer.deleted_at=row.deleted_at||null;
+        offers.forEach(item=>{if(String(item?.id)===id)Object.assign(item,offer)});
+        resultOfferRegistry.forEach(value=>{if(String(value?.id)===id)Object.assign(value,offer)});
+        if(activeOffer&&String(activeOffer.id)===id)activeOffer={...activeOffer,...offer};
+        return previousPaused!==listingPausedV933(offer);
+      }catch(_e){return false}
+    }
     function closeOwnerListingSheetV933(){const back=document.querySelector('#marketOwnerSheetBackdropV933');if(back)back.classList.remove('show')}
     function ensureOwnerListingSheetV933(){
       let back=document.querySelector('#marketOwnerSheetBackdropV933');if(back)return back;
@@ -3409,7 +3424,7 @@
       body.innerHTML=`<div class="market-owner-stats-v933"><div class="market-owner-stat-v933"><small>Vues</small><strong>${escapeHtml(compactListingViews(offer.viewsCount||offer.listing_views_count||0))}</strong></div><div class="market-owner-stat-v933"><small>Statut</small><strong>${escapeHtml(ownerListingStatusLabelV933(offer))}</strong></div></div><div class="market-owner-actions-v933"><button type="button" data-owner-back-v933>Retour à la gestion</button></div>`;
       body.querySelector('[data-owner-back-v933]').onclick=()=>openOwnerListingMenuV933(offer);back.classList.add('show');
     }
-    function openOwnerListingMenuV933(offer={}){
+    function renderOwnerListingMenuV1029(offer={}){
       if(!isOwnListingV933(offer)){toast('Cette annonce ne t’appartient pas.');return false}
       const back=ensureOwnerListingSheetV933(),body=back.querySelector('#marketOwnerSheetBodyV933');back.querySelector('#marketOwnerSheetTitleV933').textContent='Gérer mon annonce';
       const paused=listingPausedV933(offer);
@@ -3431,6 +3446,17 @@
         if(action==='delete'){if(!confirm('Supprimer cette annonce ? Elle sera retirée mais conservée de façon récupérable.'))return;button.disabled=true;try{await mutateOwnListingV933(offer,'delete')}catch(_e){}finally{button.disabled=false}}
       });
       back.classList.add('show');return true
+    }
+    function openOwnerListingMenuV933(offer={}){
+      if(!renderOwnerListingMenuV1029(offer))return false;
+      const pendingBack=document.querySelector('#marketOwnerSheetBackdropV933');
+      const pendingButton=pendingBack?.querySelector('[data-owner-action-v933="availability"]');
+      if(pendingButton){pendingButton.disabled=true;const label=pendingButton.querySelector('.market-owner-action-label-v934');if(label)label.textContent='Vérification…'}
+      refreshOwnerListingAvailabilityV1029(offer).then(()=>{
+        const back=document.querySelector('#marketOwnerSheetBackdropV933');
+        if(back?.classList.contains('show'))renderOwnerListingMenuV1029(offer);
+      });
+      return true
     }
     function bindDetailActionsV933(offer={}){
       const contact=document.querySelector('#contactSeller');if(contact)contact.onclick=()=>{closeModal('detailModal');openHappyadMessage(offer)};

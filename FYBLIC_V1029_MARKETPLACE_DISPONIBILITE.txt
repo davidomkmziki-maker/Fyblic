@@ -1,0 +1,18 @@
+FYBLIC V1029 — CORRECTION DU LIBELLE DE DISPONIBILITE
+
+Correction appliquee :
+- Le menu proprietaire relit maintenant dans Supabase le statut reel de l'annonce.
+- Une annonce deja indisponible affiche « Remettre disponible » apres retour dans Marketplace.
+- Une annonce active affiche « Rendre indisponible ».
+- Le bouton est bloque pendant la courte verification afin d'eviter une action inverse basee sur un ancien etat local.
+- Les collections locales et le detail ouvert sont synchronises avec le statut relu.
+
+Test exact :
+1. Ouvrir sa propre annonce Marketplace.
+2. Choisir « Rendre indisponible ».
+3. Verifier que l'annonce disparait de l'accueil.
+4. Quitter puis revenir dans Marketplace.
+5. Ouvrir de nouveau le menu de l'annonce : il doit afficher « Remettre disponible ».
+6. Appuyer sur « Remettre disponible » : l'annonce doit redevenir active et le menu doit afficher « Rendre indisponible ».
+
+Aucun changement SQL/RLS n'est requis pour cette correction.

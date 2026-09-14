@@ -56,7 +56,7 @@ exports.handler=async function(event){
   row=await loadPost(postId,420);if(row){type=isVideoRow(row,type)?'video':'photo';source=mediaCandidate(row,type);}
   const publicationTitle=sharePublicationTitle(row);
   const rev=parsed.rev||'r19';
-  const image=origin+'/share-image/'+encodeURIComponent(postId)+'/r19?type='+encodeURIComponent(type)+(source?'&image='+encodeURIComponent(source):'');
+  const image=origin+'/share-image/'+encodeURIComponent(postId)+'/r20?type='+encodeURIComponent(type);
   const target=directTarget(origin,postId,type),canonical=origin+'/s/'+(type==='video'?'v':'p')+'/'+encodeURIComponent(postId)+'/'+encodeURIComponent(rev);
   const logo=origin+'/icons/happyad-share-logo-black-circle-v893.png';
   const structured=JSON.stringify({'@context':'https://schema.org','@type':'SocialMediaPosting','headline':publicationTitle,'publisher':{'@type':'Organization','name':'Fyblic','logo':{'@type':'ImageObject','url':logo}},'image':[image],'url':canonical}).replace(/</g,'\u003c');

@@ -9702,7 +9702,7 @@
         const sb = getClient();
         if(missing.length && sb && sb.from){
           try{
-            const result = await sb.from('profiles').select('*').in('user_id',missing);
+            const result = await sb.from('happyad_profiles_public_v1').select('*').in('user_id',missing);
             if(!result.error) (result.data || []).forEach(row => absorb(row,row && row.user_id));
           }catch(_e){}
         }
@@ -10337,7 +10337,7 @@
           if(Object.keys(local).length){ profileMap.set(id,local); return local; }
           return null;
         }
-        const result = await sb.from('profiles').select('*').eq('id', id).maybeSingle();
+        const result = await sb.from('happyad_profiles_public_v1').select('*').eq('id', id).maybeSingle();
         if(result.error){
           if(Object.keys(local).length){ profileMap.set(id,local); return local; }
           throw new Error(clean(result.error.message) || 'Profil introuvable.');
@@ -10367,7 +10367,7 @@
         if(requested.length){
           const sb = getClient();
           if(sb && sb.from){
-            const result = await sb.from('profiles').select('*').in('id', requested);
+            const result = await sb.from('happyad_profiles_public_v1').select('*').in('id', requested);
             if(!result.error){
               const rows = result.data || [];
               const avatarMaster = window.HappyProfileAvatarMasterV855R32 || window.HappyProfileAvatarMaster;
@@ -10598,7 +10598,7 @@
         if(!sb || !sb.from) throw new Error('Connexion Supabase indisponible.');
         for(let offset = 0; offset < ids.length; offset += 80){
           const chunk = ids.slice(offset,offset + 80);
-          const result = await sb.from('profiles').select('*').in('id',chunk);
+          const result = await sb.from('happyad_profiles_public_v1').select('*').in('id',chunk);
           if(result.error) throw new Error(clean(result.error.message) || 'Profils indisponibles.');
           const rows = result.data || [];
           const avatarMaster = window.HappyProfileAvatarMasterV855R32 || window.HappyProfileAvatarMaster;

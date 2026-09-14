@@ -79,7 +79,7 @@
         local.id=local.user_id=local.uid=authUser.id;
         if(!local.name||local.name==='Utilisateur Fyblic')local.name=clean(authUser.user_metadata&&first(authUser.user_metadata,['full_name','name','display_name'],authUser.email||'Utilisateur Fyblic'));
         try{
-          var profile=await client.from('profiles').select('*').eq('id',authUser.id).maybeSingle();
+          var profile=await client.from('happyad_profiles_public_v1').select('*').eq('id',authUser.id).maybeSingle();
           if(profile&&!profile.error&&profile.data){
             var p=profile.data;
             var master=avatarMaster();if(master&&master.primeFromProfile)master.primeFromProfile(p,{source:'chat-current-profile-v855r32'});
@@ -458,7 +458,7 @@
     var client=supabaseClient();
     if(client){
       try{
-        var response=await client.from('profiles').select('id,full_name,display_name,name,username,avatar_url,avatar,badge,user_badge').eq('id',uid).maybeSingle();
+        var response=await client.from('happyad_profiles_public_v1').select('id,full_name,display_name,name,username,avatar_url,avatar,badge,user_badge').eq('id',uid).maybeSingle();
         if(response&&!response.error&&response.data){
           var p=response.data;
           var master=avatarMaster();if(master&&master.primeFromProfile)master.primeFromProfile(p,{source:'chat-message-target-v855r32'});

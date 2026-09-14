@@ -373,7 +373,7 @@
   }
   async function fetchProfile(owner,seedProfile){
     var me=readUser();if(owner&&owner===currentUid())return {id:owner,full_name:clean(me.name||me.full_name),username:clean(me.handle||me.username).replace(/^@+/,''),avatar_url:clean(me.avatar||me.avatar_url),badge:clean(me.badge||me.user_badge||me.badge_type||me.verification_badge||me.verified_badge||me.profile_badge)};
-    var c=sb();if(c&&owner){try{var q=await c.from('profiles').select('*').eq('id',owner).maybeSingle();if(q&&!q.error&&q.data)return q.data}catch(_e){}}
+    var c=sb();if(c&&owner){try{var q=await c.from('happyad_profiles_public_v1').select('*').eq('id',owner).maybeSingle();if(q&&!q.error&&q.data)return q.data}catch(_e){}}
     return seedProfile||{};
   }
   function exactStoryExpiredV735(row){
@@ -1276,7 +1276,7 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
       likes.forEach(function(v){touch(v.user_id||v.actor_id||v.viewer_id,'like',v.updated_at||v.created_at)});
       replies.forEach(function(v){touch(v.sender_id||v.user_id,'reply',v.created_at)});
       var ids=Object.keys(actions);if(!ids.length){list.innerHTML='<div class="haSamEmpty">Aucune vue pour le moment.</div>';return}
-      var pr=await c.from('profiles').select('*').in('id',ids),profiles=pr.data||[],map={};profiles.forEach(function(p){map[clean(p.id||p.user_id||p.uid)]=p});ids.sort(function(a,b){return actions[b].last-actions[a].last});
+      var pr=await c.from('happyad_profiles_public_v1').select('*').in('id',ids),profiles=pr.data||[],map={};profiles.forEach(function(p){map[clean(p.id||p.user_id||p.uid)]=p});ids.sort(function(a,b){return actions[b].last-actions[a].last});
       list.innerHTML=ids.map(function(uid){var p=map[uid]||{},a=actions[uid],name=clean(p.full_name||p.display_name||p.name||p.username)||'Utilisateur Fyblic',av=clean(p.avatar_url||p.avatar),tags='<span class="haSamAction">Vue</span>'+(a.like?'<span class="haSamAction like">♥ Aimé</span>':'')+(a.reply?'<span class="haSamAction reply">↩ Répondu</span>':'');return '<div class="haSamRow"><div class="haSamAv">'+(av?'<img src="'+esc(av)+'" alt="">':'<span class="happyadDefaultProfileAvatarV989" aria-hidden="true"></span>')+'</div><div class="haSamCopy"><div class="haSamNameLine"><b>'+esc(name)+'</b>'+badgeHtml(p.badge||p.user_badge)+'</div><div class="haSamActions">'+tags+'</div></div></div>'}).join('');
     }catch(_e){list.innerHTML='<div class="haSamEmpty">Impossible de charger les vues.</div>'}
   }
@@ -1545,7 +1545,7 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
       var cached=null,keys=['HAPPYAD_AUTHOR_PROFILE_CACHE_V1','HAPPYAD_PROFILE_CACHE_V1'];
       for(var i=0;i<keys.length&&!cached;i++){try{var raw=JSON.parse(localStorage.getItem(keys[i])||'null');if(raw&&typeof raw==='object')cached=raw[uid]||null}catch(_e){}}
       var badge=clean(cached&&(cached.badge||cached.user_badge||cached.profile_badge||cached.badge_type||cached.verified_badge));
-      if(!badge){var c=sb();if(c){var q=await c.from('profiles').select('*').eq('id',uid).maybeSingle();if(q&&!q.error&&q.data)badge=clean(q.data.badge||q.data.user_badge||q.data.profile_badge||q.data.badge_type||q.data.verified_badge)}}
+      if(!badge){var c=sb();if(c){var q=await c.from('happyad_profiles_public_v1').select('*').eq('id',uid).maybeSingle();if(q&&!q.error&&q.data)badge=clean(q.data.badge||q.data.user_badge||q.data.profile_badge||q.data.badge_type||q.data.verified_badge)}}
       if(badge&&slot.isConnected)slot.innerHTML=badgeHtml(badge)
     }catch(_e){}
   }
@@ -1768,7 +1768,7 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
         if(!rows.length)return [];
         var ids=[];rows.forEach(function(r){var id=ownerOf(r);if(id&&ids.indexOf(id)<0)ids.push(id)});
         var profiles={};
-        if(ids.length){try{var pr=await c.from('profiles').select('id,full_name,username,avatar_url,badge').in('id',ids);if(pr&&!pr.error)(pr.data||[]).forEach(function(x){profiles[clean(x.id)]=x})}catch(_e){}}
+        if(ids.length){try{var pr=await c.from('happyad_profiles_public_v1').select('id,full_name,username,avatar_url,badge').in('id',ids);if(pr&&!pr.error)(pr.data||[]).forEach(function(x){profiles[clean(x.id)]=x})}catch(_e){}}
         var remoteSeen={};
         var viewer=currentUid(),storyIds=rows.map(storyId).filter(Boolean);
         if(viewer&&storyIds.length){try{var vr=await c.from('happyad_story_views').select('story_id').eq('viewer_id',viewer).in('story_id',storyIds);if(vr&&!vr.error)(vr.data||[]).forEach(function(x){remoteSeen[clean(x.story_id)]=1})}catch(_e){}}
@@ -1834,7 +1834,7 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
         var profiles={},remoteSeen={},viewer=currentUid(),storyIds=rows.map(storyId).filter(Boolean);
         /* V936 : profils et état vu partent en parallèle. Le lot Story n'attend plus
            deux allers-retours successifs avant sa réconciliation canonique. */
-        var profileReqV936=ids.length?c.from('profiles').select('id,full_name,username,avatar_url,badge').in('id',ids):Promise.resolve({data:[],error:null});
+        var profileReqV936=ids.length?c.from('happyad_profiles_public_v1').select('id,full_name,username,avatar_url,badge').in('id',ids):Promise.resolve({data:[],error:null});
         var seenReqV936=(viewer&&storyIds.length)?c.from('happyad_story_views').select('story_id').eq('viewer_id',viewer).in('story_id',storyIds):Promise.resolve({data:[],error:null});
         try{
           var hydrateV936=await Promise.all([profileReqV936,seenReqV936]);

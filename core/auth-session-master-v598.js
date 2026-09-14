@@ -226,7 +226,7 @@
     var c=client();if(!c||!c.from||!user||!isUuid(user.id))return null;
     var profile=null, confirmedMissing=false;
     try{
-      var q=await c.from('profiles').select('*').eq('id',user.id).maybeSingle();
+      var q=await c.from('happyad_profiles_public_v1').select('*').eq('id',user.id).maybeSingle();
       if(q&&q.error){console.warn('Fyblic V741 profile read refused; local identity kept',q.error);return null;}
       if(q&&q.data)profile=q.data;else confirmedMissing=true;
     }catch(_e){console.warn('Fyblic V741 profile read failed; no automatic overwrite',_e);return null;}
@@ -241,13 +241,13 @@
       full_name:firstV741(seed.full_name,seed.name,meta.full_name,meta.name,base)||'Utilisateur Fyblic',
       username:firstV741(seed.username,seed.handle,meta.username,meta.handle,base).replace(/^@+/,'').replace(/\s+/g,'').toLowerCase()||('user_'+Date.now()),
       avatar_url:firstV741(seed.avatar_url,seed.avatar,meta.avatar_url,meta.picture),
-      bio:firstV741(seed.bio,meta.bio),type:firstV741(seed.type,meta.type,'personal'),role:firstV741(seed.role,'user'),badge:firstV741(seed.badge,'aucun')
+      bio:firstV741(seed.bio,meta.bio),type:firstV741(seed.type,meta.type,'personal')
     };
     try{
-      var ins=await c.from('profiles').insert(payload).select('*').maybeSingle();
+      var ins=await c.from('profiles').insert(payload).select('id,user_id,uid,auth_id,username,full_name,avatar_url,bio,country,created_at,badge,type,updated_at,followers,following,verification_status,avatar_updated_at,avatar_revision').maybeSingle();
       if(ins&&!ins.error&&ins.data)return ins.data;
       if(ins&&ins.error && /duplicate|unique|already exists|23505/i.test(String(ins.error.message||ins.error.code||''))){
-        var again=await c.from('profiles').select('*').eq('id',user.id).maybeSingle();
+        var again=await c.from('happyad_profiles_public_v1').select('*').eq('id',user.id).maybeSingle();
         if(again&&!again.error&&again.data)return again.data;
       }
       if(ins&&ins.error)console.warn('Fyblic V741 profile create skipped',ins.error);
