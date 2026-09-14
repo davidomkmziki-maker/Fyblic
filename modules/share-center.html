@@ -12,7 +12,7 @@
 <script src="../core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical"></script>
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
-<script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
+<script src="../core/profile-avatar-master-v855r32.js?v=1031-storage-security"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Partager — Fyblic</title>
@@ -547,7 +547,7 @@
   function prewarmDirectory(attempt){attempt=Number(attempt)||0;getSession().then(()=>{readDirectoryCache(authUser.id);if(directoryProfiles.length)renderDirectory();return ensureDirectory(false);}).catch(()=>{if(attempt<3)setTimeout(()=>prewarmDirectory(attempt+1),500*(attempt+1));});}
   setPermission('pending');
   try{if('requestIdleCallback' in window)requestIdleCallback(()=>prewarmDirectory(0),{timeout:650});else setTimeout(()=>prewarmDirectory(0),160);}catch(_e){setTimeout(()=>prewarmDirectory(0),160);}
-  postParent('HAPPYAD_SHARE_CENTER_READY',{version:'V913',at:Date.now()});
+  postParent('HAPPYAD_SHARE_CENTER_READY',{version:'V1041_FIRST_OPEN_READY',at:Date.now()});
 })();
 </script>
 
@@ -557,7 +557,7 @@
 <script src="../core/frame-first-render-v622.js?v=622"></script>
 
 <!-- Fyblic V997 GLOBAL COHERENCE -->
-<link rel="stylesheet" href="../core/happyad-global-coherence-v997.css?v=1023-system-surface-unified">
-<script src="../core/happyad-global-coherence-v997.js?v=1000-global-coherence-no-story-overlay"></script>
+<link rel="stylesheet" href="../core/happyad-global-coherence-v997.css?v=1025-search-suggestion-story">
+<script src="../core/happyad-global-coherence-v997.js?v=1025-search-suggestion-story"></script>
 </body>
 </html>

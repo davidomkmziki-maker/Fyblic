@@ -156,7 +156,7 @@
     if(ui||!supports()||Notification.permission!=='granted'||safeGet(TEST_DONE_KEY)==='1')return;
     ensureStyle();
     var box=document.createElement('div');box.id='happyadPushPromptV38E1';
-    box.innerHTML='<img src="./icons/fyblic-pwa-icon-v1024-96.png" alt="Fyblic"><div class="haPushText"><b>Tester hors application</b><span>Touchez Tester, puis fermez Fyblic et Chrome. La notification doit arriver dans 12 secondes.</span></div><div class="haPushActions"><button class="haPushEnable" type="button">Tester</button><button class="haPushClose" type="button" aria-label="Fermer">×</button></div>';
+    box.innerHTML='<img src="./icons/fyblic-app-icon-v1039-96.png" alt="Fyblic"><div class="haPushText"><b>Tester hors application</b><span>Touchez Tester, puis fermez Fyblic et Chrome. La notification doit arriver dans 12 secondes.</span></div><div class="haPushActions"><button class="haPushEnable" type="button">Tester</button><button class="haPushClose" type="button" aria-label="Fermer">×</button></div>';
     box.querySelector('.haPushClose').addEventListener('click',function(){hidePrompt();});
     box.querySelector('.haPushEnable').addEventListener('click',function(){
       var btn=this;btn.disabled=true;btn.textContent='Préparation…';
@@ -170,7 +170,7 @@
     ensureStyle();
     var denied=Notification.permission==='denied';
     var box=document.createElement('div');box.id='happyadPushPromptV38E1';
-    box.innerHTML='<img src="./icons/fyblic-pwa-icon-v1024-96.png" alt="Fyblic"><div class="haPushText"><b>'+(denied?'Réactiver les notifications':'Activer les notifications')+'</b><span>'+(denied?'Autorisez Fyblic dans les paramètres du site ou du téléphone.':'Recevez vos messages même lorsque Fyblic est fermé.')+'</span></div><div class="haPushActions"><button class="haPushEnable" type="button">'+(denied?'Instructions':'Activer')+'</button><button class="haPushClose" type="button" aria-label="Plus tard">×</button></div>';
+    box.innerHTML='<img src="./icons/fyblic-app-icon-v1039-96.png" alt="Fyblic"><div class="haPushText"><b>'+(denied?'Réactiver les notifications':'Activer les notifications')+'</b><span>'+(denied?'Autorisez Fyblic dans les paramètres du site ou du téléphone.':'Recevez vos messages même lorsque Fyblic est fermé.')+'</span></div><div class="haPushActions"><button class="haPushEnable" type="button">'+(denied?'Instructions':'Activer')+'</button><button class="haPushClose" type="button" aria-label="Plus tard">×</button></div>';
     box.querySelector('.haPushClose').addEventListener('click',function(){safeSet(promptKey(uid),now());hidePrompt();schedulePromptReminder(uid);});
     box.querySelector('.haPushEnable').addEventListener('click',function(){
       if(denied){safeSet(promptKey(uid),now());hidePrompt();schedulePromptReminder(uid);toast('Dans les paramètres du navigateur, ouvrez Autorisations puis activez Notifications pour Fyblic.');return;}

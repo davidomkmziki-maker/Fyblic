@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1031-storage-security-20260914';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1041-share-first-open-ready-20260915';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -13,17 +13,22 @@ var HAPPYAD_VAPID_PUBLIC_KEY = 'BA3UgDp8-6VYN6nZgSNX14LeZVLK6FesJgLXVytEKkKgplK_
 var HAPPYAD_APP_SHELL = [
   './',
   './index.html',
-  './index.html?v=v1031-storage-security',
+  './index.html?v=v1041-share-first-open-ready',
   './manifest.webmanifest',
   './core/fyblic-system-theme-v1022.css?v=1022-world-theme',
-  './icons/fyblic-logo-exact-v1021.png',
-  './icons/fyblic-pwa-icon-v1024-192.png',
-  './icons/happyad-share-logo-free-v884.png',
-  './icons/happyad-share-logo-black-circle-v887.png',
-  './icons/happyad-share-logo-black-circle-v893.png',
-  './icons/fyblic-pwa-icon-v1024-512.png',
-  './icons/happyad-notification-badge-96.png',
-  './icons/happyad-home-wordmark-v1.svg',
+  './icons/fyblic-app-icon-v1039-96.png',
+  './icons/fyblic-app-icon-v1039-192.png',
+  './icons/fyblic-app-icon-v1039-512.png',
+  './core/share-master.js?v=1041-first-open-ready',
+  './modules/share-center.html?v=1041-first-open-ready',
+  './icons/share-apps/whatsapp.png?v=555',
+  './icons/share-apps/facebook.png',
+  './icons/share-apps/x.png',
+  './icons/share-apps/telegram.png',
+  './icons/share-apps/messages.png',
+  './icons/share-apps/gmail.png',
+  './icons/share-apps/copy.png',
+  './icons/share-apps/more.png',
   './icons/happyad-chat-sticker-v797-transparent.png',
   './core/chat-sticker-living-v791.css?v=799-smaller-mouth-only',
   './core/chat-sticker-living-v791.js?v=855r89-opening-stable',
@@ -90,9 +95,7 @@ var HAPPYAD_APP_SHELL = [
   './core/message-presence-app-master-v855r51.js?v=869-connection-phase2',
   './core/interaction-privacy-master-v855r52.js?v=972-p1-single-client',
   './core/post-options-master-v693.js?v=1031-storage-security',
-  './core/share-master.js?v=930-shared-video-single-open',
   './core/share-button-bridge.js?v=938-guest-share-gate',
-  './modules/share-center.html?v=1031-storage-security',
   './core/story-master-v699.js?v=1031-storage-security',
   './core/notification-master-v700.js?v=1031-storage-security',
   './core/auth-session-master-v598.js?v=1031-storage-security',
@@ -117,6 +120,7 @@ var HAPPYAD_APP_SHELL = [
   './core/message-assistance-shortcut-v738.js?v=757-audit-stable',
   './core/button-state-master-v604.css?v=604',
   './core/button-state-master-v604.js?v=604',
+  './core/frame-first-render-v622.js?v=622',
   './core/internal-return-fast-v611.js?v=611',
   './core/assistance-supabase-realtime-v750.js?v=851r12-ecriture-stable',
   './modules/my-profile.html?v=1001-profile-identity-scale',
@@ -281,8 +285,8 @@ function happyadPushPayload(event){
     type:'happyad_generic',
     title:'Fyblic',
     body:'Vous avez une nouvelle notification.',
-    icon:'./icons/fyblic-pwa-icon-v1024-192.png',
-    badge:'./icons/happyad-notification-badge-96.png',
+    icon:'./icons/fyblic-app-icon-v1039-192.png',
+    badge:'./icons/fyblic-app-icon-v1039-96.png',
     tag:'happyad-notification',
     url:'./index.html?source=push',
     sent_at:'',
@@ -508,7 +512,7 @@ function happyadAvatarCacheRequest(detail,url){
 }
 
 function happyadPrepareMessageAvatar(data,detail){
-  var logo=happyadNotificationAsset('./icons/fyblic-pwa-icon-v1024-192.png','./icons/fyblic-pwa-icon-v1024-192.png');
+  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1039-192.png','./icons/fyblic-app-icon-v1039-192.png');
   if(!detail || detail.type!=='happyad_message')return Promise.resolve({icon:happyadNotificationAsset(data.icon,logo)||logo,status:'not-message',reason:''});
   var exact=happyadNotificationAsset(detail.sender_avatar||data.sender_avatar,'');
   if(!exact){
@@ -541,8 +545,8 @@ function happyadPrepareMessageAvatar(data,detail){
 }
 
 function happyadNotificationOptions(data,detail,preparedIcon,withActions){
-  var logo=happyadNotificationAsset('./icons/fyblic-pwa-icon-v1024-192.png','./icons/fyblic-pwa-icon-v1024-192.png');
-  var badge=happyadNotificationAsset(data.badge||'./icons/happyad-notification-badge-96.png','./icons/happyad-notification-badge-96.png');
+  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1039-192.png','./icons/fyblic-app-icon-v1039-192.png');
+  var badge=happyadNotificationAsset(data.badge||'./icons/fyblic-app-icon-v1039-96.png','./icons/fyblic-app-icon-v1039-96.png');
   var icon=happyadNotificationAsset(preparedIcon,'')||happyadNotificationAsset(data.icon,logo)||logo;
   var options={
     body:String(data.body||'Vous avez une nouvelle notification.'),
@@ -574,7 +578,7 @@ function happyadAvatarDiagnostic(detail,reason,stage){
 
 function happyadShowNotification(data,detail){
   var title=String(data.title||'Fyblic');
-  var logo=happyadNotificationAsset('./icons/fyblic-pwa-icon-v1024-192.png','./icons/fyblic-pwa-icon-v1024-192.png');
+  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1039-192.png','./icons/fyblic-app-icon-v1039-192.png');
   return happyadPrepareMessageAvatar(data,detail).then(function(prepared){
     detail.sender_avatar_runtime_status=String(prepared.status||'');
     detail.sender_avatar_runtime_reason=String(prepared.reason||'');
