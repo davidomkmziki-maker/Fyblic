@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1043-brand-icon-20260915';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1045-brand-icon-20260915';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -13,13 +13,12 @@ var HAPPYAD_VAPID_PUBLIC_KEY = 'BA3UgDp8-6VYN6nZgSNX14LeZVLK6FesJgLXVytEKkKgplK_
 var HAPPYAD_APP_SHELL = [
   './',
   './index.html',
-  './index.html?v=v1043-brand-icon',
-  './manifest.webmanifest?v=1043-brand-unified',
+  './index.html?v=v1045-brand-icon',
+  './manifest.webmanifest?v=1045-brand-unified',
   './core/fyblic-system-theme-v1022.css?v=1022-world-theme',
-  './icons/fyblic-app-icon-v1043-96.png',
-  './icons/fyblic-app-icon-v1043-192.png',
-  './icons/fyblic-app-icon-v1043-512.png',
-  './icons/fyblic-brand-mark-v1043-84.png',
+  './icons/fyblic-app-icon-v1045-96.png',
+  './icons/fyblic-app-icon-v1045-192.png',
+  './icons/fyblic-app-icon-v1045-512.png',
   './core/share-master.js?v=1041-first-open-ready',
   './modules/share-center.html?v=1041-first-open-ready',
   './icons/share-apps/whatsapp.png?v=555',
@@ -286,8 +285,8 @@ function happyadPushPayload(event){
     type:'happyad_generic',
     title:'Fyblic',
     body:'Vous avez une nouvelle notification.',
-    icon:'./icons/fyblic-app-icon-v1043-192.png',
-    badge:'./icons/fyblic-app-icon-v1043-96.png',
+    icon:'./icons/fyblic-app-icon-v1045-192.png',
+    badge:'./icons/fyblic-app-icon-v1045-96.png',
     tag:'happyad-notification',
     url:'./index.html?source=push',
     sent_at:'',
@@ -513,7 +512,7 @@ function happyadAvatarCacheRequest(detail,url){
 }
 
 function happyadPrepareMessageAvatar(data,detail){
-  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1043-192.png','./icons/fyblic-app-icon-v1043-192.png');
+  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1045-192.png','./icons/fyblic-app-icon-v1045-192.png');
   if(!detail || detail.type!=='happyad_message')return Promise.resolve({icon:happyadNotificationAsset(data.icon,logo)||logo,status:'not-message',reason:''});
   var exact=happyadNotificationAsset(detail.sender_avatar||data.sender_avatar,'');
   if(!exact){
@@ -546,8 +545,8 @@ function happyadPrepareMessageAvatar(data,detail){
 }
 
 function happyadNotificationOptions(data,detail,preparedIcon,withActions){
-  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1043-192.png','./icons/fyblic-app-icon-v1043-192.png');
-  var badge=happyadNotificationAsset(data.badge||'./icons/fyblic-app-icon-v1043-96.png','./icons/fyblic-app-icon-v1043-96.png');
+  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1045-192.png','./icons/fyblic-app-icon-v1045-192.png');
+  var badge=happyadNotificationAsset(data.badge||'./icons/fyblic-app-icon-v1045-96.png','./icons/fyblic-app-icon-v1045-96.png');
   var icon=happyadNotificationAsset(preparedIcon,'')||happyadNotificationAsset(data.icon,logo)||logo;
   var options={
     body:String(data.body||'Vous avez une nouvelle notification.'),
@@ -579,7 +578,7 @@ function happyadAvatarDiagnostic(detail,reason,stage){
 
 function happyadShowNotification(data,detail){
   var title=String(data.title||'Fyblic');
-  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1043-192.png','./icons/fyblic-app-icon-v1043-192.png');
+  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1045-192.png','./icons/fyblic-app-icon-v1045-192.png');
   return happyadPrepareMessageAvatar(data,detail).then(function(prepared){
     detail.sender_avatar_runtime_status=String(prepared.status||'');
     detail.sender_avatar_runtime_reason=String(prepared.reason||'');
