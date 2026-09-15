@@ -1,9 +1,0 @@
-FYBLIC V1016 — TESTS RECHERCHE
-
-1. Ouvrir Recherche : vérifier une seule ligne avec Rechercher et X.
-2. Faire défiler Découvrir : neuf anciennes publications sont ajoutées près
-   de la fin du contenu, sans toucher aux publications déjà visibles.
-3. Toucher le champ vide : Récentes et Suggestions apparaissent.
-4. Toucher X : retour à Découvrir sans fermer la Recherche.
-5. Toucher X une seconde fois : fermeture et retour à l’Accueil.
-6. Saisir une recherche puis toucher X : retour à Découvrir au premier geste.

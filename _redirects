@@ -1,8 +1,0 @@
-/s/v/:post/:rev  /.netlify/functions/happyad-share-preview?post=:post&type=video&v=:rev  200!
-/s/p/:post/:rev  /.netlify/functions/happyad-share-preview?post=:post&type=photo&v=:rev  200!
-/s/v/:post  /.netlify/functions/happyad-share-preview?post=:post&type=video  200!
-/s/p/:post  /.netlify/functions/happyad-share-preview?post=:post&type=photo  200!
-/s/:post/:rev  /.netlify/functions/happyad-share-preview?post=:post&v=:rev  200!
-/s/:post  /.netlify/functions/happyad-share-preview?post=:post  200!
-/share-image/:post/:version  /.netlify/functions/happyad-share-image?post=:post&v=:version  200!
-/share-image/:post  /.netlify/functions/happyad-share-image?post=:post  200!
