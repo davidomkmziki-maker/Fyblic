@@ -57,7 +57,7 @@ exports.handler=async function(event){
   const rev=parsed.rev||'r19';
   const image=origin+'/share-image/'+encodeURIComponent(postId)+'/r20?type='+encodeURIComponent(type);
   const target=directTarget(origin,postId,type),canonical=origin+'/s/'+(type==='video'?'v':'p')+'/'+encodeURIComponent(postId)+'/'+encodeURIComponent(rev);
-  const logo=origin+'/icons/fyblic-app-icon-v1042-512.png';
+  const logo=origin+'/icons/fyblic-app-icon-v1043-512.png';
   const structured=JSON.stringify({'@context':'https://schema.org','@type':'SocialMediaPosting','headline':publicationTitle,'publisher':{'@type':'Organization','name':'Fyblic','logo':{'@type':'ImageObject','url':logo}},'image':[image],'url':canonical}).replace(/</g,'\u003c');
   const html='<!doctype html><html lang="fr"><head><meta charset="utf-8">'+
     '<meta name="viewport" content="width=device-width,initial-scale=1"><title>Fyblic</title><meta name="description" content="'+esc(publicationTitle)+'">'+
