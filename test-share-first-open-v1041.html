@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><title>Test partage froid V1041</title></head>
+<body>
+  <button id="openShare" type="button">Partager</button>
+  <script src="core/share-master.js?v=1041-first-open-ready"></script>
+  <script>
+    document.getElementById('openShare').addEventListener('click', function(){
+      window.HappyadShareMaster.open({
+        id:'11111111-1111-4111-8111-111111111111',
+        media_type:'photo',
+        title:'Publication test',
+        media_url:'https://example.invalid/test.jpg'
+      }, window);
+    });
+  </script>
+</body>
+</html>

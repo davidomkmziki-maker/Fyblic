@@ -1,0 +1,15 @@
+FYBLIC V1033 - TEST EXACT
+
+1. Deployer le ZIP.
+2. Ouvrir une publication photo puis utiliser Partager.
+3. Ouvrir le lien partage dans un navigateur ou une conversation WhatsApp.
+4. Repeter avec une publication video possedant une miniature.
+5. Verifier que le lien ouvre la bonne publication dans Fyblic.
+6. Verifier que l'apercu affiche l'image ou la miniature avec le logo Fyblic.
+7. Tester aussi une ancienne publication. Si son ancien media externe n'est plus
+   dans happyad-media, une carte Fyblic neutre doit apparaitre sans erreur.
+
+RESULTAT ATTENDU
+- Le partage photo et video continue normalement.
+- Aucun ecran de navigation, Assistance, Marketplace ou retour n'est modifie.
+- Aucun SQL n'est necessaire.

@@ -1,0 +1,11 @@
+HAPPYAD V988R6 — PLAY + AVATAR GLOBAL
+
+Base conservée : V988R5.
+
+1. Bouton lecture central des cartes : le triangle noir est abaissé de 1,5 px supplémentaire (3 px au total vers le bas) tout en gardant le léger décalage horizontal optique. Le cercle, sa taille et la zone de clic ne changent pas.
+2. Avatar sans photo : le fallback blanc/gris est désormais forcé au niveau inline !important lorsqu’il est actif. Cela empêche les backgrounds propres aux cartes, fullscreen ou centrale vidéo de masquer l’icône.
+3. Couverture étendue aux classes d’avatar utilisées par cartes, fullscreen photo, centrale vidéo, commentaires, story/radar, recherche, messages, notifications, partage et profils.
+4. Dès qu’une vraie image valide charge, les styles fallback inline sont retirés et l’image réelle reprend exactement sa place.
+5. Cache-busting + Service Worker passés à V988R6 pour éviter de conserver V988R5 après déploiement.
+
+Aucune image générée ou ajoutée. Aucun changement métier, Supabase, navigation, publication, compteur ou média.

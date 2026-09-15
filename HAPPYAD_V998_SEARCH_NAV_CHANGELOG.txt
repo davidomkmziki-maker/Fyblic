@@ -1,0 +1,20 @@
+HAPPYAD V998 — RECHERCHE COMPACTE + NAVIGATION EXCLUSIVE
+
+1. Recherche
+- Le placeholder de la barre devient simplement : Recherche.
+- Avatar à gauche, nom + badge + @username immédiatement à droite.
+- La ligne profil est plus compacte et n'empile plus avatar puis nom verticalement.
+- Le bouton Voir reste à droite.
+
+2. Story dans Recherche
+- Aucun contour Story si aucune Story active.
+- Story active non lue : contour multicolore plus épais et nettement visible.
+- Story active déjà lue : même épaisseur, contour gris.
+- Le clic avatar Story reste distinct du clic profil.
+
+3. Menu principal
+- Un clic Accueil / Vidéos / Publier / Messages / Profil coupe immédiatement la surface précédente.
+- L'ancienne iframe est mise en pause et retirée visuellement ; elle peut rester en cache uniquement pour la vitesse.
+- La Recherche parent est fermée avant le changement de page.
+- Pendant la préparation de Messages, l'ancienne page ne peut plus réapparaître derrière.
+- Les routes internes et le bouton Retour restent gérés par le routeur existant.

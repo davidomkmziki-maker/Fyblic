@@ -1,0 +1,18 @@
+HAPPYAD V988R12 — COMMENT @ POPUP SCROLL + VRAI BADGE HAPPYAD
+Date: 2026-08-31
+Base: HAPPYAD0_ACCUEIL_MATURE_V988R11
+
+Correction ciblée du popup @ dans les commentaires.
+
+1. Le badge affiché à côté d’un profil n’est plus un cercle ✓ artificiel : le popup réutilise le badge HAPPYAD canonique (happyBadgeMark / badgeMarkHtml) et sa vraie couleur quand profiles.badge est disponible.
+2. Le popup @ devient réellement scrollable au doigt : pointerdown ne sélectionne plus immédiatement un utilisateur.
+3. Un glissement vertical annule la sélection; seul un vrai tap sans déplacement sélectionne le profil.
+4. touch-action: pan-y et overscroll-behavior: contain gardent le scroll fluide dans la liste sans ouvrir un profil par erreur.
+5. Une barre « Rechercher un utilisateur » est intégrée directement en haut du popup et reste visible pendant le scroll.
+6. La recherche du popup filtre par nom et @username Supabase; la recherche en tapant après @ dans le commentaire reste aussi disponible.
+7. Les suggestions sont étendues jusqu’à 100 profils rendus, avec amis/abonnements prioritaires puis profils disponibles.
+8. La sélection insère toujours le vrai @username; le clic sur la mention publiée reste résolu par ProfileLink Master V992 vers le vrai profil visiteur.
+9. Les règles de confidentialité des mentions restent conservées.
+10. Service Worker renouvelé en V988R12 pour supprimer l’ancien cache V988R11.
+
+Aucun changement sur les cartes, Stories, annonces, double-tap Love, Messages, profils ou navigation générale.

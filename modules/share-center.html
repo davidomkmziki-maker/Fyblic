@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="fr" data-happyad-page="share">
+<head>
+<style id="happyad-profile-avatar-source-v995">
+/* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
+.avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
+.avatar>img,.commentAvatar>img,.commentAvatarSmall>img,.haCommentAvatar>img,.person-selector-avatar>img,.chat-avatar>img,.haProfileAvatar>img,.ha629Avatar>img,.ha629SharedPostAvatarV912>img,.haMentionAvatarV63>img,.haSearchAvatar>img,.happy-avatar>img,.hsvAvatar>img,.haV872Avatar>img,.haHomeFsAvatar>img,.hsvmAv>img,.haSamAv>img,#currentUserAvatar>img,#chatAvatar>img,#profileAvatar>img,#hsvAvatar>img{position:relative;z-index:1}
+#currentUserInitials{display:none!important}
+</style><script src="../core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry"></script>
+<script src="../core/overlay-scroll-master-v662.js?v=905-p1-single-overlay-master"></script>
+<script src="../core/auth-frame-gate-v596.js?v=938-guest-passive"></script>
+<script src="../core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical"></script>
+<script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
+<script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
+<script src="../core/profile-avatar-master-v855r32.js?v=1031-storage-security"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Partager — Fyblic</title>
+  <!-- Fyblic V925 — Ma story optimiste immédiate; partage normal + groupe conserve -->
+  <style>
+    :root{color-scheme:dark;--bg:#12151b;--surface:#181c23;--surface2:#20252e;--line:rgba(255,255,255,.075);--text:#f6f7f9;--muted:#969da8;--orange:#ff8500;--blue:#4d7cff;--safe-top:max(8px,env(safe-area-inset-top));--safe-bottom:max(10px,env(safe-area-inset-bottom));font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%;min-height:100%;background:var(--bg);color:var(--text);overscroll-behavior:none}button,input{font:inherit}button{color:inherit}.app{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+    .head{flex:0 0 48px;min-height:48px;padding:2px 14px;display:grid;grid-template-columns:38px 1fr 48px;align-items:center;background:var(--bg);border:0;touch-action:none;user-select:none;-webkit-user-select:none}.head h1{margin:0;text-align:center;font-size:1.02rem;line-height:1;font-weight:800;letter-spacing:-.01em}.round{width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.055);display:grid;place-items:center;cursor:pointer}.round:active{transform:scale(.94);background:rgba(255,255,255,.09)}.round svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}.count{font-size:.74rem;color:var(--muted);text-align:right;font-weight:750;font-variant-numeric:tabular-nums}
+    .scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:0 12px 14px;scrollbar-width:none;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;overflow-anchor:none}.scroll::-webkit-scrollbar{display:none}
+    .searchWrap{margin:0 -1px 8px;padding:5px 1px 7px;position:sticky;top:0;z-index:8;background:linear-gradient(180deg,var(--bg) 0%,var(--bg) 82%,rgba(18,21,27,0) 100%)}.searchWrap svg{position:absolute;left:14px;top:26px;transform:translateY(-50%);width:19px;height:19px;fill:none;stroke:#8f98a6;stroke-width:2}.search{width:100%;height:42px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:#1b2028;color:var(--text);padding:0 13px 0 42px;outline:none;font-size:.92rem}.search::placeholder{color:#8f96a1}.search:focus{border-color:rgba(94,125,255,.48);background:#1d222b;box-shadow:0 0 0 2px rgba(82,104,255,.08)}
+    .section{margin-top:8px}.contactsGrid,.searchResults{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 6px;padding:3px 0 14px}.person{min-width:0;border:0;background:transparent;padding:0 1px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;touch-action:manipulation}.person:active .avatar{transform:scale(.96)}.avatar{position:relative;width:56px;height:56px;min-width:56px;min-height:56px;max-width:56px;max-height:56px;border-radius:50%;background:#202735;border:1.5px solid rgba(255,255,255,.12);display:grid;place-items:center;overflow:visible;font-weight:850;line-height:1;isolation:isolate;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease}.avatar>img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:100%!important;margin:0!important;padding:0!important;display:block!important;object-fit:cover!important;object-position:center!important;border-radius:50%!important;clip-path:circle(50% at 50% 50%)!important;overflow:hidden!important;transform:translateZ(0);z-index:1}.person.selected .avatar{border-color:#6384ff;box-shadow:0 0 0 2px rgba(83,112,255,.25)}.check{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:#5779ff;border:2px solid var(--bg);display:none;place-items:center;font-size:12px;font-weight:950;z-index:3}.person.selected .check{display:grid}.nameRow{width:100%;min-width:0;display:flex;align-items:center;justify-content:center;gap:3px}.name{min-width:0;max-width:72px;font-size:.69rem;line-height:1.12;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e5e8ed}.nameBadge{position:relative;flex:0 0 auto;width:15px;height:15px;display:inline-block;vertical-align:-.18em;color:#fff;background:transparent;overflow:visible;font-size:0;line-height:1;clip-path:polygon(50% 0%,58% 12%,71% 6%,76% 20%,91% 22%,88% 38%,100% 50%,88% 62%,91% 78%,76% 80%,71% 94%,58% 88%,50% 100%,42% 88%,29% 94%,24% 80%,9% 78%,12% 62%,0% 50%,12% 38%,9% 22%,24% 20%,29% 6%,42% 12%);filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}.nameBadge::before{content:"";position:absolute;inset:0;clip-path:inherit;z-index:0}.nameBadge::after{content:"✓";position:absolute;top:50%;left:50%;transform:translate(-50%,-53%);color:#fff;font-size:9px;font-weight:1000;line-height:1;z-index:1}.nameBadge.blue::before,.nameBadge.bleu::before{background:linear-gradient(135deg,#6fd4ff,#38b6ff,#0090ff)}.nameBadge.violet::before,.nameBadge.purple::before{background:linear-gradient(135deg,#e9d5ff,#c084fc,#9333ea)}.nameBadge.yellow::before,.nameBadge.jaune::before{background:linear-gradient(135deg,#ffe27a,#ffb020,#ff7a00)}.nameBadge.is-image{display:inline-grid;place-items:center;clip-path:none;border-radius:50%;overflow:hidden}.nameBadge.is-image::before,.nameBadge.is-image::after{display:none}.nameBadge img{width:100%;height:100%;display:block;object-fit:contain;border-radius:inherit}.empty{color:var(--muted);font-size:.82rem;padding:18px 4px;text-align:center}.loading{color:var(--muted);padding:14px 2px;font-size:.82rem;text-align:center}.contactSkeleton{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 6px;padding:14px 0 12px}.contactSkeleton span{display:flex;flex-direction:column;align-items:center;gap:7px}.contactSkeleton i{display:block;background:rgba(255,255,255,.075)}.contactSkeleton i:first-child{width:54px;height:54px;border-radius:50%}.contactSkeleton i:last-child{width:48px;height:8px;border-radius:8px}.share-permission-pending .appBtn,.share-permission-pending .send,.share-permission-denied .appBtn,.share-permission-denied .send{opacity:.48}.share-permission-pending .appBtn,.share-permission-pending .send,.share-permission-denied .appBtn,.share-permission-denied .send{pointer-events:none}.permissionNote{display:none;margin:6px 2px 0;color:var(--muted);font-size:.74rem;text-align:center}.share-permission-pending .permissionNote,.share-permission-denied .permissionNote{display:block}
+    .sendBar{flex:0 0 auto;max-height:0;overflow:hidden;display:flex;align-items:center;padding:0 12px;border:0;background:var(--bg);opacity:0;transform:translateY(8px);transition:max-height .18s ease,padding .18s ease,opacity .14s ease,transform .18s ease}.has-selection .sendBar{max-height:60px;padding:7px 12px 6px;opacity:1;transform:translateY(0)}.send{width:100%;height:44px;border:0;border-radius:14px;background:#ff8500;color:#0d0d0e;font-weight:900;cursor:pointer;padding:0 18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.send:active{transform:scale(.99)}.send:disabled{opacity:.42;cursor:not-allowed}.status{display:none!important}
+    .external{flex:0 0 auto;border-top:1px solid var(--line);background:#0f1217;padding:8px 9px calc(7px + var(--safe-bottom))}.externalTitle{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.apps{display:flex;gap:5px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:0 1px}.apps::-webkit-scrollbar{display:none}.appBtn{flex:0 0 62px;width:62px;border:0;background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;touch-action:manipulation}.appBtn:active{transform:scale(.96)}.appIcon{flex:0 0 43px;width:43px;height:43px;aspect-ratio:1/1;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:transparent;box-shadow:none}.appIcon img{width:100%;height:100%;max-width:100%;max-height:100%;display:block;object-fit:contain;object-position:center;aspect-ratio:1/1;border-radius:13px;image-rendering:auto}.appBtn[data-app="gmail"] .appIcon{background:#fff}.appBtn[data-app="copy"] .appIcon,.appBtn[data-app="more"] .appIcon{background:#1c222c}.appBtn[data-app="story-happyad"] .appIcon{background:linear-gradient(145deg,#ff9b26,#ff7a00);color:#fff;border-radius:50%;box-shadow:0 5px 18px rgba(255,133,0,.22)}.appBtn[data-app="story-happyad"] .appIcon svg{width:25px;height:25px;display:block;fill:none;stroke:currentColor;stroke-width:2.05;stroke-linecap:round;stroke-linejoin:round}.appBtn[data-app="story-happyad"].is-busy{opacity:.55;pointer-events:none}.appBtn span:last-child{max-width:62px;font-size:.62rem;line-height:1.12;color:#d2d6dd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.story-share-mode .external{display:none!important}.story-share-mode .sendBar{padding-bottom:calc(7px + var(--safe-bottom))}
+    .toast{position:fixed;left:50%;bottom:calc(86px + var(--safe-bottom));transform:translate(-50%,16px);z-index:20;max-width:88%;padding:9px 13px;border-radius:12px;background:#273142;color:white;font-size:.8rem;opacity:0;pointer-events:none;transition:.18s}.has-selection .toast{bottom:calc(138px + var(--safe-bottom))}.story-share-mode .toast{bottom:calc(62px + var(--safe-bottom))}.toast.on{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:350px){.contactsGrid,.searchResults{gap:12px 4px}.avatar{width:51px;height:51px;min-width:51px;min-height:51px;max-width:51px;max-height:51px}.name{max-width:62px;font-size:.65rem}.appBtn{flex-basis:58px;width:58px}.appIcon{width:40px;height:40px;flex-basis:40px}}
+  </style>
+
+  <style id="happyadShareScrollNativeV906">
+    /* V906 — contacts: scroll vertical natif; aucune animation de layout pendant le défilement. */
+    .scroll{
+      scroll-behavior:auto!important;
+      overscroll-behavior-y:contain!important;
+      touch-action:pan-y!important;
+      -webkit-overflow-scrolling:touch!important;
+    }
+    .contactsGrid,.searchResults{overflow-anchor:none!important;}
+  </style>
+<meta name="theme-color" content="#080b10">
+<meta name="color-scheme" content="dark">
+<meta name="application-name" content="Fyblic">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fyblic">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="../core/fyblic-system-theme-v1022.css?v=1022-world-theme">
+</head>
+<body>
+<div class="app">
+  <header class="head">
+    <button class="round" id="closeBtn" type="button" aria-label="Fermer"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h1 id="shareTitle">Partager</h1>
+    <div class="count" id="selectedCount">0/20</div>
+  </header>
+  <main class="scroll">
+    <div class="searchWrap"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.2-4.2"/></svg><input class="search" id="searchInput" placeholder="Rechercher tous les utilisateurs" autocomplete="off"></div>
+    <div id="directory"><div class="contactSkeleton" aria-hidden="true"><span><i></i><i></i></span><span><i></i><i></i></span><span><i></i><i></i></span><span><i></i><i></i></span><span><i></i><i></i></span><span><i></i><i></i></span><span><i></i><i></i></span><span><i></i><i></i></span></div></div><div class="permissionNote" id="permissionNote">Vérification du partage…</div>
+  </main>
+  <div class="sendBar"><button class="send" id="sendBtn" disabled>Envoyer</button><div class="status" id="sendStatus">0 sélection</div></div>
+  <section class="external">
+    <div class="externalTitle">Partager avec une application</div>
+    <div class="apps">
+      <button class="appBtn" data-app="story-happyad"><span class="appIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"></rect><path d="M12 8v8M8 12h8"></path></svg></span><span>Ma story</span></button>
+      <button class="appBtn" data-app="whatsapp"><span class="appIcon"><img src="../icons/share-apps/whatsapp.png?v=555" alt="" width="128" height="128" loading="eager" decoding="async"></span><span>WhatsApp</span></button>
+      <button class="appBtn" data-app="facebook"><span class="appIcon"><img src="../icons/share-apps/facebook.png" alt="" width="128" height="128" loading="eager" decoding="async"></span><span>Facebook</span></button>
+      <button class="appBtn" data-app="x"><span class="appIcon"><img src="../icons/share-apps/x.png" alt="" width="128" height="128" loading="eager" decoding="async"></span><span>X</span></button>
+      <button class="appBtn" data-app="telegram"><span class="appIcon"><img src="../icons/share-apps/telegram.png" alt="" width="128" height="128" loading="eager" decoding="async"></span><span>Telegram</span></button>
+      <button class="appBtn" data-app="messages"><span class="appIcon"><img src="../icons/share-apps/messages.png" alt="" width="128" height="128" loading="eager" decoding="async"></span><span>Messages</span></button>
+      <button class="appBtn" data-app="gmail"><span class="appIcon"><img src="../icons/share-apps/gmail.png" alt="" width="128" height="128" loading="eager" decoding="async"></span><span>Gmail</span></button>
+      <button class="appBtn" data-app="copy"><span class="appIcon"><img src="../icons/share-apps/copy.png" alt="" width="128" height="128" loading="eager" decoding="async"></span><span>Copier le lien</span></button>
+      <button class="appBtn" data-app="more"><span class="appIcon"><img src="../icons/share-apps/more.png" alt="" width="128" height="128" loading="eager" decoding="async"></span><span>Plus…</span></button>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  'use strict';
+  const MAX_SELECTED=20;
+  const POST_MARKER='\u2063HAPPYAD_POST_V1\u2063';
+  const STORY_MARKER='\u2063HAPPYAD_STORY_V1\u2063';
+  let context={};
+  let authUser=null;
+  let selected=new Map();
+  let recent=[];
+  let blockedIds=new Set();
+  let following=[];
+  let followers=[];
+  let directoryProfiles=[];
+  let searchResults=[];
+  let searchTimer=0;
+  let searchToken=0;
+  let sending=false;
+  let storyAdding=false;
+  let permissionState='pending';
+  let sheetState={percent:68,atMax:false,atMin:false};
+  let suppressTapUntil=0;
+  let directoryLoaded=false;
+  let directoryLoadedAt=0;
+  let directoryLoading=null;
+  const DIRECTORY_CACHE_PREFIX='HAPPYAD_SHARE_DIRECTORY_V715_';
+  const DIRECTORY_FRESH_MS=45000;
+  const $=id=>document.getElementById(id);
+  const clean=v=>String(v==null?'':v).trim();
+  const isUuid=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(clean(v));
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function client(){try{if(parent&&parent!==window){if(typeof parent.happyadSb==='function')return parent.happyadSb();if(parent.happyadSupabase)return parent.happyadSupabase;if(parent.supabaseClient)return parent.supabaseClient;}}catch(_e){}return null;}
+  function avatarMaster(){return window.HappyProfileAvatarMasterV855R32||window.HappyProfileAvatarMaster||null;}
+  function canonicalAvatar(id,fallback){const m=avatarMaster(),uid=clean(id);if(m&&uid){const entry=m.getEntry&&m.getEntry(uid);if(entry&&entry.known)return clean(entry.url);if(m.resolve)m.resolve(uid).catch(()=>{});return '';}return clean(fallback);}
+  function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2200);}
+  function postParent(type,detail){try{parent.postMessage({type,detail:detail||{}},'*');}catch(_e){}}
+  async function rpc(name,variants){const c=client();if(!c||!c.rpc)throw new Error('Connexion Supabase indisponible.');let last=null;for(const payload of variants){const r=await c.rpc(name,payload);if(!r.error)return r.data;last=r.error;const m=clean(last&&last.message).toLowerCase();if(!(last&&last.code==='PGRST202')&&!m.includes('function')&&!m.includes('schema cache'))break;}throw new Error(clean(last&&(last.message||last.details))||('Échec de '+name));}
+  function rows(data){if(Array.isArray(data))return data;if(data&&Array.isArray(data.data))return data.data;if(data&&typeof data==='object')return [data];return [];}
+  function first(data){return rows(data)[0]||{};}
+  function profileName(p){return clean(p.full_name||p.display_name||p.name||p.username)||'Utilisateur Fyblic';}
+  function profileAvatar(p){return clean(p.avatar_url||p.avatar||p.photo_url);}
+  function profileBadgeUrl(p){const v=clean(p.badge_url||p.profile_badge_url||p.verified_badge_url||p.verification_badge_url||p.badge_image);return /^(?:data:image\/|blob:|https?:\/\/|\/|\.\/|\.\.\/)/i.test(v)?v:'';}
+  function profileBadge(p){const v=clean(p.badge||p.user_badge||p.badge_type||p.certification||p.blue_badge||p.verifyBadge||p.verify_badge||p.verifiedBadge||p.verified_badge||p.role_badge||p.profile_badge||p.admin_badge||p.badge_color);if(/^(|aucun|none|false|0|null|undefined)$/i.test(v))return '';if(/^(1|true)$/i.test(v))return 'blue';return v;}
+  function normalizeProfile(p){if(!p||!isUuid(p.id))return null;const id=clean(p.id);return {id:id,name:profileName(p),username:clean(p.username).replace(/^@+/,''),avatar:canonicalAvatar(id,profileAvatar(p)),badge:profileBadge(p),badgeUrl:profileBadgeUrl(p)};}
+  function badgeIsImage(v){return /^(?:data:image\/|blob:|https?:\/\/|\/|\.\/|\.\.\/)/i.test(clean(v));}
+  function badgeVariant(v){v=clean(v).toLowerCase();if(/violet|purple|creator/.test(v))return 'violet';if(/jaune|yellow|business|premium|seller/.test(v))return 'yellow';return 'blue';}
+  function badgeHtml(v,url){url=clean(url);v=clean(v);const image=url||(badgeIsImage(v)?v:'');if(image)return '<i class="nameBadge is-image" title="Badge Fyblic officiel"><img src="'+esc(image)+'" alt="" loading="lazy" decoding="async"></i>';if(!v)return '';return '<i class="nameBadge '+badgeVariant(v)+'" aria-label="Badge Fyblic officiel" data-happyad-badge="'+esc(v)+'"></i>';}
+
+  function uniqueIds(list){const out=[],seen=new Set();for(const id of list.map(clean)){if(!isUuid(id)||seen.has(id)||(authUser&&id===authUser.id))continue;seen.add(id);out.push(id);}return out;}
+  function skeletonHtml(){return '<div class="contactSkeleton" aria-hidden="true">'+Array(8).fill('<span><i></i><i></i></span>').join('')+'</div>';}
+  function setPermission(state){permissionState=/^(allowed|denied)$/.test(clean(state))?clean(state):'pending';document.body.classList.toggle('share-permission-pending',permissionState==='pending');document.body.classList.toggle('share-permission-denied',permissionState==='denied');const note=$('permissionNote');if(note)note.textContent=permissionState==='denied'?'Le partage est désactivé par le propriétaire.':'Vérification du partage…';updateSelection();}
+  function cacheKey(uid){return DIRECTORY_CACHE_PREFIX+clean(uid);}
+  function readDirectoryCache(uid){try{const raw=JSON.parse(localStorage.getItem(cacheKey(uid))||'null');if(!raw||raw.user_id!==uid||!Array.isArray(raw.recent)||!Array.isArray(raw.following)||!Array.isArray(raw.followers))return false;recent=raw.recent;following=raw.following;followers=raw.followers;directoryProfiles=recent.concat(following,followers);directoryLoadedAt=Number(raw.at)||0;if(directoryProfiles.length||raw.empty===true)renderDirectory();return true;}catch(_e){return false;}}
+  function writeDirectoryCache(uid){try{localStorage.setItem(cacheKey(uid),JSON.stringify({user_id:uid,at:Date.now(),empty:directoryProfiles.length===0,recent:recent.slice(0,120),following:following.slice(0,160),followers:followers.slice(0,160)}));}catch(_e){}}
+  async function getSession(){const c=client();if(!c||!c.auth)throw new Error('Session indisponible.');let u=null;try{const r=await c.auth.getSession();u=r&&r.data&&r.data.session&&r.data.session.user;}catch(_e){}if(!u){const r=await c.auth.getUser();u=r&&r.data&&r.data.user;}if(!u||!isUuid(u.id))throw new Error('Connectez-vous pour partager.');authUser=u;return u;}
+  async function fetchProfiles(ids){ids=uniqueIds(ids);const map=new Map();const c=client(),m=avatarMaster();for(let i=0;i<ids.length;i+=80){const part=ids.slice(i,i+80),r=await c.from('happyad_profiles_public_v1').select('*').in('id',part);if(r.error)throw r.error;if(m&&m.primeProfiles)m.primeProfiles(r.data||[],part,{source:'share-directory-v855r32',markMissing:true});(r.data||[]).forEach(p=>{const n=normalizeProfile(p);if(n)map.set(n.id,n);});}return map;}
+  async function loadDirectory(force){
+    if(directoryLoading)return directoryLoading;
+    if(!authUser)await getSession();
+    const me=authUser.id;
+    if(!directoryProfiles.length)readDirectoryCache(me);
+    if(!force&&directoryLoaded&&Date.now()-directoryLoadedAt<DIRECTORY_FRESH_MS){renderDirectory();return directoryProfiles;}
+    if(!directoryProfiles.length)$('directory').innerHTML=skeletonHtml();
+    directoryLoading=(async()=>{
+      try{
+        const c=client();
+        const [convData,followingRes,followersRes,blockedOut,blockedIn]=await Promise.all([
+          rpc('happyad_msg_list_conversations',[{p_limit:80,p_before_last_message_seq:null},{limit:80,before_last_message_seq:null},{}]).catch(()=>[]),
+          c.from('happyad_follows').select('creator_id,created_at').eq('follower_id',me).order('created_at',{ascending:false}).limit(200),
+          c.from('happyad_follows').select('follower_id,created_at').eq('creator_id',me).order('created_at',{ascending:false}).limit(200),
+          Promise.resolve(c.from('happyad_msg_user_blocks').select('blocked_id').eq('blocker_id',me)).catch(()=>({data:[]})),
+          Promise.resolve(c.from('happyad_msg_user_blocks').select('blocker_id').eq('blocked_id',me)).catch(()=>({data:[]}))
+        ]);
+        blockedIds=new Set();
+        (blockedOut&&blockedOut.data||[]).forEach(r=>blockedIds.add(clean(r.blocked_id)));
+        (blockedIn&&blockedIn.data||[]).forEach(r=>blockedIds.add(clean(r.blocker_id)));
+        const conversationIds=rows(convData).map(r=>clean(r.target_user_id||r.other_user_id||r.peer_user_id||r.recipient_id)).filter(id=>!blockedIds.has(id));
+        const followingIds=(followingRes&&followingRes.data||[]).map(r=>clean(r.creator_id)).filter(id=>!blockedIds.has(id));
+        const followerIds=(followersRes&&followersRes.data||[]).map(r=>clean(r.follower_id)).filter(id=>!blockedIds.has(id));
+        const followerSet=new Set(followerIds);
+        const friendIds=followingIds.filter(id=>followerSet.has(id));
+        const recentIds=friendIds.concat(conversationIds.filter(id=>!friendIds.includes(id)));
+        const all=uniqueIds(recentIds.concat(followingIds,followerIds));
+        const profiles=await fetchProfiles(all);
+        const used=new Set();
+        function build(ids){const out=[];for(const id of uniqueIds(ids)){if(used.has(id)||!profiles.has(id))continue;used.add(id);out.push(profiles.get(id));}return out;}
+        recent=build(recentIds);following=build(followingIds);followers=build(followerIds);
+        directoryProfiles=recent.concat(following,followers);directoryLoaded=true;directoryLoadedAt=Date.now();writeDirectoryCache(me);renderDirectory();return directoryProfiles;
+      }catch(error){
+        if(!directoryProfiles.length)$('directory').innerHTML='<div class="empty">Contacts indisponibles. Utilisez la recherche.</div>';
+        if(!directoryProfiles.length)toast(clean(error&&error.message)||'Chargement impossible.');
+        return directoryProfiles;
+      }finally{directoryLoading=null;}
+    })();
+    return directoryLoading;
+  }
+  async function ensureDirectory(force){
+    try{if(!authUser)await getSession();if(!directoryProfiles.length)readDirectoryCache(authUser.id);if(directoryProfiles.length)renderDirectory();return await loadDirectory(!!force);}catch(error){if(!directoryProfiles.length)$('directory').innerHTML='<div class="empty">Connectez-vous pour envoyer dans les inbox Fyblic.</div>';return [];}
+  }
+  function personHtml(p){const av=p.avatar?'<img src="'+esc(p.avatar)+'" alt="" loading="lazy" decoding="async">':'<span class="happyadDefaultProfileAvatarV989" aria-hidden="true"></span>';return '<button class="person'+(selected.has(p.id)?' selected':'')+'" type="button" data-person="'+esc(p.id)+'"><span class="avatar">'+av+'<i class="check">✓</i></span><span class="nameRow"><span class="name">'+esc(p.name)+'</span>'+badgeHtml(p.badge,p.badgeUrl)+'</span></button>';}
+  function renderDirectory(){const q=clean($('searchInput').value);const list=q?searchResults:directoryProfiles;if(!q&&!directoryLoaded&&!list.length){$('directory').innerHTML=skeletonHtml();return;}$('directory').innerHTML=list.length?'<section class="section"><div class="contactsGrid">'+list.map(personHtml).join('')+'</div></section>':'<div class="empty">'+(q?'Aucun utilisateur trouvé.':'Aucun contact disponible. Utilisez la recherche.')+'</div>';}
+  function syncSelectionDom(){
+    document.querySelectorAll('[data-person]').forEach(el=>el.classList.toggle('selected',selected.has(el.dataset.person)));
+  }
+  function updateSelection(){
+    const n=selected.size,btn=$('sendBtn');
+    document.body.classList.toggle('has-selection',n>0);
+    $('selectedCount').textContent=n+'/'+MAX_SELECTED;
+    $('sendStatus').textContent=n+(n>1?' sélections':' sélection');
+    if(btn){
+      if(sending)btn.textContent='Envoi…';
+      else if(n===1){const p=Array.from(selected.values())[0]||{};btn.textContent='Envoyer à '+(clean(p.name)||'cette personne');}
+      else if(n>1)btn.textContent='Envoyer à '+n+' personnes';
+      else btn.textContent='Envoyer';
+      btn.disabled=n<1||sending||permissionState!=='allowed';
+    }
+    /* V900 : ne plus reconstruire toute la grille (et toutes les images) à
+       chaque sélection. Seules les classes sélectionnées sont synchronisées. */
+    syncSelectionDom();
+  }
+  async function searchUsers(value,token){const needle=clean(value).replace(/^@+/,'');if(!needle){searchResults=[];renderDirectory();return;}try{const c=client(),pattern='%'+needle.replace(/[%_]/g,'')+'%';const [a,b]=await Promise.all([c.from('happyad_profiles_public_v1').select('*').ilike('full_name',pattern).limit(60),c.from('happyad_profiles_public_v1').select('*').ilike('username',pattern).limit(60)]);if(token!==searchToken)return;const sourceRows=(a.data||[]).concat(b.data||[]),m=avatarMaster();if(m&&m.primeProfiles)m.primeProfiles(sourceRows,sourceRows.map(p=>clean(p&&p.id)).filter(isUuid),{source:'share-search-v855r32'});const map=new Map();sourceRows.forEach(p=>{const n=normalizeProfile(p);if(n&&(!authUser||n.id!==authUser.id)&&!blockedIds.has(n.id))map.set(n.id,n);});searchResults=Array.from(map.values()).slice(0,80);renderDirectory();}catch(_e){if(token===searchToken){searchResults=[];renderDirectory();}}}
+  function scheduleSearch(){clearTimeout(searchTimer);const value=$('searchInput').value;searchToken++;const token=searchToken;if(!clean(value)){searchResults=[];renderDirectory();return;}$('directory').innerHTML='<div class="loading">Recherche…</div>';searchTimer=setTimeout(()=>searchUsers(value,token),240);}
+  function isStoryContext(){const p=context.post||context||{};const kind=clean(p.content_type||p.source_type||p.mode||p.category||p.type).toLowerCase();return kind==='story'||!!clean(p.story_id);}
+  function sharePayload(){
+    const p=context.post||context;
+    const story=isStoryContext();
+    const id=clean(story?(p.story_id||p.id):(p.id||p.post_id));
+    const type=/video|reel|clip/.test(clean(p.media_type||p.kind||p.type).toLowerCase())?'video':'photo';
+    const preview=clean(p.preview_url||p.thumbnail_url||p.thumbnailUrl||p.poster_url||p.posterUrl||p.cover_url||p.coverUrl||p.home_media_url||p.homeMediaUrl||p.media_url||p.mediaUrl||p.media_path||p.mediaPath);
+    if(story)return {v:1,content_type:'story',source_type:'story',story_id:id,id:id,owner_id:clean(p.owner_id||p.user_id||p.creator_id),user_id:clean(p.user_id||p.owner_id||p.creator_id),media_type:type,title:clean(p.title)||'Story Fyblic',description:clean(p.description||p.desc||p.caption).slice(0,280),media_url:preview,preview_url:preview,thumbnail_url:clean(p.thumbnail_url||p.poster_url||preview),poster_url:clean(p.poster_url||p.thumbnail_url||preview),author_name:clean(p.author_name||p.creator_name||p.display_name||p.full_name),created_at:clean(p.created_at||p.createdAt),expires_at:clean(p.expires_at||p.expiresAt)};
+    return {v:2,post_id:id,media_type:type,title:clean(p.title)||'Publication Fyblic',description:clean(p.description||p.desc||p.caption).slice(0,280),preview_url:preview,thumbnail_url:preview,poster_url:preview,author_name:clean(p.author_name||p.creator_name||p.display_name||p.full_name),link:clean(p.link||context.link)};
+  }
+  function encodedPostBody(){return (isStoryContext()?STORY_MARKER:POST_MARKER)+JSON.stringify(sharePayload());}
+  function randomUuid(){if(crypto&&typeof crypto.randomUUID==='function')return crypto.randomUUID();return '00000000-0000-4000-8000-'+(String(Date.now()).slice(-8)+String(Math.random()).replace(/\D/g,'').slice(0,4)).padEnd(12,'0').slice(0,12);}
+  async function sendOne(userId){const opened=first(await rpc('happyad_msg_open_direct_privacy_v855r51',[{p_target_user_id:userId}]));const conversationId=clean(opened.conversation_id||opened.id);if(!isUuid(conversationId))throw new Error('Conversation invalide.');const body=encodedPostBody(),clientId=randomUuid();return rpc('happyad_msg_send_text',[{p_conversation_id:conversationId,p_client_message_id:clientId,p_body:body,p_reply_to_id:null},{conversation_id:conversationId,client_message_id:clientId,body:body,reply_to_id:null}]);}
+  async function sendSelected(){if(permissionState!=='allowed'){toast(permissionState==='denied'?'Partage non autorisé.':'Vérification du partage…');return;}if(sending||!selected.size)return;sending=true;updateSelection();let ok=0,fail=0;const ids=Array.from(selected.keys()).slice(0,MAX_SELECTED);for(let i=0;i<ids.length;i++){ $('sendStatus').textContent=(i+1)+'/'+ids.length;try{await sendOne(ids[i]);ok++;}catch(_e){fail++;}}
+    sending=false;updateSelection();if(ok){recordShare('happyad-inbox',ok);postParent('HAPPYAD_SHARE_SENT',{successes:ok,failures:fail,post:sharePayload()});toast((isStoryContext()?'Story envoyée à ':'Envoyé à ')+ok+(ok>1?' personnes':' personne')+(fail?' · '+fail+' échec(s)':'')+'.');setTimeout(()=>postParent('HAPPYAD_SHARE_CLOSE',{reason:'sent'}),900);}else toast('Envoi impossible.');}
+  function recordShare(channel,units){postParent('HAPPYAD_SHARE_COMMITTED',{channel:clean(channel)||'unknown',share_units:Math.min(20,Math.max(1,Number(units||1)||1)),client_event_id:randomUuid(),post:sharePayload()});}
+
+  /* V913 — Publication -> Story Fyblic.
+     Point 2 : une publication groupee garde une simple reference vers les IDs
+     originaux. Le premier media du groupe devient l'apercu Story; aucun media
+     n'est re-uploade ni duplique. */
+  function rawPostV912(){const p=context.post||context||{};return (p.raw&&typeof p.raw==='object')?p.raw:p;}
+  function firstCleanV912(){for(let i=0;i<arguments.length;i++){const v=clean(arguments[i]);if(v)return v;}return '';}
+  function sourcePostIdV912(){const p=context.post||context||{};return clean(p.post_id||p.id||p.publication_id);}
+  function firstMediaValueV913(value){
+    if(value===null||value===undefined)return '';
+    if(typeof value==='string'){
+      const s=clean(value);if(!s)return '';
+      if((s[0]==='['&&s[s.length-1]===']')||(s[0]==='{'&&s[s.length-1]==='}')){try{return firstMediaValueV913(JSON.parse(s));}catch(_e){}}
+      return s;
+    }
+    if(Array.isArray(value)){for(const x of value){const s=firstMediaValueV913(x);if(s)return s;}return '';}
+    if(typeof value==='object'){
+      for(const k of ['url','publicUrl','public_url','src','path','storage_path','storagePath','file_path','filePath','media_url','mediaUrl','home_media_url','homeMediaUrl','image_url','imageUrl','photo_url','photoUrl','video_url','videoUrl','video_url_compressed','video_url_original','thumbnail_url','thumbnailUrl','poster_url','posterUrl','cover_url','coverUrl']){
+        const s=firstMediaValueV913(value[k]);if(s)return s;
+      }
+    }
+    return '';
+  }
+  function itemIdV913(x){x=x||{};return clean(x.id||x.post_id||x.postId||x.publication_id||x.publicationId);}
+  function publicMediaV913(value){
+    let src=firstMediaValueV913(value);if(!src)return '';
+    if(/^(?:https?:\/\/|data:|blob:)/i.test(src))return src;
+    src=src.replace(/^\/+/, '').replace(/^happyad-media\//i,'');
+    let base=clean(window.HAPPYAD_SUPABASE_URL||'');
+    try{base=clean(parent&&parent.HAPPYAD_SUPABASE_URL)||base;}catch(_e){}
+    return base.replace(/\/+$/,'')+'/storage/v1/object/public/happyad-media/'+encodeURI(src);
+  }
+  function itemMediaV913(x){
+    x=x||{};
+    return publicMediaV913(x.thumbnail_url||x.thumbnailUrl||x.poster_url||x.posterUrl||x.cover_url||x.coverUrl||x.home_media_url||x.homeMediaUrl||x.media_url||x.mediaUrl||x.image_url||x.imageUrl||x.photo_url||x.photoUrl||x.video_url_compressed||x.videoUrlCompressed||x.video_url_original||x.videoUrlOriginal||x.video_url||x.videoUrl||x.media_urls||x.mediaUrls||x.images||x.photos||x.files);
+  }
+  /* V915 : une Story-publication vidéo doit conserver le vrai fichier vidéo.
+     V913 choisissait d'abord thumbnail/poster, ce qui créait une Story de type
+     vidéo dont media_url pointait parfois vers une image (écran noir dans <video>). */
+  function itemVideoMediaV915(x){
+    x=x||{};
+    return publicMediaV913(x.video_url_compressed||x.videoUrlCompressed||x.video_url_original||x.videoUrlOriginal||x.video_url||x.videoUrl||x.media_url||x.mediaUrl||x.url||x.src||x.file_url||x.fileUrl||x.media_urls||x.mediaUrls||x.files);
+  }
+  function itemTypeV913(x){x=x||{};const v=clean(x.media_type||x.mediaType||x.kind||x.type||x.post_type).toLowerCase();const u=itemMediaV913(x);return /video|reel|clip|mp4|webm|mov|m4v/.test(v)||/\.(mp4|webm|mov|m4v)(?:[?#]|$)/i.test(u)?'video':'photo';}
+  function itemStoryMediaV915(x){return itemTypeV913(x)==='video'?(itemVideoMediaV915(x)||itemMediaV913(x)):itemMediaV913(x);}
+  function itemOwnerV913(x){x=x||{};return firstCleanV912(x.user_id,x.owner_id,x.creator_id,x.creatorId,x.author_id);}
+  function itemAuthorV913(x){x=x||{};return firstCleanV912(x.creator_name,x.creatorName,x.display_name,x.full_name,x.user_name,x.username,x.author_name,'Utilisateur Fyblic');}
+  function itemAvatarV913(x){x=x||{};return firstCleanV912(x.avatar_url,x.user_avatar,x.avatar,x.creator_avatar,x.profile_avatar,x.profile_photo);}
+  function sourcePostPreviewV912(){const p=context.post||context||{},r=rawPostV912();return firstCleanV912(p.preview_url,p.thumbnail_url,p.poster_url,p.media_url,itemMediaV913(r));}
+  function sourcePostMediaTypeV912(){const p=context.post||context||{},r=rawPostV912(),v=clean(p.media_type||p.kind||r.media_type||r.kind||r.type).toLowerCase();return /video|reel|clip/.test(v)?'video':'photo';}
+  function sourcePostOwnerV912(){const p=context.post||context||{},r=rawPostV912();return firstCleanV912(p.owner_id,p.user_id,r.user_id,r.owner_id,r.creator_id,r.creatorId);}
+  function sourcePostAuthorNameV912(){const p=context.post||context||{},r=rawPostV912();return firstCleanV912(p.author_name,r.creator_name,r.creatorName,r.display_name,r.full_name,r.user_name,r.username,'Utilisateur Fyblic');}
+  function sourcePostAuthorAvatarV912(){const r=rawPostV912();return firstCleanV912(r.avatar_url,r.user_avatar,r.avatar,r.creator_avatar,r.profile_avatar,r.photo_url);}
+
+  function groupFieldV913(r,p){
+    r=r||{};p=p||{};
+    const fields=['album_id','group_id','batch_id','gallery_id','collection_id','multi_id','post_group_id','publication_group_id','parent_post_id','root_post_id','master_post_id','source_publication_id'];
+    for(const f of fields){const value=firstCleanV912(r[f],p[f]);if(value)return {field:f,value:value};}
+    return null;
+  }
+  function itemTimeV913(x){const t=Date.parse(clean(x&&x.created_at));return Number.isFinite(t)?t:0;}
+  function groupSortV913(a,b){
+    const ai=Number(a&&(a.groupIndex??a.group_index??a.photoIndex??a.photo_index??a.media_index??a.position));
+    const bi=Number(b&&(b.groupIndex??b.group_index??b.photoIndex??b.photo_index??b.media_index??b.position));
+    const aok=Number.isFinite(ai),bok=Number.isFinite(bi);
+    if(aok&&bok&&ai!==bi)return ai-bi;
+    if(aok!==bok)return aok?-1:1;
+    return itemTimeV913(a)-itemTimeV913(b);
+  }
+  function dedupeGroupV913(rows){
+    const seen=new Set(),out=[];
+    (rows||[]).forEach(x=>{if(!x||typeof x!=='object')return;const id=itemIdV913(x);if(!id||seen.has(id))return;seen.add(id);out.push(x);});
+    out.sort(groupSortV913);return out;
+  }
+  function sameLegacyGroupV913(a,b){
+    if(!a||!b)return false;
+    const oa=itemOwnerV913(a),ob=itemOwnerV913(b);if(!oa||oa!==ob)return false;
+    const ta=itemTimeV913(a),tb=itemTimeV913(b);if(!ta||!tb||Math.floor(ta/90000)!==Math.floor(tb/90000))return false;
+    const lc=v=>clean(v).toLowerCase();
+    return lc(a.title)===lc(b.title)&&lc(a.description||a.desc||a.caption)===lc(b.description||b.desc||b.caption)&&lc(a.category)===lc(b.category);
+  }
+  async function resolveGroupV913(){
+    const r=rawPostV912(),p=context.post||context||{};
+    const arrays=[r.__albumItems,p.__albumItems,r.__happyadPublicationItemsV613E,p.__happyadPublicationItemsV613E,r.items,p.items,r.posts,p.posts,r.photos,p.photos,r.mediaItems,p.mediaItems,r.media_items,p.media_items];
+    for(const a of arrays){if(Array.isArray(a)&&a.length>1){const rows=dedupeGroupV913(a);if(rows.length>1)return {grouped:true,items:rows,field:'embedded',value:'',legacy:false};}}
+    const grp=groupFieldV913(r,p);
+    if(grp){
+      try{
+        const q=await client().from('happyad_posts').select('*').eq(grp.field,grp.value).limit(40);
+        if(!q.error){const rows=dedupeGroupV913(q.data||[]);if(rows.length>1)return {grouped:true,items:rows,field:grp.field,value:grp.value,legacy:false};}
+      }catch(_e){}
+    }
+    /* Compatibilite avec les anciens albums Fyblic sans colonne de groupe:
+       meme auteur, meme bloc de 90 s et memes metadonnees, comme le moteur
+       fullscreen/partage deja utilise par l'application. */
+    try{
+      const owner=itemOwnerV913(r)||sourcePostOwnerV912(),tm=itemTimeV913(r);
+      if(owner&&tm&&itemTypeV913(r)==='photo'){
+        const start=new Date(Math.floor(tm/90000)*90000).toISOString(),stop=new Date((Math.floor(tm/90000)+1)*90000).toISOString();
+        const ownField=clean(r.user_id)?'user_id':(clean(r.owner_id)?'owner_id':(clean(r.creator_id)?'creator_id':''));
+        if(ownField){
+          const q=await client().from('happyad_posts').select('*').eq(ownField,owner).gte('created_at',start).lt('created_at',stop).limit(40);
+          if(!q.error){
+            const rows=dedupeGroupV913((q.data||[]).filter(x=>itemTypeV913(x)==='photo'&&sameLegacyGroupV913(r,x)));
+            if(rows.length>1)return {grouped:true,items:rows,field:'legacy_90s',value:'',legacy:true};
+          }
+        }
+      }
+    }catch(_e){}
+    return {grouped:false,items:[r],field:'',value:'',legacy:false};
+  }
+
+  async function myStoryProfileV912(){
+    const user=authUser||await getSession(),c=client();let profile={};
+    try{const q=await c.from('happyad_profiles_public_v1').select('*').eq('id',user.id).maybeSingle();if(q&&!q.error&&q.data)profile=q.data;}catch(_e){}
+    return {id:user.id,name:firstCleanV912(profile.full_name,profile.display_name,profile.name,user.user_metadata&&user.user_metadata.full_name,user.email&&user.email.split('@')[0],'Utilisateur Fyblic'),username:firstCleanV912(profile.username,profile.handle),avatar:firstCleanV912(profile.avatar_url,profile.avatar,profile.photo_url)};
+  }
+  function storySchemaMissingV912(error){
+    const t=clean(error&&(error.message||error.details||error.hint)).toLowerCase();
+    return /source_post_id|source_post_media_type|source_post_owner_id|source_post_title|source_post_author_name|source_post_author_avatar|source_post_caption|source_post_grouped|source_post_group_count|source_post_group_ids/.test(t)&&(t.includes('column')||t.includes('schema'));
+  }
+  async function addPostToStoryV912(){
+    if(storyAdding)return;
+    if(isStoryContext()){toast('Une story ne peut pas être ajoutée dans une autre story.');return;}
+    if(permissionState!=='allowed'){toast(permissionState==='denied'?'Partage non autorisé.':'Vérification du partage…');return;}
+
+    /* V925 point 6 : le clic orange "Ma story" est optimiste. La carte/cercle
+       est injectée dans le maître Story AVANT les requêtes réseau, puis la feuille
+       de partage se ferme immédiatement. L'iframe reste montée en arrière-plan et
+       termine silencieusement l'INSERT Supabase. */
+    const raw=rawPostV912(),firstIdFast=itemIdV913(raw)||sourcePostIdV912(),previewFast=itemStoryMediaV915(raw)||sourcePostPreviewV912();
+    if(!firstIdFast){toast('Publication introuvable.');return;}
+    if(!previewFast){toast('Aperçu de la publication indisponible.');return;}
+
+    storyAdding=true;
+    const btn=document.querySelector('[data-app="story-happyad"]');if(btn)btn.classList.add('is-busy');
+    const optimisticAt=Date.now(),tempId='happyad-story-pending-v925-'+optimisticAt+'-'+Math.random().toString(36).slice(2,8);
+    const fastType=itemTypeV913(raw),fastPoster=itemMediaV913(raw)||sourcePostPreviewV912()||previewFast;
+    const fastP=context.post||context||{},rawSnapshot=raw;
+    const groupPromise=resolveGroupV913();
+    const optimisticRow={
+      id:tempId,user_id:clean(authUser&&authUser.id),
+      title:'Publication Fyblic',description:'',caption:'',media_url:previewFast,thumbnail_url:fastPoster,poster_url:fastPoster,
+      media_type:fastType==='video'?'video':'image',kind:fastType,is_active:true,
+      created_at:new Date(optimisticAt).toISOString(),expires_at:new Date(optimisticAt+45000).toISOString(),
+      source_post_id:firstIdFast,source_post_media_type:fastType,source_post_owner_id:itemOwnerV913(raw)||sourcePostOwnerV912(),
+      source_post_title:firstCleanV912(raw.title,fastP.title,'Publication Fyblic').slice(0,180),
+      source_post_author_name:firstCleanV912(itemAuthorV913(raw),sourcePostAuthorNameV912()).slice(0,180),
+      source_post_author_avatar:firstCleanV912(itemAvatarV913(raw),sourcePostAuthorAvatarV912()),
+      source_post_caption:firstCleanV912(raw.description,raw.desc,raw.caption,fastP.description,fastP.desc,fastP.caption).slice(0,500),
+      __storyOptimisticV925:true,__storyOptimisticAtV925:optimisticAt
+    };
+    postParent('HAPPYAD_STORY_POST_OPTIMISTIC_V925',{story:optimisticRow,temp_id:tempId,source:'share-center-v925',at:optimisticAt});
+    postParent('HAPPYAD_SHARE_CLOSE',{reason:'story-optimistic-v925'});
+
+    try{
+      const group=await groupPromise;
+      const items=group.grouped?group.items:[rawSnapshot];
+      const first=(items&&items[0])||rawSnapshot;
+      const firstId=itemIdV913(first)||sourcePostIdV912();
+      const preview=itemStoryMediaV915(first)||sourcePostPreviewV912();
+      const posterPreview=itemMediaV913(first)||sourcePostPreviewV912()||preview;
+      if(!firstId){throw new Error('Publication introuvable.');}
+      if(!preview){throw new Error('Aperçu de la publication indisponible.');}
+
+      const ids=dedupeGroupV913(items).map(itemIdV913).filter(Boolean).slice(0,40);
+      const grouped=ids.length>1;
+      const c=client(),me=await myStoryProfileV912(),now=new Date(),expires=new Date(now.getTime()+24*60*60*1000);
+      const p=fastP,r=rawSnapshot,firstType=itemTypeV913(first);
+      const row={
+        user_id:me.id,user_name:me.name,display_name:me.name,username:clean(me.username).replace(/^@+/,''),handle:clean(me.username).replace(/^@+/,''),user_avatar:me.avatar,
+        title:'Publication Fyblic',description:'',caption:'',media_url:preview,thumbnail_url:posterPreview,poster_url:posterPreview,media_type:firstType==='video'?'video':'image',kind:firstType,is_active:true,created_at:now.toISOString(),expires_at:expires.toISOString(),
+        source_post_id:firstId,
+        source_post_media_type:firstType,
+        source_post_owner_id:itemOwnerV913(first)||sourcePostOwnerV912(),
+        source_post_title:firstCleanV912(first.title,p.title,r.title,'Publication Fyblic').slice(0,180),
+        source_post_author_name:firstCleanV912(itemAuthorV913(first),sourcePostAuthorNameV912()).slice(0,180),
+        source_post_author_avatar:firstCleanV912(itemAvatarV913(first),sourcePostAuthorAvatarV912()),
+        source_post_caption:firstCleanV912(first.description,first.desc,first.caption,p.description,r.description,r.desc,r.caption).slice(0,500)
+      };
+      if(grouped){
+        row.source_post_grouped=true;
+        row.source_post_group_count=ids.length;
+        row.source_post_group_ids=ids;
+      }
+      const q=await c.from('happyad_stories').insert(row).select('*').single();
+      if(q&&q.error)throw q.error;
+      if(!q||!q.data||!clean(q.data.id))throw new Error('Story créée sans identifiant.');
+      postParent('HAPPYAD_STORY_POST_COMMITTED_V925',{story:q.data,temp_id:tempId,source:'share-center-v925',at:Date.now()});
+      recordShare('happyad-story',1);
+    }catch(error){
+      postParent('HAPPYAD_STORY_POST_FAILED_V925',{temp_id:tempId,message:storySchemaMissingV912(error)?'Active d’abord la fondation Story groupée V913 dans Supabase.':(clean(error&&error.message)||'Ajout à la story impossible.'),source:'share-center-v925',at:Date.now()});
+    }finally{storyAdding=false;if(btn)btn.classList.remove('is-busy');}
+  }
+
+  function externalData(){const p=sharePayload();return {title:'Fyblic',text:'',url:clean(p.link)};}
+
+  function warmExternalPreviewV881(){
+    try{
+      const p=sharePayload(),url=clean(p&&p.link);if(!url)return;
+      /* The public OG endpoint is independent from this iframe. Warming it here
+         makes a very fast share tap much less likely to reach WhatsApp cold. */
+      fetch(url,{cache:'reload',credentials:'omit',redirect:'follow'}).catch(()=>{});
+    }catch(_e){}
+  }
+  function openUrl(url){
+    /* V712 : aucune application externe ne peut remplacer ce document iframe.
+       Le lancement est effectué par la fenêtre Fyblic parente pendant le geste utilisateur. */
+    try{
+      if(parent&&parent!==window&&parent.HappyadShareMaster&&typeof parent.HappyadShareMaster.launchExternal==='function'){
+        return parent.HappyadShareMaster.launchExternal(url,{source:'share-center-v712'});
+      }
+    }catch(_e){}
+    try{
+      const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer external';a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>{try{a.remove();}catch(_e){}},0);return true;
+    }catch(_e2){return false;}
+  }
+  async function externalShare(app){if(permissionState!=='allowed'){toast(permissionState==='denied'?'Partage non autorisé.':'Vérification du partage…');return;}const d=externalData(),u=encodeURIComponent(d.url),t=encodeURIComponent(d.url);if(app==='copy'){try{await navigator.clipboard.writeText(d.url);toast('Lien copié.');}catch(_e){toast('Copie impossible.');}return;}if(app==='more'){if(navigator.share){try{if(parent&&parent!==window&&parent.HappyadShareMaster&&typeof parent.HappyadShareMaster.markExternalTransition==='function')parent.HappyadShareMaster.markExternalTransition({source:'system-share-v712'});}catch(_e){}try{await navigator.share({title:'Fyblic',url:d.url});recordShare('system-share',1);}catch(_e){}}else{try{await navigator.clipboard.writeText(d.url);toast('Lien copié.');}catch(_e){}}return;}let launched=false;if(app==='whatsapp')launched=openUrl('https://wa.me/?text='+t);else if(app==='telegram')launched=openUrl('https://t.me/share/url?url='+u);else if(app==='facebook')launched=openUrl('https://www.facebook.com/sharer/sharer.php?u='+u);else if(app==='x')launched=openUrl('https://twitter.com/intent/tweet?url='+u);else if(app==='gmail')launched=openUrl('mailto:?subject='+encodeURIComponent('Fyblic')+'&body='+t);else if(app==='messages')launched=openUrl('sms:?body='+t);if(launched)recordShare(app,1);}
+  function applyContext(detail){context=detail&&typeof detail==='object'?detail:{};setPermission(clean(context.permission_state)||'pending');setTimeout(warmExternalPreviewV881,0);const story=isStoryContext();document.body.classList.toggle('story-share-mode',story);const title=$('shareTitle');if(title)title.textContent=story?'Partager la story':'Partager';const input=$('searchInput');if(input)input.placeholder=story?'Rechercher une conversation ou une personne':'Rechercher tous les utilisateurs';selected.clear();if(directoryProfiles.length)renderDirectory();else $('directory').innerHTML=skeletonHtml();updateSelection();ensureDirectory(false);}
+  document.addEventListener('click',e=>{if(Date.now()<suppressTapUntil){e.preventDefault();e.stopPropagation();return;}const p=e.target.closest('[data-person]');if(p){const id=p.dataset.person;const source=directoryProfiles.concat(searchResults).find(x=>x.id===id);if(!source)return;if(selected.has(id))selected.delete(id);else{if(selected.size>=MAX_SELECTED){toast('20 personnes maximum par partage.');return;}selected.set(id,source);}updateSelection();return;}const app=e.target.closest('[data-app]');if(app){if(app.dataset.app==='story-happyad')addPostToStoryV912();else externalShare(app.dataset.app);}});
+  $('searchInput').addEventListener('input',scheduleSearch);$('sendBtn').addEventListener('click',sendSelected);$('closeBtn').addEventListener('click',()=>postParent('HAPPYAD_SHARE_CLOSE',{reason:'button'}));
+  (function installSheetScrollCoordinatorV906(){
+    const scroller=document.querySelector('.scroll');if(!scroller)return;
+    let tracking=false,mode='native',startY=0,startX=0,startScrollTop=0,lastY=0,pulling=false,pullRaf=0,pendingPullY=0;
+    const yOf=t=>Number((t&&t.screenY)||(t&&t.clientY)||0);
+    const xOf=t=>Number((t&&t.screenX)||(t&&t.clientX)||0);
+    function sendPullMove(y){
+      pendingPullY=Number(y)||lastY;
+      if(pullRaf)return;
+      pullRaf=requestAnimationFrame(()=>{
+        pullRaf=0;
+        if(pulling)postParent('HAPPYAD_SHARE_PULL_CLOSE_MOVE_V906',{screenY:pendingPullY,source:'contacts-native-v906'});
+      });
+    }
+    function flushPullMove(){
+      if(pullRaf){cancelAnimationFrame(pullRaf);pullRaf=0;}
+      if(pulling)postParent('HAPPYAD_SHARE_PULL_CLOSE_MOVE_V906',{screenY:pendingPullY||lastY,source:'contacts-native-v906'});
+    }
+    function beginPull(y){
+      if(pulling)return;
+      pulling=true;mode='pull-close';suppressTapUntil=Date.now()+420;
+      postParent('HAPPYAD_SHARE_PULL_CLOSE_START_V906',{screenY:startY,source:'contacts-native-v906'});
+      sendPullMove(y);
+    }
+    scroller.addEventListener('touchstart',e=>{
+      if(!e.touches||e.touches.length!==1)return;
+      if(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+      const t=e.touches[0];
+      tracking=true;pulling=false;mode='native';startY=lastY=yOf(t);startX=xOf(t);pendingPullY=startY;startScrollTop=Number(scroller.scrollTop||0);
+      /* V906 : le navigateur garde le scroll natif tant qu'un transfert vers le
+         panneau n'est pas clairement demandé. Le début du geste est figé :
+         atteindre scrollTop=0 pendant un geste ne ferme jamais ce même geste. */
+      if(!sheetState.atMax)mode='compact-candidate';
+      else if(startScrollTop<=2)mode='top-candidate';
+    },{passive:true});
+    scroller.addEventListener('touchmove',e=>{
+      if(!tracking||!e.touches||e.touches.length!==1)return;
+      const t=e.touches[0],y=yOf(t),x=xOf(t),dy=y-startY,dx=x-startX;lastY=y;
+      if(pulling){
+        sendPullMove(y);
+        if(e.cancelable)e.preventDefault();
+        return;
+      }
+      if(mode==='native')return;
+      if(Math.abs(dy)<8)return;
+      if(Math.abs(dx)>Math.abs(dy)*1.12){mode='native';return;}
+
+      if(mode==='compact-candidate'){
+        if(dy<0){
+          /* Un seul geste ascendant ouvre directement le plein écran.
+             Ce geste ne commence pas aussi le défilement des contacts. */
+          mode='expanded-this-gesture';suppressTapUntil=Date.now()+340;
+          postParent('HAPPYAD_SHARE_EXPAND_FULL_V899',{source:'contacts-native-v906'});
+          if(e.cancelable)e.preventDefault();
+          return;
+        }
+        if(dy>0&&startScrollTop<=2){
+          beginPull(y);
+          if(e.cancelable)e.preventDefault();
+          return;
+        }
+        mode='native';return;
+      }
+
+      if(mode==='top-candidate'){
+        /* Vers le haut = scroll natif immédiat des personnes.
+           Vers le bas depuis le premier rang = transfert au sheet, comme Commentaires. */
+        if(Number(scroller.scrollTop||0)>2){mode='native';return;}
+        if(dy<0){mode='native';return;}
+        if(dy>0){
+          beginPull(y);
+          if(e.cancelable)e.preventDefault();
+          return;
+        }
+      }
+
+      if(mode==='expanded-this-gesture'){
+        if(e.cancelable)e.preventDefault();
+      }
+    },{passive:false});
+    function finish(e,cancelled){
+      if(!tracking)return;
+      let y=lastY;
+      try{const t=e&&e.changedTouches&&e.changedTouches[0];if(t)y=yOf(t);}catch(_e){}
+      lastY=y;
+      if(pulling){
+        flushPullMove();
+        postParent(cancelled?'HAPPYAD_SHARE_PULL_CLOSE_CANCEL_V906':'HAPPYAD_SHARE_PULL_CLOSE_END_V906',{screenY:y,source:'contacts-native-v906'});
+      }
+      tracking=false;pulling=false;mode='native';startScrollTop=0;
+    }
+    scroller.addEventListener('touchend',e=>finish(e,false),{passive:true});
+    scroller.addEventListener('touchcancel',e=>finish(e,true),{passive:true});
+  })();
+  (function installHeaderDrag(){const head=document.querySelector('.head');if(!head)return;let active=false,pid=null;function point(e){return Number(e.screenY||e.clientY||0);}head.style.touchAction='none';head.addEventListener('pointerdown',e=>{if(e.button!=null&&e.button!==0)return;if(e.target.closest('button,input,a'))return;active=true;pid=e.pointerId;try{head.setPointerCapture(pid);}catch(_e){}postParent('HAPPYAD_SHARE_DRAG_START',{screenY:point(e)});e.preventDefault();},{passive:false});head.addEventListener('pointermove',e=>{if(!active)return;postParent('HAPPYAD_SHARE_DRAG_MOVE',{screenY:point(e)});e.preventDefault();},{passive:false});function end(e){if(!active)return;active=false;postParent('HAPPYAD_SHARE_DRAG_END',{screenY:point(e)});try{head.releasePointerCapture(pid);}catch(_e){}pid=null;e.preventDefault();}head.addEventListener('pointerup',end,{passive:false});head.addEventListener('pointercancel',end,{passive:false});})();
+  function resumeLifecycle(source){try{if(window.HappyModuleLifecycleV614&&window.HappyModuleLifecycleV614.resume)window.HappyModuleLifecycleV614.resume(source||'share-center-resume');}catch(_e){}}
+  function announceResume(source){resumeLifecycle(source);postParent('HAPPYAD_SHARE_CENTER_RESUMED',{source:source||'share-center',at:Date.now()});}
+  window.addEventListener('message',e=>{
+    const d=e.data||{};
+    if(d.type==='HAPPYAD_SHARE_CONTEXT')applyContext(d.detail||{});
+    else if(d.type==='HAPPYAD_SHARE_SHEET_STATE'){const st=d.detail||{};sheetState={percent:Number(st.percent)||68,atMax:!!st.atMax,atMin:!!st.atMin};document.body.classList.toggle('sheet-at-max',sheetState.atMax);}
+    else if(d.type==='HAPPYAD_SHARE_PERMISSION')setPermission(d.detail&&d.detail.state);
+    else if(d.type==='HAPPYAD_SHARE_PING'){resumeLifecycle('share-ping');postParent('HAPPYAD_SHARE_PONG',{nonce:clean(d.detail&&d.detail.nonce),source:'share-center-pong',at:Date.now()});}
+    else if(d.type==='HAPPYAD_SHARE_RESUME'||d.type==='HAPPYAD_MODULE_RESUME')resumeLifecycle(clean(d.detail&&d.detail.source)||d.type);
+  });
+  window.addEventListener('HAPPYAD_PROFILE_AVATAR_UPDATED_V855R32',e=>{const d=e&&e.detail||{},id=clean(d.userId||d.id);if(!isUuid(id))return;const url=clean(d.url);[recent,following,followers,directoryProfiles,searchResults].forEach(list=>(list||[]).forEach(p=>{if(p&&p.id===id)p.avatar=url;}));if(selected.has(id)){const p=selected.get(id);if(p)p.avatar=url;}renderDirectory();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)announceResume('share-center-visible');},true);
+  window.addEventListener('pageshow',()=>announceResume('share-center-pageshow'),true);
+  window.addEventListener('focus',()=>announceResume('share-center-focus'),true);
+  function prewarmDirectory(attempt){attempt=Number(attempt)||0;getSession().then(()=>{readDirectoryCache(authUser.id);if(directoryProfiles.length)renderDirectory();return ensureDirectory(false);}).catch(()=>{if(attempt<3)setTimeout(()=>prewarmDirectory(attempt+1),500*(attempt+1));});}
+  setPermission('pending');
+  try{if('requestIdleCallback' in window)requestIdleCallback(()=>prewarmDirectory(0),{timeout:650});else setTimeout(()=>prewarmDirectory(0),160);}catch(_e){setTimeout(()=>prewarmDirectory(0),160);}
+  postParent('HAPPYAD_SHARE_CENTER_READY',{version:'V1041_FIRST_OPEN_READY',at:Date.now()});
+})();
+</script>
+
+<!-- Fyblic V603 — menu transparent et boutons internes fiables -->
+<link rel="stylesheet" href="../core/button-state-master-v604.css?v=604">
+<script src="../core/button-state-master-v604.js?v=604"></script>
+<script src="../core/frame-first-render-v622.js?v=622"></script>
+
+<!-- Fyblic V997 GLOBAL COHERENCE -->
+<link rel="stylesheet" href="../core/happyad-global-coherence-v997.css?v=1025-search-suggestion-story">
+<script src="../core/happyad-global-coherence-v997.js?v=1025-search-suggestion-story"></script>
+</body>
+</html>

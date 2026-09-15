@@ -1,0 +1,12 @@
+HAPPYAD V988R4 — DEUX FINITIONS VISUELLES
+
+Base conservée : V988R3.
+
+1. Le bouton lecture des vidéos sur les cartes reprend le langage de la
+   centrale vidéo : cercle blanc légèrement transparent, triangle noir,
+   sans contour.
+2. Les points de navigation des albums passent de 4 px à 5 px. Le point actif
+   passe de 11 px à 13 px. Leur position et leur fonctionnement ne changent pas.
+
+Aucun changement de logique, clic, média, album, action, compteur, favori,
+publication, navigation, donnée ou route.

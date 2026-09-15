@@ -1,0 +1,10 @@
+FYBLIC V1027 — INSTALLATION, SWIPE ET NOTIFICATION SONORE
+
+1. La demande native d’installation est déclenchée uniquement par le bouton « Télécharger ».
+   Le clic sur le reste de la notification ne lance plus aucune action et aucun guide manuel ne s’ouvre.
+
+2. Un glissement vers la gauche ou vers la droite ferme désormais la notification d’installation.
+
+3. La notification « Utilisation des sons bientôt » est remontée au-dessus de la barre de navigation.
+
+Cache PWA mis à jour vers V1027.

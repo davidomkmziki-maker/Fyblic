@@ -1,0 +1,14 @@
+HAPPYAD V988R3 — FINITION FINALE DE L'ACCUEIL
+
+Cette version conserve intégralement la logique et le fonctionnement de V988R2.
+
+Trois corrections visuelles seulement :
+1. Le bouton de lecture central devient un rectangle compact, sombre et arrondi,
+   avec un triangle blanc, sans contour ni cercle surdimensionné.
+2. Les noms, titres, descriptions, icônes et compteurs d'action passent en blanc
+   franc. Les informations secondaires restent plus sombres. Les tailles et les
+   dimensions des actions ne sont pas augmentées.
+3. Le bouton « Voir plus » passe à l'orange HappyAd.
+
+Aucun changement de clic, compteur, publication, média, album, favori, partage,
+navigation, données, route ou comportement métier.

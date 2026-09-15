@@ -1,0 +1,273 @@
+/* Fyblic V799 — correction ciblée depuis V798.
+   Sticker visuellement plus petit et centré face aux avatars Story.
+   PNG transparent inchangé, aucun fond, seule la bouche reste animée. */
+#homeRadarStoryMasterV629 .radarRow .happyadChatStickerUnitV791,
+#homeRadarBlock .radarRow .happyadChatStickerUnitV791{
+  position:relative!important;
+  flex:0 0 86px!important;
+  width:86px!important;
+  min-width:86px!important;
+  display:flex!important;
+  justify-content:center!important;
+  background:transparent!important;
+  border:0!important;
+  overflow:visible!important;
+  scroll-snap-align:none!important;
+}
+#homeRadarStoryMasterV629 .happyadChatStickerButtonV791,
+#homeRadarBlock .happyadChatStickerButtonV791{
+  width:86px!important;
+  min-width:86px!important;
+  max-width:86px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:inherit!important;
+  cursor:pointer!important;
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+  touch-action:manipulation!important;
+}
+/* Mascotte flottante : aucun cercle, aucune bordure, aucun fond. */
+#homeRadarStoryMasterV629 .happyadChatStickerAvatarV791,
+#homeRadarBlock .happyadChatStickerAvatarV791{
+  position:relative!important;
+  width:60px!important;
+  height:60px!important;
+  min-width:60px!important;
+  max-width:60px!important;
+  margin:5px auto 0!important;
+  border:0!important;
+  border-radius:0!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:none!important;
+  filter:none!important;
+}
+#homeRadarStoryMasterV629 .happyadChatStickerAvatarV791::after,
+#homeRadarBlock .happyadChatStickerAvatarV791::after{
+  content:none!important;
+  display:none!important;
+}
+#homeRadarStoryMasterV629 .happyadChatStickerSceneV791,
+#homeRadarBlock .happyadChatStickerSceneV791{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  overflow:visible!important;
+  border-radius:0!important;
+  transform-origin:50% 56%!important;
+  animation:none!important;
+  transform:none!important;
+  will-change:auto!important;
+}
+/* PNG détouré : seule la mascotte jusqu'à son trait extérieur reste visible. */
+#homeRadarStoryMasterV629 .happyadChatStickerImageV791,
+#homeRadarBlock .happyadChatStickerImageV791{
+  position:absolute!important;
+  z-index:1!important;
+  left:-12%!important;
+  top:-12%!important;
+  display:block!important;
+  width:124%!important;
+  height:124%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-user-drag:none!important;
+  pointer-events:none!important;
+}
+/* Les yeux originaux restent visibles. On ajoute seulement un petit iris chaleureux mobile. */
+#homeRadarStoryMasterV629 .happyadChatEyeV791,
+#homeRadarBlock .happyadChatEyeV791{
+  display:none!important;
+  position:absolute!important;
+  z-index:4!important;
+  top:38.3%!important;
+  width:13.2%!important;
+  height:13.8%!important;
+  min-width:8px!important;
+  min-height:8px!important;
+  border-radius:50%!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+#homeRadarStoryMasterV629 .happyadChatEyeLeftV791,
+#homeRadarBlock .happyadChatEyeLeftV791{left:24.4%!important}
+#homeRadarStoryMasterV629 .happyadChatEyeRightV791,
+#homeRadarBlock .happyadChatEyeRightV791{left:61.3%!important}
+#homeRadarStoryMasterV629 .happyadChatPupilV791,
+#homeRadarBlock .happyadChatPupilV791{
+  position:absolute!important;
+  z-index:2!important;
+  left:50%!important;
+  top:52%!important;
+  width:38%!important;
+  height:38%!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle at 34% 27%,#fff 0 18%,#d98743 20% 51%,#6e2e15 54% 73%,#24100c 76% 100%)!important;
+  box-shadow:0 0 1px rgba(255,255,255,.35)!important;
+  transform:translate(-50%,-50%)!important;
+  animation:happyadChatLookHappyV791 6.8s ease-in-out infinite!important;
+}
+/* Clignement doux : une petite paupière orange recouvre brièvement chaque œil. */
+#homeRadarStoryMasterV629 .happyadChatEyeV791::after,
+#homeRadarBlock .happyadChatEyeV791::after{
+  content:""!important;
+  position:absolute!important;
+  z-index:5!important;
+  left:-8%!important;
+  right:-8%!important;
+  top:-8%!important;
+  bottom:-8%!important;
+  border-radius:50%!important;
+  background:linear-gradient(180deg,#ffc437 0%,#ff8a17 72%,#f56b12 100%)!important;
+  transform:scaleY(0)!important;
+  transform-origin:50% 0!important;
+  animation:happyadChatBlinkHappyV791 7.4s linear infinite!important;
+  pointer-events:none!important;
+}
+/* Bouche souriante : parole lente, avec de longues pauses. */
+#homeRadarStoryMasterV629 .happyadChatMouthV791,
+#homeRadarBlock .happyadChatMouthV791{
+  position:absolute!important;
+  z-index:5!important;
+  left:42.7%!important;
+  top:51.1%!important;
+  width:14.8%!important;
+  height:10.2%!important;
+  min-width:9px!important;
+  min-height:6px!important;
+  overflow:hidden!important;
+  border-radius:22% 22% 54% 54% / 26% 26% 74% 74%!important;
+  background:linear-gradient(to bottom,#3b0b09 0 48%,#8e2117 49% 100%)!important;
+  border:1px solid rgba(88,21,9,.72)!important;
+  box-shadow:inset 0 1px 0 rgba(255,178,83,.16)!important;
+  transform-origin:50% 20%!important;
+  animation:happyadChatTalkSlowV791 7.2s ease-in-out infinite!important;
+}
+#homeRadarStoryMasterV629 .happyadChatMouthV791::after,
+#homeRadarBlock .happyadChatMouthV791::after{
+  content:""!important;
+  position:absolute!important;
+  left:18%!important;
+  right:18%!important;
+  bottom:-2%!important;
+  height:41%!important;
+  border-radius:50% 50% 40% 40%!important;
+  background:linear-gradient(#ff7b38,#ffa35b)!important;
+}
+#homeRadarStoryMasterV629 .happyadChatStickerNameV791,
+#homeRadarBlock .happyadChatStickerNameV791{
+  max-width:86px!important;
+  margin-top:10px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  text-align:center!important;
+  font-size:13px!important;
+  font-weight:850!important;
+  line-height:1.15!important;
+  color:#fff!important;
+}
+#homeRadarStoryMasterV629 .happyadChatStickerMetaV791,
+#homeRadarBlock .happyadChatStickerMetaV791{
+  max-width:86px!important;
+  margin-top:3px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  text-align:center!important;
+  font-size:11px!important;
+  line-height:1.15!important;
+  color:#aeb3c0!important;
+}
+#homeRadarStoryMasterV629 .happyadChatStickerButtonV791:active .happyadChatStickerSceneV791,
+#homeRadarBlock .happyadChatStickerButtonV791:active .happyadChatStickerSceneV791,
+#homeRadarStoryMasterV629 .happyadChatStickerButtonV791.happyadButtonPressedV604 .happyadChatStickerSceneV791,
+#homeRadarBlock .happyadChatStickerButtonV791.happyadButtonPressedV604 .happyadChatStickerSceneV791{
+  animation:none!important;
+  transform:none!important;
+}
+#homeRadarStoryMasterV629 .mapLite[data-happyad-annonces-placeholder-v791="1"],
+#homeRadarBlock .mapLite[data-happyad-annonces-placeholder-v791="1"]{
+  cursor:pointer!important;
+  text-decoration:none!important;
+}
+@keyframes happyadChatInsideAliveV791{
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  32%{transform:translate3d(-.35px,-.45px,0) scale(1.008)}
+  66%{transform:translate3d(.35px,0,0) scale(1.004)}
+}
+@keyframes happyadChatLookHappyV791{
+  0%,15%,100%{transform:translate(-50%,-50%)}
+  25%,38%{transform:translate(-67%,-50%)}
+  48%,62%{transform:translate(-50%,-50%)}
+  73%,86%{transform:translate(-33%,-50%)}
+}
+@keyframes happyadChatBlinkHappyV791{
+  0%,41%,43.2%,82%,84.2%,100%{transform:scaleY(0)}
+  42%,83%{transform:scaleY(1)}
+}
+@keyframes happyadChatTalkSlowV791{
+  0%,12%,30%,48%,100%{transform:scaleX(1) scaleY(.68)}
+  17%{transform:scaleX(.98) scaleY(1.02)}
+  22%{transform:scaleX(1) scaleY(.61)}
+  27%{transform:scaleX(.98) scaleY(.92)}
+  54%{transform:scaleX(.99) scaleY(.94)}
+  59%{transform:scaleX(1) scaleY(.62)}
+  64%{transform:scaleX(.99) scaleY(.88)}
+  70%,94%{transform:scaleX(1) scaleY(.68)}
+}
+/* V798 : neutralisation définitive du carré hérité de .radarAvatar img. */
+#homeRadarStoryMasterV629 .happyadChatStickerAvatarV791 img.happyadChatStickerImageV791,
+#homeRadarBlock .happyadChatStickerAvatarV791 img.happyadChatStickerImageV791{
+  background-color:transparent!important;
+  background-image:none!important;
+}
+#homeRadarStoryMasterV629 .happyadChatStickerButtonV791:active .happyadChatStickerAvatarV791,
+#homeRadarBlock .happyadChatStickerButtonV791:active .happyadChatStickerAvatarV791,
+#homeRadarStoryMasterV629 .happyadChatStickerButtonV791.happyadButtonPressedV604 .happyadChatStickerAvatarV791,
+#homeRadarBlock .happyadChatStickerButtonV791.happyadButtonPressedV604 .happyadChatStickerAvatarV791{
+  transform:none!important;
+}
+
+@media(max-width:390px){
+  #homeRadarStoryMasterV629 .radarRow .happyadChatStickerUnitV791,
+  #homeRadarBlock .radarRow .happyadChatStickerUnitV791{flex-basis:82px!important;width:82px!important;min-width:82px!important}
+  #homeRadarStoryMasterV629 .happyadChatStickerButtonV791,
+  #homeRadarBlock .happyadChatStickerButtonV791{width:82px!important;min-width:82px!important;max-width:82px!important}
+  #homeRadarStoryMasterV629 .happyadChatStickerAvatarV791,
+  #homeRadarBlock .happyadChatStickerAvatarV791{width:56px!important;height:56px!important;min-width:56px!important;max-width:56px!important;margin-top:6px!important}
+  #homeRadarStoryMasterV629 .happyadChatStickerNameV791,
+  #homeRadarBlock .happyadChatStickerNameV791,
+  #homeRadarStoryMasterV629 .happyadChatStickerMetaV791,
+  #homeRadarBlock .happyadChatStickerMetaV791{max-width:82px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #homeRadarStoryMasterV629 .happyadChatStickerSceneV791,
+  #homeRadarBlock .happyadChatStickerSceneV791,
+  #homeRadarStoryMasterV629 .happyadChatEyeV791::after,
+  #homeRadarBlock .happyadChatEyeV791::after,
+  #homeRadarStoryMasterV629 .happyadChatPupilV791,
+  #homeRadarBlock .happyadChatPupilV791,
+  #homeRadarStoryMasterV629 .happyadChatMouthV791,
+  #homeRadarBlock .happyadChatMouthV791{animation:none!important}
+}

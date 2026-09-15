@@ -1,0 +1,17 @@
+FYBLIC V1046 — LOGO COMPRESSEUR UNIFIÉ
+Date : 15 septembre 2026
+
+- Ancien symbole ailé remplacé dans toute l’application par le symbole à quatre formes du compresseur.
+- Géométrie, rotations et palette du compresseur conservées : #ffe032, #ff7a2f et #ff0a9f.
+- Icônes PWA, installation, raccourcis, notifications, Assistance et partage régénérés depuis une source unique.
+- Logo de l’Accueil transparent intégré directement en Base64 dans index.html : 23 px sur écran normal et 20 px sous 360 px.
+- Le logo de l’Accueil ne dépend d’aucune requête réseau et reste disponible hors connexion avec le code de la page.
+- Noms et versions des ressources passés à V1046 pour empêcher le retour de l’ancien logo depuis le cache.
+- Anciens fichiers V1045 retirés après remplacement complet des références actives.
+
+TEST APRÈS DÉPLOIEMENT
+1. Actualiser le site et vérifier le symbole à côté du nom Fyblic dans l’Accueil.
+2. Tester sur un téléphone normal puis sur un écran de 360 px ou moins.
+3. Vérifier la notification d’installation et l’écran d’installation.
+4. Fermer puis rouvrir l’application installée.
+5. Si Android garde l’ancienne icône, désinstaller uniquement la PWA puis la réinstaller.

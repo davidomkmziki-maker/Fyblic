@@ -1,0 +1,21 @@
+HAPPYAD V1004 — COMPTEURS ACTIONS ACCUEIL 17 PX
+
+1. TAILLE
+- Les compteurs des actions de l’Accueil passent de 15 px à 17 px.
+- Seule la taille du texte du compteur est modifiée.
+- La taille et la position des boutons, icônes, zones tactiles, espacements et alignements restent inchangées.
+
+2. FORMATS PRÉSERVÉS
+- La logique de formatage numérique n’est pas modifiée.
+- K, M et MD restent dans le même nœud texte, avec exactement la même taille que les chiffres.
+- Exemples préservés : 1K, 999K, 999.9K, 1M, 1.5M, 1MD.
+- Le tronquage à une décimale reste inchangé.
+
+3. NON-RÉGRESSION
+- Aucun changement sur les SVG/icônes d’action.
+- Aucun changement sur la hauteur des boutons d’action.
+- Aucun changement sur la position des compteurs.
+- Le compteur de vues et son Play professionnel restent inchangés.
+
+4. CACHE
+- Version cache/feuille d’actions passée à V1004 afin que le nouveau 17 px soit chargé immédiatement après déploiement.

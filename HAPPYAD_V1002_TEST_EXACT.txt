@@ -1,0 +1,29 @@
+TEST EXACT V1002
+
+NOTE : pour la taille finale et les formats K/M/MD, utiliser maintenant
+HAPPYAD_V1003_TEST_EXACT.txt. Les tests du fond noir et du Play restent valables.
+
+A. TAILLE DES CHIFFRES D'ACTIONS
+1. Ouvrir une carte Accueil avec J'aime, commentaire, partage et republication.
+2. Comparer leur position à la version V1000.
+ATTENDU : chiffres plus grands et plus lisibles, mais exactement à la même position.
+ATTENDU : aucune poussée vers le haut ou vers le bas.
+
+B. COMPTEUR DE VUES
+1. Ouvrir une vidéo dans l'Accueil.
+ATTENDU : fond noir compact identique à V1000, toujours en bas à gauche.
+ATTENDU : nombre de vues à la même taille et à la même position.
+ATTENDU : seul le triangle Play devant le nombre possède le nouveau dessin professionnel.
+
+C. RAFRAÎCHISSEMENT DU COMPTEUR
+1. Ouvrir une vidéo puis revenir à l'Accueil afin que le compteur se rafraîchisse.
+ATTENDU : le triangle ne revient jamais à l'ancien dessin après le rafraîchissement.
+
+D. NON-RÉGRESSION V1001
+1. Tester une publication Story, normale et Market.
+2. Ouvrir Mon profil puis un profil visiteur.
+ATTENDU : vocabulaire public et échelle nom/badge V1001 toujours présents.
+
+E. CACHE
+1. Déployer, fermer complètement la PWA puis la rouvrir une fois.
+ATTENDU : cache V1002 actif dès la nouvelle ouverture.

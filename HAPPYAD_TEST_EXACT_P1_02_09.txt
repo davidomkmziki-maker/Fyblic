@@ -1,0 +1,38 @@
+HAPPYAD — TEST EXACT P1.02.09
+Registre unique des modules et cycle mount / resume / suspend / unmount
+
+PRÉPARATION
+1. Déployer le contenu du ZIP à la racine du site.
+2. Fermer complètement HAPPYAD, puis le rouvrir.
+3. Se connecter avec un compte de test et rester sur Accueil.
+
+TEST PRINCIPAL — 5 À 7 MINUTES
+1. Ouvrir Vidéos, lancer une vidéo et la laisser jouer 3 secondes.
+2. Appuyer sur Messages pendant que la vidéo joue, puis attendre 5 secondes.
+   Résultat attendu : le son et la vidéo cachés s’arrêtent immédiatement ; Messages reste utilisable.
+3. Faire deux fois la boucle Accueil > Vidéos > Messages > Profil > Accueil.
+   Résultat attendu : chaque surface s’ouvre au premier appui, sans écran noir, sans blocage et sans double chargement visible.
+4. Depuis Profil, ouvrir Paramètres, revenir ; ouvrir Statistiques, revenir ; ouvrir Modifier le profil, revenir sans enregistrer.
+   Résultat attendu : chaque retour retrouve exactement Profil ; le menu inférieur ne disparaît pas et aucun écran ne reste superposé.
+5. Ouvrir une publication, ouvrir son partage, fermer le partage, ouvrir le profil de l’auteur, puis revenir.
+   Résultat attendu : le retour suit l’ordre inverse exact ; aucun partage ou profil fantôme ne reste affiché.
+6. Rester sur Messages, mettre le téléphone en arrière-plan pendant 10 secondes, puis revenir.
+   Résultat attendu : la même surface revient une seule fois ; aucun message, nom, son ou chargement n’est dupliqué.
+7. Se déconnecter, puis se reconnecter avec le même compte de test.
+   Résultat attendu : les surfaces privées sont recréées proprement ; aucune ancienne conversation, sélection de fichier ou surcouche ne réapparaît par erreur.
+
+ÉCHEC À SIGNALER
+- un son ou une vidéo continue derrière une autre page ;
+- un appui doit être répété pour ouvrir une surface ;
+- écran noir, page figée ou retour vers la mauvaise surface ;
+- chargement, contenu, message ou audio déclenché deux fois ;
+- ancienne donnée privée encore visible après déconnexion/reconnexion.
+
+CONTRÔLE TECHNIQUE FACULTATIF (CONSOLE NAVIGATEUR)
+window.HappyMasterRegistry.auditLifecycle()
+
+Résultat attendu :
+valid: true
+total: 17
+requiredHooks: ["mount", "resume", "suspend", "unmount"]
+missing: []

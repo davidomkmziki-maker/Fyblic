@@ -1,0 +1,30 @@
+TEST EXACT V997 — À FAIRE APRÈS DÉPLOIEMENT
+
+A. RADAR / BADGES
+1. Ouvrir Accueil avec une bonne connexion.
+2. Vérifier un profil Story avec badge et un nom court : badge entier, juste après le nom.
+3. Vérifier un profil Story avec un nom très long : le nom finit par « … », puis le badge reste entier.
+4. Faire défiler le Radar puis revenir : même résultat, aucun badge coupé.
+5. Passer en connexion moyenne/faible et attendre une hydratation du profil : le badge ne doit pas sortir de la zone du nom.
+
+B. RECHERCHE / STORIES
+1. Ouvrir Recherche.
+2. Vérifier un profil sans Story : aucun anneau autour de l'avatar.
+3. Vérifier un profil avec Story non vue : anneau multicolore.
+4. Cliquer exactement sur l'avatar : la Story doit s'ouvrir, pas le profil.
+5. Fermer la Story puis cliquer sur le nom ou la ligne du profil : le profil doit s'ouvrir normalement.
+6. Lire toutes les Stories du profil, revenir à Recherche : l'anneau doit devenir gris.
+7. Chercher un profil qui n'était pas visible dans les 20 premières Stories du Radar : attendre environ 0,5 à 1 seconde; si une Story active existe, l'anneau doit apparaître.
+
+C. COULEUR GLOBALE
+Ouvrir successivement : Accueil, Messages, Notifications, Profil, Profil visiteur, Paramètres, Assistance, Statistiques, Publier et Partage.
+Attendu : même famille gris-noir, sans page nettement bleue/noire/grise différente.
+Photo/Vidéo/Live : la zone média peut rester noire, mais les surfaces système autour doivent rester cohérentes.
+
+D. RÉGRESSION
+- Like / Love / Favori inchangés.
+- Scroll Accueil inchangé.
+- Ouverture profil depuis cartes inchangée.
+- Story Radar habituelle inchangée.
+- Recherche publications inchangée fonctionnellement.
+- Retour système et dock inférieur inchangés.

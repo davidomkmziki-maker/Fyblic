@@ -1,0 +1,36 @@
+HAPPYAD V1001 — QUATRE FINITIONS FINALES
+
+NOTE : historique V1001. Les points 1 et 2 sont remplacés par la correction
+précise V1002. Le ZIP courant suit HAPPYAD_V1002_COMPTEURS_PLAY_CHANGELOG.txt.
+
+1. COMPTEURS DES ACTIONS DANS L'ACCUEIL
+- La règle finale du maître core/actions-layout-master-v982.css a été corrigée.
+- Les chiffres J'aime, commentaires, partages et republications passent à 14 px.
+- Leur hauteur minimale est de 17 px pour éviter l'aspect trop court.
+- Les icônes, couleurs actives, espacements et zones tactiles restent inchangés.
+
+2. COMPTEUR DE VUES SUR LES CARTES
+- La forme grise en capsule a été retirée dans le maître
+  core/home-visual-maturity-master-v988.css.
+- Le rendu final est un indicateur discret de niveau professionnel : Play SVG blanc,
+  nombre tabulaire, aucun contour ni carte, ombre légère uniquement pour la lisibilité.
+- Le placement reste en bas à gauche et le format compact des grands nombres est conservé.
+
+3. PUBLICATION SANS NOM TECHNIQUE
+- Story et publication normale : le texte fixe, la progression, les notifications et
+  les erreurs visibles passent par le filtre public de modules/publish.html.
+- Marketplace : la progression et les erreurs visibles passent par le filtre public de
+  core/listing-publication-supabase-master-v821.js.
+- Le nom de l'infrastructure n'est plus affiché à l'utilisateur pendant une publication.
+- Les connexions, tables, stockages et appels techniques internes ne sont pas renommés.
+
+4. NOM ET BADGE DES PROFILS
+- La source commune core/profile/profile-design-v854r5.css a été réduite pour les deux
+  pages : Mon profil et profil visiteur.
+- En mode compact, le nom passe de 21 px à 19 px et le badge de 19 px à 16 px.
+- Le fond commun avec l'Accueil et le menu flottant de Mon profil restent inchangés.
+
+5. RACINE ET CACHE
+- Les quatre corrections sont intégrées à leurs maîtres existants : aucune nouvelle
+  feuille tardive, aucun MutationObserver et aucune surcouche parallèle.
+- Le Service Worker passe en V1001 et les URLs concernées sont versionnées.

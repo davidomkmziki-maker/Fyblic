@@ -1,0 +1,39 @@
+HAPPYAD V988R10 — profils, mentions et Story sur cartes
+31/08/2026
+
+Base : HAPPYAD0_ACCUEIL_MATURE_V988R9
+
+1. Commentaires / réponses / messages
+- Accueil : clic sur avatar ou nom d’un commentaire ouvre le profil exact.
+- Les réponses utilisent le même chemin, sans route parallèle.
+- Centrale Photo : activation du chemin profil commentaire (fonction absente auparavant).
+- Centrale Vidéo : chemin profil commentaire sécurisé par UID utilisateur.
+- Messages : avatar et nom dans la liste des conversations ouvrent le profil ; avatar et nom dans l’en-tête du chat aussi.
+- Le clic sur le reste de la ligne de conversation continue d’ouvrir la conversation.
+- Le long-press de suppression est neutralisé uniquement sur les zones nom/avatar afin d’éviter le conflit.
+
+2. Mentions @ dans les commentaires
+- @username rendu en bleu dans Accueil, Centrale Photo et Centrale Vidéo.
+- Clic sur @username : résolution du profil via profiles.username puis ouverture du profil visiteur exact.
+- Les réponses utilisent le même rendu.
+- Le bouton Voir plus des commentaires Accueil conserve les mentions bleues après expansion/réduction.
+
+3. Story autour des avatars des cartes Accueil
+- Anneau ajouté uniquement lorsqu’une Story active existe pour l’auteur.
+- Couleurs non-lu identiques au RADAR : orange / rose / violet / vert.
+- État entièrement lu : gris #6b7280, synchronisé avec le RADAR.
+- Clic sur l’avatar avec Story : ouvre le même propriétaire et le même point de départ que le RADAR (première Story non lue, sinon première Story).
+- Clic sur le + d’abonnement reste indépendant.
+- Sans Story, le comportement avatar/nom existant vers le profil reste inchangé.
+
+4. Photo du profil visiteur
+- Si une Story est disponible : clic avatar ouvre la Story, priorité conservée.
+- Si aucune Story n’est disponible : clic avatar ouvre la vraie photo de profil en lecteur plein écran noir, image centrée en object-fit contain.
+- Retour/fermeture du lecteur intégré au moteur de retour interne pour éviter de quitter le profil par erreur.
+
+Robustesse
+- Nouveau maître unique : core/profile-link-master-v992.js pour les liens identité et mentions commentaires.
+- Nouveau maître léger : core/home-card-story-ring-master-v992.js pour les anneaux Story Accueil.
+- Observation DOM limitée aux mutations structurelles, sans boucle sur les changements de classes.
+- Service Worker renouvelé : V988R10.
+- Boutons Annonce, double-tap Like et mise en page V988R9 non modifiés.

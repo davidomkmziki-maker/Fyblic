@@ -1,0 +1,23 @@
+HAPPYAD V986 BASE — CENTRALE VIDÉO / TEXTE PROPRE
+Date : 30 août 2026
+
+Périmètre volontairement minimal
+- Les cartes Accueil, la géométrie des médias, les photos et leurs object-fit ne sont pas modifiés.
+- La hiérarchie typographique V986 de l’Accueil est conservée telle quelle.
+- La date n’est pas retouchée : son ajustement était facultatif et ne justifie pas un risque de régression.
+
+Correction Centrale vidéo
+1. Les titres techniques automatiques sont masqués à l’affichage :
+   « Publication HAPPYAD », « Vidéo HAPPYAD », « Video HAPPYAD », « Photo HAPPYAD »
+   ainsi que l’ancien libellé générique « Publication ».
+2. « Aucune description. » (avec variantes de casse/ponctuation) est masqué.
+3. Les vrais titres et les vraies descriptions restent affichés, y compris les mentions.
+4. Si aucun vrai texte n’existe, tout le bloc d’information disparaît sans conserver d’espace vide.
+5. « Voir plus » disparaît avec la description lorsqu’aucun texte réel n’existe ; son comportement existant reste sinon inchangé.
+6. Le même filtrage est réappliqué après modification d’une publication ou rafraîchissement doux du flux.
+
+Robustesse PWA
+- Route/preload Centrale vidéo cache-bustée en v=986-base-video-text.
+- Cache Service Worker renouvelé sans modifier les autres routes V986.
+
+Cette archive est destinée à servir de base stable V986 après validation du test exact.

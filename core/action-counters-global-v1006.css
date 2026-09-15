@@ -1,0 +1,176 @@
+/* Fyblic V1006 — COMPTEURS 15 PX GLOBAL + ACTIONS VIDEO ALIGNÉES ACCUEIL
+   Couche finale de présentation. Aucun changement de logique réseau, navigation,
+   média, like, commentaire, partage, republication ou favoris. */
+
+/* Accueil : tous les compteurs d'actions à 15 px, suffixe dans le même texte. */
+html body #list.homeTimeline .miniActions .actionBtn small,
+html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn small,
+html body .feedGrid .miniActions .actionBtn small,
+html body .hScroller .miniActions .actionBtn small,
+html body .homeTimeline .miniActions .actionBtn small{
+  font-size:15px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  text-overflow:clip!important;
+  font-variant-numeric:tabular-nums!important;
+  letter-spacing:-.2px!important;
+  max-width:4.8em!important;
+}
+
+/* Le 15 px reste prioritaire aussi sur les petits écrans. */
+@media(max-width:370px){
+  html body #list.homeTimeline .miniActions .actionBtn small,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn small,
+  html body .feedGrid .miniActions .actionBtn small,
+  html body .hScroller .miniActions .actionBtn small,
+  html body .homeTimeline .miniActions .actionBtn small{
+    font-size:15px!important;
+    letter-spacing:-.35px!important;
+  }
+  html body #list.homeTimeline .miniActions,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions,
+  html body .feedGrid .miniActions,
+  html body .hScroller .miniActions,
+  html body .homeTimeline .miniActions{
+    padding-left:4px!important;
+    padding-right:4px!important;
+  }
+  html body #list.homeTimeline .miniActions .actionBtn,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions .actionBtn,
+  html body .feedGrid .miniActions .actionBtn,
+  html body .hScroller .miniActions .actionBtn,
+  html body .homeTimeline .miniActions .actionBtn{
+    gap:1px!important;
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  html body #list.homeTimeline .miniActions .haLineIcon,
+  html body #list.homeTimeline .miniActions .haLineIcon svg,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions .haLineIcon,
+  html body #list.homeTimeline .haAlbumFullSlide .miniActions .haLineIcon svg{
+    width:22px!important;
+    height:22px!important;
+    flex-basis:22px!important;
+  }
+  html body #happyadHomePhotoFullscreen .haHomeFsActions{
+    left:4px!important;
+    right:4px!important;
+    gap:0!important;
+  }
+  html body #happyadHomePhotoFullscreen .haHomeFsAct{
+    gap:1px!important;
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  html body #happyadHomePhotoFullscreen .haHomeFsAct .haFsSvg,
+  html body #happyadHomePhotoFullscreen .haHomeFsAct .haFsSvg svg{
+    width:22px!important;
+    height:22px!important;
+    flex-basis:22px!important;
+  }
+}
+
+/* Fullscreen photo : même taille exacte, y compris les chemins profil. */
+html body #happyadHomePhotoFullscreen .haHomeFsActions .haHomeFsAct small{
+  font-size:15px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  text-overflow:clip!important;
+  font-variant-numeric:tabular-nums!important;
+  letter-spacing:-.2px!important;
+  max-width:4.8em!important;
+}
+
+/* Compteur de vues sur les cartes Accueil. */
+html body #list.homeTimeline .happyadVideoViewsBadge,
+html body #list.homeTimeline .happyadVideoViewsCount{
+  font-size:15px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  font-variant-numeric:tabular-nums!important;
+  letter-spacing:-.2px!important;
+}
+html body #list.homeTimeline .happyadVideoViewsBadge{
+  max-width:calc(100% - 24px)!important;
+  overflow:hidden!important;
+}
+html body #list.homeTimeline .happyadVideoViewsCount{
+  display:inline-block!important;
+  max-width:5em!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+/* Centrale vidéo : taille visible des actions alignée sur l'Accueil.
+   Accueil = cible 44 px + SVG 24 px ; le compteur reste à 15 px. */
+.reel .side .act,
+.reel .side .haPostMoreActV613F{
+  min-width:58px!important;
+}
+.reel .side .act button,
+.reel .side .haPostMoreActV613F button,
+.reel .side .haPostMoreV613E{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+.reel .side .act .haLineIcon,
+.reel .side .act .haLineIcon svg,
+.reel .side .haPostMoreActV613F button svg,
+.reel .side .haPostMoreV613E .haPostMoreIconV80{
+  width:24px!important;
+  height:24px!important;
+  flex-basis:24px!important;
+}
+.reel .side .act .actCount{
+  display:block!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:58px!important;
+  margin:1px auto 0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  white-space:nowrap!important;
+  font-size:15px!important;
+  line-height:1!important;
+  font-variant-numeric:tabular-nums!important;
+  letter-spacing:-.25px!important;
+  text-align:center!important;
+}
+@media(max-height:720px){
+  .reel .side .act button,
+  .reel .side .haPostMoreActV613F button,
+  .reel .side .haPostMoreV613E{
+    width:44px!important;
+    height:44px!important;
+    min-width:44px!important;
+    min-height:44px!important;
+  }
+  .reel .side .act .haLineIcon,
+  .reel .side .act .haLineIcon svg,
+  .reel .side .haPostMoreActV613F button svg,
+  .reel .side .haPostMoreV613E .haPostMoreIconV80{
+    width:24px!important;
+    height:24px!important;
+    flex-basis:24px!important;
+  }
+  .reel .side .act .actCount{
+    font-size:15px!important;
+  }
+}
+@media(max-width:370px){
+  .reel .side .act .haLineIcon,
+  .reel .side .act .haLineIcon svg,
+  .reel .side .haPostMoreActV613F button svg,
+  .reel .side .haPostMoreV613E .haPostMoreIconV80{
+    width:22px!important;
+    height:22px!important;
+    flex-basis:22px!important;
+  }
+  .reel .side .act .actCount{font-size:15px!important;}
+}
+

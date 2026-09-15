@@ -1,0 +1,49 @@
+TEST EXACT V1000
+
+A. NOM COURT SANS BADGE
+1. Ouvrir l'Accueil.
+2. Observer une Story dont le nom est court.
+ATTENDU : nom complet, centré, sans « … ».
+
+B. NOM NORMAL AVEC BADGE
+1. Observer une Story avec badge et nom tenant dans la largeur.
+ATTENDU : nom complet puis badge entier, sur une seule ligne.
+
+C. NOM TRÈS LONG AVEC BADGE
+1. Tester un vrai nom très long sur une Story.
+ATTENDU : seul le nom finit par « … » ; le badge reste entier et visible.
+
+D. POINT VERT — DÉMARRAGE
+1. Fermer complètement l'application/PWA.
+2. La rouvrir avec connexion bonne, moyenne puis faible.
+3. Observer le Radar dès sa première apparition.
+ATTENDU : aucun point vert ne s'affiche, même pendant une fraction de seconde.
+
+E. STABILITÉ DU RADAR
+1. Ouvrir puis fermer une Story.
+2. Aller dans Messages puis revenir à l'Accueil.
+3. Faire défiler horizontalement le Radar.
+ATTENDU : même format nom + badge ; aucune deuxième mise en forme ni saut.
+
+F. COULEUR MON PROFIL
+1. Depuis l'Accueil, ouvrir Mon profil.
+2. Observer le squelette puis la page chargée.
+ATTENDU : fond #0d1117 identique à l'Accueil pendant les deux états.
+ATTENDU : le menu flottant conserve exactement son apparence précédente.
+
+G. COULEUR PROFIL VISITEUR
+1. Ouvrir le profil d'une autre personne.
+2. Observer le squelette puis la page chargée.
+ATTENDU : même fond #0d1117 que l'Accueil et Mon profil.
+
+H. NON-RÉGRESSION
+1. Ouvrir une Story depuis son cercle.
+2. Vérifier Story vue/non vue, compteur de groupe et bouton + de Ma story.
+3. Revenir avec le bouton téléphone puis avec le menu.
+ATTENDU : ouverture, retour, compteurs et ajout Story fonctionnent comme avant.
+
+I. PREMIER DÉPLOIEMENT V1000
+1. Déployer le ZIP.
+2. Fermer complètement l'application/PWA puis la rouvrir une fois.
+ATTENDU : le nouveau Service Worker V1000 prend la main et l'ancien rendu ne revient pas.
+

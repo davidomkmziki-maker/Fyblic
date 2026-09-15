@@ -1,0 +1,13 @@
+HAPPYAD V979 — LAST DESIGN MASTER
+
+Base: HAPPYAD24_ACTIONS_COMPACT_INSTAGRAM_MASTER_V978.zip
+
+Corrections:
+1. Le master V979 est préchargé et appliqué dès le head, puis rechargé en dernier dans index.html : aucun ancien design ne doit apparaître avant le dernier.
+2. Albums groupés : ancien conteneur/barre extérieure neutralisé, gap horizontal = 0, une carte complète de 100% par slide afin qu’aucune tranche d’une carte voisine/ancienne ne reste visible.
+3. Centrale vidéo : icônes = 24px et compteurs = 13px, identiques aux cartes.
+4. Centrale vidéo : rail abaissé (47% normal, 44% écran court) ; ancien correctif 40% supprimé.
+5. Centrale vidéo : fonds restent totalement transparents.
+6. Cache Service Worker passé à V979.
+
+Aucune logique Like/Commentaire/Partage/Repost/Favori/Supabase n’a été modifiée.

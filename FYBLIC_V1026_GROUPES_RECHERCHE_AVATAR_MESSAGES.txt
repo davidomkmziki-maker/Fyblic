@@ -1,0 +1,17 @@
+FYBLIC V1026 — Groupes Recherche et avatar Messages
+Date : 13/09/2026
+
+1. Recherche
+- Une publication groupée compte désormais comme une seule publication.
+- Les lignes ayant le même batch_id, group_id ou album_id ne sont plus divisées en plusieurs cartes.
+- Les éléments du groupe sont ordonnés par leur index et transmis ensemble au plein écran.
+- Recherche récupère aussi les autres lignes du batch afin de ne pas ouvrir un groupe incomplet.
+- Un petit indicateur discret affiche le nombre de médias du groupe.
+
+2. Messages
+- Dès qu’une vraie photo de profil est chargée, le fond du squelette est entièrement remplacé.
+- Le squelette reste visible uniquement lorsque la photo est absente ou échoue réellement.
+- Le cercle Story coloré reste préservé sans contour blanc provenant du squelette.
+
+3. Cache PWA
+- Nouvelle version V1026 pour éviter de conserver les anciens fichiers après déploiement.

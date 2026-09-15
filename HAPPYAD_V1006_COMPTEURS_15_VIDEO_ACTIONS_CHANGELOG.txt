@@ -1,0 +1,24 @@
+HAPPYAD V1006 — COMPTEURS 15 PX GLOBAL + ACTIONS CENTRALE VIDEO ALIGNÉES ACCUEIL
+
+1. COMPTEURS À 15 PX
+- Accueil : compteurs Like / Commentaire / Partage / Republier à 15 px.
+- Fullscreen photo : mêmes compteurs à 15 px.
+- Centrale vidéo : compteurs à 15 px.
+- Compteur de vues sur les cartes Accueil : texte à 15 px.
+- Le 15 px reste verrouillé dans les media queries petits écrans.
+
+2. FORMATS SANS DÉBORDEMENT
+- La centrale vidéo utilise maintenant le même format compact que l'Accueil.
+- Exemples : 1K, 999K, 999.9K, 1M, 1.5M, 1MD.
+- K / M / MD restent dans le même nœud texte et à la même taille que les chiffres.
+- Les zones de texte sont bornées et restent sur une seule ligne.
+
+3. ACTIONS CENTRALE VIDÉO
+- Cible visible : 44 x 44 px, comme l'Accueil.
+- SVG : 24 x 24 px, comme l'Accueil.
+- Le conteneur de compteur garde assez de largeur pour les formats compacts longs.
+- Aucun fond, couleur d'état ou comportement d'action n'est modifié.
+
+4. CACHE
+- Service Worker passé à V1006.
+- Nouveau maître final : core/action-counters-global-v1006.css.

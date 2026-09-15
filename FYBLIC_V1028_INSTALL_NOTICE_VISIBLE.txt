@@ -1,0 +1,9 @@
+FYBLIC V1028 — NOTIFICATION D’INSTALLATION VISIBLE
+
+- L’affichage automatique de la notification est rétabli après le démarrage.
+- Une seconde tentative d’affichage sécurise les navigateurs mobiles plus lents.
+- Seul le bouton « Télécharger » déclenche l’installation.
+- Aucun guide manuel n’est ouvert.
+- Le swipe gauche/droite et la position corrigée de la notification sonore sont conservés.
+
+Cache PWA mis à jour vers V1028.

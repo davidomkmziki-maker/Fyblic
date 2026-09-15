@@ -1,0 +1,33 @@
+HAPPYAD V988R1 — CORRECTIONS VISUELLES DE L'ACCUEIL
+Date : 30 août 2026
+
+OBJECTIF
+Conserver toute la logique existante de l'accueil et corriger uniquement
+l'affichage signalé après la finition V988.
+
+CORRECTIONS
+1. Le bouton Favoris est de nouveau visible sur toutes les cartes sociales.
+   La rangée conserve les cinq actions : aimer, commenter, partager,
+   republier et ajouter aux favoris.
+2. Les cartes n'ont plus de contour, d'ombre, d'arrondi extérieur ni de ligne
+   de séparation. Le fil et les cartes utilisent exactement le même gris.
+3. Les points des albums sont désormais intégrés dans la carte, entre le média
+   et la description. Ils sont plus petits et ne gênent ni le contenu ni le
+   balayage horizontal.
+4. La surface de l'accueil, son en-tête, son fil, ses zones de texte, ses
+   actions et sa navigation utilisent le gris uniforme #11151b. Le noir pur
+   reste réservé aux médias quand leur format l'exige.
+
+GARANTIE FONCTIONNELLE
+- Aucun gestionnaire d'action n'a été supprimé ou remplacé.
+- Aucun compteur, chargement, route, requête, stockage ou état métier n'a été
+  modifié.
+- Le contrôleur existant des points et du balayage d'album est conservé ; seul
+  l'emplacement du conteneur de points dans la carte a changé.
+
+TESTS CONSEILLÉS SUR TÉLÉPHONE
+- Vérifier les cinq actions sur photo, vidéo et album.
+- Ajouter puis retirer une publication des favoris.
+- Balayer un album et vérifier le déplacement du point actif.
+- Faire défiler plusieurs publications : aucune bordure, forme ou bande noire
+  ne doit apparaître entre deux cartes.

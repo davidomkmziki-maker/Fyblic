@@ -1,0 +1,18 @@
+HAPPYAD V988R11 — COMMENT @ MENTION AUTOCOMPLETE
+Date: 2026-08-31
+Base: HAPPYAD0_ACCUEIL_MATURE_V988R10
+
+Correction ciblée uniquement sur la saisie des mentions dans les commentaires.
+
+1. Taper @ dans un commentaire ouvre un popup de vrais profils Supabase.
+2. Taper des lettres après @ recherche simultanément dans username et full_name.
+3. @ seul privilégie les amis/abonnements, avec repli sur des profils disponibles.
+4. Le popup affiche photo profil, nom, @username et badge; aucun avatar lettre artificiel n'est ajouté.
+5. Cliquer un résultat insère le @username réel dans le texte et replace le curseur proprement.
+6. Fonctionne sur Accueil, Photo et Centrale vidéo, y compris pour une réponse à un commentaire.
+7. Navigation clavier: flèches pour sélectionner, Entrée uniquement si une suggestion est sélectionnée, Échap ferme le popup. Entrée normale reste libre pour les comportements de commentaire existants.
+8. Les règles de confidentialité des mentions sont respectées lorsque leur policy est disponible.
+9. Après publication, le rendu bleu et l'ouverture vers le vrai profil restent assurés par ProfileLink Master V992 (résolution du username vers l'ID Supabase réel).
+10. Service Worker renouvelé en V988R11 afin d'éviter l'ancien cache.
+
+Aucun changement sur les cartes, boutons annonce, double tap Love, Stories, Messages, Supabase schema ou navigation générale.

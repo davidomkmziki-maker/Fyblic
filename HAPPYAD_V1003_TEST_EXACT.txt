@@ -1,0 +1,23 @@
+TEST EXACT V1003
+
+A. TAILLE ET POSITION
+1. Ouvrir une carte Accueil contenant plusieurs compteurs non nuls.
+ATTENDU : chiffres légèrement plus grands que V1002.
+ATTENDU : même position verticale et horizontale, sans déplacement des icônes.
+
+B. FORMATS COURTS
+Tester les valeurs 1000, 999000, 999900, 1000000 et 1500000 si disponibles.
+ATTENDU : 1K, 999K, 999.9K, 1M et 1.5M.
+
+C. MÊME TAILLE
+Observer visuellement chaque suffixe K, M ou MD.
+ATTENDU : suffixe exactement à la même hauteur, graisse et taille que les chiffres.
+
+D. NON-RÉGRESSION
+ATTENDU : fond noir et nouveau triangle Play du compteur de vues inchangés.
+ATTENDU : publication Story/normale/Market et profils inchangés.
+
+E. CACHE
+Déployer, fermer complètement la PWA puis la rouvrir une fois.
+ATTENDU : cache V1003 actif.
+

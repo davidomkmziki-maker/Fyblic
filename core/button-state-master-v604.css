@@ -1,0 +1,261 @@
+/* Fyblic V604 — menu inférieur isolé et J’aime rose/rouge dans tous les modules.
+   - aucun orange pour les états actifs
+   - aucun encadrement persistant sur J'aime ou les onglets Profil
+   - retour tactile visible sans bloquer le clic réel
+*/
+:root{
+  --ha-btn-white:#fff;
+  --ha-btn-muted:rgba(255,255,255,.76);
+  --ha-btn-border:rgba(255,255,255,.92);
+  --ha-btn-press-bg:rgba(255,255,255,.055);
+}
+
+button,
+a[href],
+[role="button"],
+label[for],
+input[type="button"],input[type="submit"],input[type="reset"],
+.nav,.chip,.tab,.filterBtn,.sortBtn,.topBtn,.round,.actionBtn,.profileAct,.catCard,
+.targetBtn,.periodBtn,.issueChip,.typeCard,.settingsGrid button,
+[data-action],[data-card-act],[data-profile-act],[data-tab],[data-filter],[data-command],[data-open],[data-close]{
+  -webkit-tap-highlight-color:transparent!important;
+  touch-action:manipulation;
+}
+
+/* Aucun cadre de focus persistant après un toucher Android. */
+button:focus:not(:focus-visible),a[href]:focus:not(:focus-visible),[role="button"]:focus:not(:focus-visible),
+.actionBtn:focus,.profileAct:focus,.haProfileMasterTab:focus{
+  outline:none!important;
+}
+.actionBtn:focus,.profileAct:focus,.haProfileMasterTab:focus{
+  box-shadow:none!important;
+}
+
+/* Neutralisation des anciennes couches de clic. */
+.happyadTapOrange,.happyadTapOrange *,
+.happyadBottomPressedV504,.happyadBottomPressedV504 *,
+.happyadMainDockPressedV586,.happyadMainDockPressedV586 *,
+.happyadButtonPressedV602,.happyadButtonPressedV602 *{
+  color:inherit!important;
+  border-color:inherit!important;
+  filter:none!important;
+  text-shadow:none!important;
+}
+
+/* Retour tactile interne: discret, visible assez longtemps, sans empêcher l'action. */
+.happyadButtonPressedV604,
+button:active,a[href]:active,[role="button"]:active,
+.nav:active,.chip:active,.tab:active,.filterBtn:active,.sortBtn:active,.topBtn:active,
+.round:active,.actionBtn:active,.profileAct:active,.catCard:active,.targetBtn:active,.periodBtn:active,
+.issueChip:active,.typeCard:active,.settingsGrid button:active,
+[data-action]:active,[data-card-act]:active,[data-profile-act]:active,[data-tab]:active,[data-filter]:active{
+  color:var(--ha-btn-white)!important;
+  border-color:var(--ha-btn-border)!important;
+  background-color:var(--ha-btn-press-bg)!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  filter:brightness(1.16)!important;
+  text-shadow:none!important;
+  translate:0 1px!important;
+  scale:.975!important;
+  transition:translate .06s ease,scale .06s ease,background-color .06s ease,color .06s ease,filter .06s ease!important;
+}
+.happyadButtonPressedV604 *,button:active *,a[href]:active *,[role="button"]:active *{color:inherit!important}
+.happyadButtonPressedV604 svg,.happyadButtonPressedV604 svg *,
+button:active svg,button:active svg *,a[href]:active svg,a[href]:active svg *,
+[role="button"]:active svg,[role="button"]:active svg *{
+  stroke:currentColor!important;
+  filter:none!important;
+}
+
+/* Les boutons d'action et les onglets Profil ne doivent jamais recevoir un rectangle. */
+.actionBtn,.profileAct,.haProfileMasterTab,
+.actionBtn:active,.profileAct:active,.haProfileMasterTab:active,
+.actionBtn.happyadButtonPressedV604,.profileAct.happyadButtonPressedV604,.haProfileMasterTab.happyadButtonPressedV604{
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+.actionBtn:active,.profileAct:active,.haProfileMasterTab:active,
+.actionBtn.happyadButtonPressedV604,.profileAct.happyadButtonPressedV604,.haProfileMasterTab.happyadButtonPressedV604{
+  filter:brightness(1.3)!important;
+  translate:0 1px!important;
+  scale:.94!important;
+}
+
+/* États choisis: blanc uniquement. Les composants en pilule conservent une bordure blanche claire. */
+.chip.on,.chip.active,.tab.active,.filterRow button.active,.filterBtn.active,.sortBtn.active,
+.targetBtn.on,.settingsGrid button.on,.typeCard.on,.periodBtn.active,.issueChip.active,.catCard.active,
+.mediaThumb.active,.viewerThumb.active,[aria-selected="true"]:not(.haProfileMasterTab){
+  color:#fff!important;
+  border-color:rgba(255,255,255,.92)!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+  text-shadow:none!important;
+}
+
+/* Profil propriétaire et visiteur: onglet actif sans cadre, avec trait blanc. */
+#happyadProfileTabsMaster .haProfileMasterTab,
+#happyadProfileTabsMaster .haProfileMasterTab.is-active{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+#happyadProfileTabsMaster .haProfileMasterTab.is-active{color:#fff!important}
+#happyadProfileTabsMaster .haProfileMasterTab.is-active::after{
+  background:#fff!important;
+  box-shadow:none!important;
+}
+
+/* J'aime : aucun cadre. Quand il est actif, le coeur et son compteur deviennent rose/rouge. */
+.miniActions .actionBtn,.profileActions .profileAct,
+[data-card-act="like"],[data-profile-act="like"],
+[data-profile-fs-act="like"],.act[data-act="like"],
+.haCommentLike,[data-comment-like],.cLike,[data-like-comment],
+#hsvLike,.hsvAct.like{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  outline:none!important;
+}
+
+[data-card-act="like"].on,
+[data-profile-act="like"].on,
+[data-profile-fs-act="like"].on,
+.act[data-act="like"].on,
+.haHomeFsAct[data-card-act="like"].on,
+.haCommentLike.on,
+[data-comment-like].on,
+.cLike.liked,
+[data-like-comment].likeOn,
+#hsvLike.on,
+.hsvAct.like.on,
+button[aria-pressed="true"][aria-label*="aime" i],
+button[aria-pressed="true"][aria-label*="like" i]{
+  color:#ff315f!important;
+  text-shadow:none!important;
+}
+
+[data-card-act="like"].on *,
+[data-profile-act="like"].on *,
+[data-profile-fs-act="like"].on *,
+.act[data-act="like"].on *,
+.haHomeFsAct[data-card-act="like"].on *,
+.haCommentLike.on *,
+[data-comment-like].on *,
+.cLike.liked *,
+[data-like-comment].likeOn *{
+  color:#ff315f!important;
+}
+
+[data-card-act="like"].on svg path,
+[data-profile-act="like"].on svg path,
+[data-profile-fs-act="like"].on svg path,
+.act[data-act="like"].on svg path,
+.haHomeFsAct[data-card-act="like"].on svg path,
+.haCommentLike.on svg path,
+[data-comment-like].on svg path,
+.cLike.liked svg path,
+button[aria-pressed="true"][aria-label*="aime" i] svg path,
+button[aria-pressed="true"][aria-label*="like" i] svg path{
+  fill:#ff315f!important;
+  stroke:#ff315f!important;
+}
+
+/* Les actions non-J’aime restent blanches, même lorsqu'elles sont sélectionnées. */
+.miniActions .actionBtn.on:not([data-card-act="like"]),
+.profileActions .profileAct.on:not([data-profile-act="like"]){
+  color:#fff!important;
+}
+
+/* Menu fixe V604 : moitié haute réellement vide/transparente, moitié basse noire légère.
+   Le parent de navigation pose une surface du module actif sous le dock afin que l'Accueil
+   ne soit jamais visible derrière Profil, Messages ou Vidéos. */
+.bottom.happyadMainDockV585{
+  background:linear-gradient(to top,
+    rgba(4,6,9,.98) 0%,
+    rgba(4,6,9,.98) 50%,
+    rgba(4,6,9,0) 50%,
+    rgba(4,6,9,0) 100%)!important;
+  border-top:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  pointer-events:none!important;
+}
+.bottom.happyadMainDockV585 .nav{
+  pointer-events:auto!important;
+}
+.bottom.happyadMainDockV585 .nav,
+.bottom.happyadMainDockV585 .nav:not(.active),
+.bottom.happyadMainDockV585 .nav.active{
+  color:#f7f8fb!important;
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  outline:none!important;
+  filter:none!important;
+}
+.bottom.happyadMainDockV585 .nav .mainDockLabel{color:rgba(255,255,255,.72)!important}
+.bottom.happyadMainDockV585 .nav.active .mainDockLabel{color:#fff!important;font-weight:1000!important}
+
+/* Au clic du menu: aucun fond gris, seulement un mouvement et un blanc plus clair. */
+.bottom.happyadMainDockV585 .nav:active,
+.bottom.happyadMainDockV585 .nav.happyadButtonPressedV604,
+.bottom.happyadMainDockV585 .nav.happyadButtonPressedV603,
+.bottom.happyadMainDockV585 .nav.happyadButtonPressedV602{
+  color:#fff!important;
+  background:transparent!important;
+  background-image:none!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  filter:brightness(1.28)!important;
+  translate:0 1px!important;
+  scale:.92!important;
+}
+.bottom.happyadMainDockV585 .nav svg,.bottom.happyadMainDockV585 .nav svg *{stroke:currentColor!important}
+
+/* Pictogrammes remplis en blanc pour l'onglet actif. */
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="home"] .mainDockIcon path{fill:#fff!important;stroke:#fff!important}
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="video"] .mainDockIcon rect{fill:#fff!important;stroke:#fff!important}
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="video"] .mainDockIcon path{fill:#080a0e!important;stroke:#080a0e!important}
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="publish"] .mainDockPublishIcon{background:#fff!important;border-color:#fff!important;color:#080a0e!important}
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="publish"] .mainDockPublishIcon svg,
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="publish"] .mainDockPublishIcon svg *{stroke:#080a0e!important}
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="message"] .mainDockIcon path:first-child{fill:#fff!important;stroke:#fff!important}
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="message"] .mainDockIcon path:last-child{fill:none!important;stroke:#080a0e!important}
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="profile"] .mainDockIcon circle,
+.bottom.happyadMainDockV585 .nav.active[data-happyad-main-nav="profile"] .mainDockIcon path{fill:#fff!important;stroke:#fff!important}
+
+/* Surface stable sous le dock lorsque l'une des grandes pages est ouverte. */
+#happyadDockSurfaceV604{
+  position:fixed!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  height:var(--happyad-main-dock-total,76px)!important;
+  z-index:999979!important;
+  display:none!important;
+  pointer-events:none!important;
+  background:#000!important;
+}
+body.happyadParentAppLockedV604.happyadMainDockVisible:not([data-happyad-main-page="home"]) #happyadDockSurfaceV604{
+  display:block!important;
+}
+body[data-happyad-main-page="message"] #happyadDockSurfaceV604{background:#020a14!important}
+body[data-happyad-main-page="video"] #happyadDockSurfaceV604,
+body[data-happyad-main-page="profile"] #happyadDockSurfaceV604,
+body[data-happyad-main-page="profile_public"] #happyadDockSurfaceV604{background:#000!important}
+
+/* L'Accueil parent ne défile jamais derrière un module actif. */
+html.happyadParentAppLockedV604,
+body.happyadParentAppLockedV604{
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+}
+
+.navBadge,.homeNotificationBadge,[class*="Badge"]{translate:none!important;scale:1!important;transform:none!important}

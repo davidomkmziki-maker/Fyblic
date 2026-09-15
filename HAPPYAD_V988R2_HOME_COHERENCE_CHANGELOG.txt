@@ -1,0 +1,34 @@
+HAPPYAD V988R2 — COHÉRENCE FINALE DE L'ACCUEIL
+Date : 30 août 2026
+
+OBJECTIF
+Aligner les publications sociales normales sur la continuité visuelle déjà
+obtenue par les cartes Annonce, sans modifier leur fonctionnement.
+
+CORRECTIONS
+1. Publications normales
+   - neutralisation de l'ancienne règle V981/V983 qui réappliquait un fond
+     #090c12, une bordure, une ombre et un arrondi de 18 à 22 px ;
+   - même gris #11151b pour le fil, l'auteur, la description et les actions ;
+   - aucun contour, arrondi, ombre ou ligne entre les publications.
+
+2. Albums
+   - les points sont placés directement sur le bas de l'image ;
+   - aucune barre ou ligne grise supplémentaire n'est créée ;
+   - le contrôleur de balayage et le point actif restent inchangés.
+
+3. Vidéos
+   - bouton lecture plus compact, sans anneau gris ;
+   - fond noir translucide discret et triangle blanc net, correctement centré.
+
+4. Lisibilité
+   - descriptions en blanc très clair, avec graisse normale ;
+   - « Voir plus » conserve sa couleur secondaire distincte ;
+   - icônes et compteurs d'action deviennent plus clairs ;
+   - couleurs actives Like, Republier et Favoris conservées.
+
+GARANTIE FONCTIONNELLE
+- Aucun gestionnaire de clic, compteur, chargement, média, route, stockage,
+  requête ou état de données n'a été modifié.
+- La seule adaptation HTML déplace le conteneur des points dans le viewport
+  album ; ses classes, sa référence et son contrôleur restent identiques.

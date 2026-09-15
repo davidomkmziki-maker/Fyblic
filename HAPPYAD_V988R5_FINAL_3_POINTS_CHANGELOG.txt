@@ -1,0 +1,10 @@
+HAPPYAD V988R5 — TROIS FINITIONS VALIDÉES
+
+Base conservée : V988R4.
+
+1. Les SVG Recherche et Notifications de l’Accueil passent à 24 px dans leurs boutons existants : légèrement plus visibles, sans agrandir la barre ni modifier les zones de clic.
+2. Le triangle noir du bouton lecture central des cartes est recentré optiquement dans le cercle blanc (décalage optique conservé à droite et 1,5 px vers le bas). Le cercle, le clic et la logique vidéo restent inchangés.
+3. Lorsqu’un compte n’a pas de photo de profil, HAPPYAD affiche désormais un avatar générique cohérent avec la référence fournie : cercle blanc, tête et épaules grises. Cette règle est centralisée par le maître d’avatar et couvre les surfaces sociales qui l’utilisent (Accueil, cartes, commentaires, Radar, Centrale vidéo, Photos, Messages, Notifications, Partage, Publication et Profils). Une image réelle reprend toujours priorité dès qu’elle existe ou charge correctement.
+
+Aucune image n’a été générée ni ajoutée au ZIP. Le fallback est dessiné uniquement en CSS.
+Aucune logique métier, compteur, like, commentaire, partage, navigation, chargement média, album, story, Supabase ou route n’a été modifiée.

@@ -1,0 +1,11 @@
+HAPPYAD V988R14 — COMMENT MENTION PRIMARY NAME
+
+Correction ciblee depuis V988R13.
+
+1. Le popup @ continue de rechercher par nom principal et @username.
+2. Lors de la selection, le champ commentaire affiche maintenant le premier nom du profil (profiles.full_name), pas le nom d'utilisateur permanent de la deuxieme ligne.
+3. Le vrai username reste conserve uniquement comme identifiant technique lors de l'enregistrement afin que l'ouverture du profil reste exacte et survive aux homonymes.
+4. Le rendu publie continue d'afficher @ + nom principal en bleu + vrai badge HAPPYAD.
+5. Le cache mentions passe a V996 pour eliminer les anciennes valeurs pouvant afficher le username comme nom.
+6. Accueil, Photo et Centrale video utilisent la meme serialisation.
+7. Aucun changement sur les likes, stories, cartes, annonces, messages ou navigation.

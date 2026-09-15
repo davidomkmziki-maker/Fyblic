@@ -1,0 +1,17 @@
+TEST EXACT V998
+
+A — Recherche
+1. Ouvrir Accueil > Recherche.
+2. Vérifier que la barre affiche seulement « Recherche ».
+3. Sans taper, contrôler 4 profils : avatar à gauche ; nom, badge et @username à droite de l'avatar ; Voir à droite.
+4. Vérifier un profil sans Story : aucun cercle coloré/gris.
+5. Vérifier un profil avec Story non lue : cercle multicolore clairement épais.
+6. Ouvrir sa Story depuis l'avatar, revenir, puis vérifier que le cercle passe en état lu/gris quand toutes ses Stories sont vues.
+7. Cliquer sur le nom / la ligne hors avatar : le profil doit s'ouvrir, pas la Story.
+
+B — Menu exclusif
+1. Ouvrir Recherche puis toucher Vidéos : Recherche doit disparaître immédiatement et ne jamais rester derrière.
+2. Vidéos > Messages > Profil > Accueil, dans cet ordre.
+3. À chaque toucher, vérifier qu'une seule page est visible : aucun texte, fond ou composant de la page précédente ne doit apparaître sous la nouvelle.
+4. Pendant une connexion moyenne/faible, répéter Vidéos > Messages > Profil : durant la préparation, seule la surface globale foncée peut être visible, jamais l'ancienne page en superposition.
+5. Vérifier Retour Android : la pile interne doit continuer de fonctionner normalement.

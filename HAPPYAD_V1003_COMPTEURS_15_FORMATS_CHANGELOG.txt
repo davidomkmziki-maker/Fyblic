@@ -1,0 +1,21 @@
+HAPPYAD V1003 — COMPTEURS ACCUEIL 15 PX + FORMATS UNIFORMES
+
+1. TAILLE
+- Les compteurs des actions Accueil passent de 14 px à 15 px.
+- Seule la propriété font-size du maître existant est modifiée.
+- La position, la hauteur des boutons, l'alignement, les espaces et les icônes
+  restent exactement ceux de V1002.
+
+2. FORMATS
+- Le maître renvoie un texte simple et continu : aucun suffixe réduit ou séparé.
+- K, M et MD utilisent donc exactement la même police, taille et graisse que les chiffres.
+- Exemples vérifiés : 1K, 999K, 999.9K, 1M, 1.5M et 1MD.
+- Les nombres restent tronqués à une décimale, sans arrondi trompeur vers l'unité suivante.
+
+3. NON-RÉGRESSION
+- Le fond noir et le Play professionnel V1002 du compteur de vues sont conservés.
+- Les publications et les profils conservent toutes les corrections V1001.
+
+4. CACHE
+- Le Service Worker et la feuille maître des actions passent en V1003.
+

@@ -1,0 +1,26 @@
+HAPPYAD V1002 — COMPRÉHENSION EXACTE COMPTEURS + PLAY
+
+NOTE : la taille 14 px du point 1 est remplacée par 15 px dans V1003.
+Le fond noir et le nouveau Play professionnel V1002 restent la base active.
+
+1. CHIFFRES DES ACTIONS ACCUEIL
+- Seule la taille visuelle des chiffres passe de 12,5 px à 14 px.
+- Aucune hauteur minimale, boîte, translation ou règle d'alignement n'est ajoutée.
+- Les chiffres gardent donc exactement leur position V1000.
+- Les icônes et les zones tactiles restent strictement inchangées.
+
+2. COMPTEUR DE VUES
+- Le fond noir V1000 est entièrement restauré : même position, même marge,
+  même padding, même rayon et même taille du nombre.
+- Seul le dessin du triangle Play est remplacé.
+- Le nouveau chemin SVG est un symbole Play vectoriel standard, propre et courbe,
+  identique dans le rendu maître, le rafraîchissement des actions et le fallback Accueil.
+
+3. CORRECTIONS V1001 CONSERVÉES
+- Le vocabulaire public des publications Story, normales et Market reste corrigé.
+- La taille réduite du nom et du badge sur les deux profils reste corrigée.
+- La palette commune Accueil/Profils et le menu flottant ne changent pas.
+
+4. ARCHITECTURE ET CACHE
+- Les corrections sont réalisées dans les maîtres existants, sans surcouche tardive.
+- Le Service Worker et les quatre ressources concernées passent en cache V1002.

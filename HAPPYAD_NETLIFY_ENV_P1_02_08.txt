@@ -1,0 +1,21 @@
+HAPPYAD — P1.02.08 — VARIABLES NETLIFY
+
+Configurer ces deux variables dans Netlify, puis relancer un déploiement :
+
+HAPPYAD_SUPABASE_URL
+  URL HTTPS du projet Supabase.
+
+HAPPYAD_SUPABASE_PUBLISHABLE_KEY
+  Clé publique Supabase commençant par sb_publishable_.
+
+Alias compatibles si déjà configurés :
+  SUPABASE_URL
+  SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_ANON_KEY (uniquement si sa valeur est une clé sb_publishable_)
+
+Règles de sécurité :
+  - Ne jamais placer SUPABASE_SERVICE_ROLE_KEY dans le navigateur ou ce fichier.
+  - Ne jamais enregistrer une clé secrète dans Git, le ZIP ou netlify.toml.
+  - Les fonctions de partage utilisent seulement la clé publiable et respectent RLS.
+  - Si les variables manquent, les liens continuent de s'ouvrir et l'image générique
+    HAPPYAD est utilisée, sans révéler de configuration interne.

@@ -1,0 +1,114 @@
+FYBLIC V1007 — MARQUE, PROFIL VISITEUR ET MESSAGES
+Date : 12 septembre 2026
+
+1. Identité Fyblic
+- Nom visible HAPPYAD remplacé par Fyblic dans les interfaces actives.
+- Nom d'accueil Fyblic écrit directement dans le code source HTML/CSS.
+- Manifest PWA, titres de pages, partages et textes système actualisés.
+- Les anciens identifiants internes HAPPYAD restent compatibles avec Supabase,
+  les caches, les sessions et les données déjà enregistrées.
+- Section principale « Annonces » renommée « Boutique ».
+- « Chat HAPPYAD » renommé « Chat annonce ».
+
+2. Profil visiteur et fullscreen photo
+- Clic sur une photo de la grille : ouverture directe du fullscreen existant.
+- Un clic simple sur la photo ou le fond ne ferme plus le fullscreen.
+- Double-clic/double-tap sur la photo : like direct, sans retirer un like existant.
+- Glissement d'album, zoom et déplacement conservés.
+- Fermeture visuelle uniquement par la flèche en haut à gauche.
+
+3. Messages
+- Nom et avatar dans la liste ouvrent désormais uniquement la conversation.
+- Le profil visiteur s'ouvre uniquement depuis le nom ou l'avatar dans l'en-tête
+  du message direct entre les deux personnes.
+
+4. Cache
+- Version PWA V1007 afin que les téléphones reçoivent les fichiers corrigés.
+
+CORRECTIF FYBLIC V1008
+- Le premier toucher sur une photo du profil visiteur ouvre maintenant le
+  fullscreen après la fin exacte du geste, sans attendre un second toucher.
+- Le double-tap du fullscreen utilise l'état réel du like et affiche désormais
+  le grand cœur rose animé avec ses quatre confirmations autour.
+- Le zoom, le glissement d'album et le retour en haut à gauche restent protégés.
+
+CORRECTIF FYBLIC V1009
+- Centrale vidéo rapprochée du dessin fourni : actions légèrement agrandies,
+  traits renforcés, espacement équilibré et compteurs verrouillés à 15 px.
+- Ajout du bouton son en SVG ; un toucher affiche « Utilisation des sons bientôt ».
+- Les commentaires reprennent la feuille sombre de l’Accueil. La vidéo s’adapte
+  au-dessus de la feuille et continue sa lecture pendant la consultation.
+- Suppression du second dessin de double-tap fullscreen : le fullscreen photo
+  et l’Accueil partagent maintenant exactement le même moteur et le même CSS.
+- Cache PWA V1009 pour distribuer immédiatement ces corrections.
+
+CORRECTIF FYBLIC V1010
+- Pile d’actions Centrale vidéo recalée au-dessus de la progression : taille et
+  espacement rapprochés de la référence Instagram, compteurs toujours à 15 px.
+- Les trois points ne peuvent plus entrer dans la ligne d’évolution vidéo.
+- Ancien geste de redimensionnement des commentaires entièrement remplacé.
+- Glissement de la poignée : agrandissement/réduction continu et fluide du panneau.
+- La petite vidéo arrondie s’adapte simultanément à la hauteur disponible.
+- Glissement de la vidéo vers le bas : fermeture du panneau commentaires.
+- Glissement de la vidéo vers le haut : aucune action parasite.
+- Lecture vidéo préservée pendant tous ces gestes.
+- Cache PWA V1010 pour distribuer la nouvelle interaction.
+
+CORRECTIF FYBLIC V1011
+- Colonne d’actions compactée et descendue : le premier bouton commence au
+  niveau occupé précédemment par Partager et les trois points finissent au
+  niveau de « Voir plus », sans toucher la progression.
+- Le bouton d’utilisation du son est maintenant un petit disque circulaire
+  affichant la photo réelle du créateur ou l’avatar Fyblic par défaut.
+- Cache PWA V1011 pour distribuer ce réglage visuel.
+
+CORRECTIF FYBLIC V1012
+- Toute la colonne d’actions est descendue davantage vers le bas.
+- Les trois points passent avant le bouton son.
+- Le petit cercle du son est réduit à 29 px et placé tout en bas de la colonne.
+- Cache PWA V1012 pour distribuer cet alignement final.
+
+CORRECTIF FYBLIC V1013
+- La photo du créateur remplit maintenant entièrement et proprement le cercle supérieur.
+- La photo du bouton son remplit également tout son disque sans espace intérieur.
+- Cercle sonore visible porté à 32 px, toujours plus petit que le profil supérieur.
+- Zone tactile du son conservée à 44 px pour un toucher fiable.
+- Cache PWA V1013 pour distribuer ce dernier réglage.
+
+CORRECTIF FYBLIC V1014 — RECHERCHE
+- Ouverture sans clavier sur une vraie page Découvrir.
+- Publications regroupées par créateur, avec priorité locale aux abonnements et
+  aux contenus récents, par lots progressifs de 20.
+- Badge « Nouveau » discret sur les publications des dernières 24 heures.
+- Le clavier apparaît uniquement après un toucher dans la barre de recherche.
+- À ce moment : quatre recherches récentes, puis « Voir plus » par lots de 20.
+- Suppression individuelle d’une recherche et réutilisation en un toucher.
+- Suggestions de profils placées sous l’historique dans Recherche.
+- Suggestions masquées dans Notifications afin d’éviter le doublon.
+- Résultats de saisie portés à 20 profils et 20 publications au premier lot.
+- Design Découvrir propre à Fyblic, distinct de YouTube.
+- Cache PWA V1014 pour distribuer la nouvelle Recherche.
+
+CORRECTIF FYBLIC V1015
+- La découverte devient un flux visuel unique, trié par nouveauté et mélangé
+  entre les créateurs, avec deux publications maximum par créateur et par lot.
+- Les cartes génériques affichent désormais le vrai nom du créateur ; les
+  vidéos indiquent aussi leur nombre de vues dans un format compact.
+- Les suggestions affichent six profils au départ, puis « Voir plus » charge
+  vingt profils supplémentaires à chaque demande.
+- Le bouton « S’abonner » agit directement depuis la suggestion et devient
+  « Abonné » lorsque la relation existe déjà ou vient d’être créée.
+- Libellés et hiérarchie typographique de la Recherche simplifiés pour une
+  interface plus internationale, lisible et professionnelle.
+- Cache PWA V1015 pour distribuer ces améliorations.
+
+CORRECTIF FYBLIC V1016
+- Suppression du grand titre Recherche : la barre de saisie et le bouton X
+  partagent désormais un seul en-tête compact.
+- Dans Récentes, Suggestions ou Résultats, le premier X revient à Découvrir ;
+  un second X ferme la Recherche et retrouve l’Accueil.
+- Après les contenus les plus récents, le défilement charge automatiquement
+  les publications plus anciennes par lots de neuf.
+- L’ordre récent et la limite de deux publications par créateur restent actifs
+  dans chaque flux chargé.
+- Cache PWA V1016 pour distribuer cette navigation.

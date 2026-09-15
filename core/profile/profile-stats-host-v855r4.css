@@ -1,0 +1,29 @@
+/* Fyblic V855R28 — ouverture Stats avec squelette compact immédiat. */
+.haProfileStatsHostV855R2{position:fixed;inset:0;z-index:2147483000;background:#070b11;display:none;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .12s ease;contain:strict;overflow:hidden}
+.haProfileStatsHostV855R2.on{display:block;visibility:visible;opacity:1;pointer-events:auto}
+.haProfileStatsHostV855R2 iframe{position:relative;z-index:1;display:block;width:100%;height:100%;border:0;background:#070b11;opacity:0;transition:opacity .12s ease}
+.haProfileStatsHostV855R2.ready iframe{opacity:1}
+.haProfileStatsLoaderV855R4{position:absolute;inset:0;z-index:2;display:flex;align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 18px) 14px 0;background:#070b11;opacity:1;visibility:visible;transition:opacity .12s ease,visibility .12s ease}
+.haProfileStatsHostV855R2.ready .haProfileStatsLoaderV855R4{opacity:0;visibility:hidden;pointer-events:none}
+.haProfileStatsSkeletonV855R28{width:min(100%,680px);display:grid;gap:12px}
+.haProfileStatsSkeletonV855R28 i,.haProfileStatsSkeletonV855R28 b,.haProfileStatsSkeletonV855R28 span,.haProfileStatsSkeletonV855R28 article{display:block;position:relative;overflow:hidden;background:#111a24}
+.haProfileStatsSkeletonV855R28 i:after,.haProfileStatsSkeletonV855R28 b:after,.haProfileStatsSkeletonV855R28 span:after,.haProfileStatsSkeletonV855R28 article:after{content:"";position:absolute;inset:0;transform:translateX(-110%);background:linear-gradient(90deg,transparent,rgba(150,196,235,.10),transparent);animation:haStatsSkeletonV855R28 .82s ease-in-out infinite}
+.haStatsSkTopV855R28{display:grid;grid-template-columns:42px minmax(0,1fr) 42px;align-items:center;gap:12px;padding:0 2px 10px}
+.haStatsSkTopV855R28 i{width:42px;height:42px;border-radius:14px}
+.haStatsSkTopV855R28 b{width:42%;height:17px;border-radius:8px}
+.haStatsSkTabsV855R28{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.haStatsSkTabsV855R28 span{height:8px;border-radius:999px}
+.haStatsSkHeroV855R28{min-height:94px;border:1px solid #1b2936;border-radius:18px;padding:16px;display:grid;align-content:center;gap:10px;background:#0c141d}
+.haStatsSkHeroV855R28 b{width:36%;height:13px;border-radius:7px}
+.haStatsSkHeroV855R28 span{width:68%;height:10px;border-radius:6px}
+.haStatsSkHeroV855R28 span:last-child{width:48%}
+.haStatsSkGridV855R28{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.haStatsSkGridV855R28 article{min-height:74px;border:1px solid #1b2936;border-radius:16px;padding:14px;background:#0c141d}
+.haStatsSkGridV855R28 article b,.haStatsSkGridV855R28 article span{z-index:1}
+.haStatsSkGridV855R28 article b{width:38%;height:10px;border-radius:6px}
+.haStatsSkGridV855R28 article span{width:62%;height:16px;margin-top:13px;border-radius:7px}
+@keyframes haStatsSkeletonV855R28{55%,100%{transform:translateX(110%)}}
+html.haProfileStatsHostOpenV855R2,body.haProfileStatsHostOpenV855R2{overflow:hidden!important;overscroll-behavior:none!important;touch-action:none!important}
+body.haProfileStatsHostOpenV855R2>.haProfileApp,body.haProfileStatsHostOpenV855R2>#profileBack{visibility:hidden!important;pointer-events:none!important}
+@media(max-width:420px){.haStatsSkHeroV855R28{min-height:84px}.haStatsSkGridV855R28 article{min-height:68px}}
+@media(prefers-reduced-motion:reduce){.haProfileStatsHostV855R2,.haProfileStatsHostV855R2 iframe,.haProfileStatsLoaderV855R4{transition:none}.haProfileStatsSkeletonV855R28 i:after,.haProfileStatsSkeletonV855R28 b:after,.haProfileStatsSkeletonV855R28 span:after,.haProfileStatsSkeletonV855R28 article:after{animation:none}}

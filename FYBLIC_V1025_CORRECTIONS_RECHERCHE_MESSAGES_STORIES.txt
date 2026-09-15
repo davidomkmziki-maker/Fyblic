@@ -1,0 +1,27 @@
+FYBLIC V1025 — Corrections Recherche, Messages, Stories et abonnement
+Date : 13/09/2026
+
+1. Publications ouvertes depuis Recherche
+- La publication exacte cliquée est conservée avant l’ouverture.
+- Les photos reçoivent directement leurs données déjà chargées par Recherche.
+- Les vidéos et photos de Recherche sont ajoutées aux caches rapides utilisés par les lecteurs.
+- L’ouverture ne dépend plus du chargement préalable de l’Accueil.
+
+2. En-tête Messages
+- Nom principal réduit et mieux proportionné sur mobile.
+- Badge réduit et correctement aligné avec le nom.
+- Icône de profil par défaut contenue à l’intérieur du cercle, sans superposition visible.
+
+3. Stories dans Recherche
+- Détection des Stories étendue aux profils des résultats et aux Suggestions.
+- Cercle coloré uniquement quand une Story active existe.
+- Appui sur l’avatar ouvre directement la Story ; appui hors avatar ouvre le profil.
+- Story déjà vue affichée avec un cercle discret.
+
+4. Boutons S’abonner
+- Orange plein remplacé par un bleu Fyblic plus sobre.
+- Taille, rayon, contraste et état pressé harmonisés.
+- État Abonné conservé en style sombre et discret.
+
+5. Cache PWA
+- Version du service worker renouvelée pour livrer immédiatement les fichiers corrigés.
