@@ -31,14 +31,15 @@
       var end=Math.min(offset+chunkBytes,file.size),chunk=file.slice(offset,end);
       onProgress&&onProgress({phase:'upload',percent:Math.round((offset/file.size)*45),text:'Préparation du média'});
       try{
-        var response=await fetch(join('/api/uploads/'+session.id),{method:'PUT',headers:headers(token,{'Upload-Offset':String(offset),'Content-Type':'application/octet-stream'}),body:chunk});
+        var response=await fetch(join('/api/uploads/'+session.id),{method:'POST',headers:headers(token,{'Upload-Offset':String(offset),'Content-Type':'application/octet-stream'}),body:chunk});
         if(!response.ok&&response.status!==409){var body=await response.json().catch(function(){return {};});var fatal=new Error(body.error||('Envoi refusé ('+response.status+')'));fatal.fatal=true;throw fatal;}
         if(response.status===409)throw new Error('Reprise du média');
         offset=Number(response.headers.get('Upload-Offset')||end);retries=0;
       }catch(error){
         if(error.fatal)throw error;
-        retries+=1;if(retries>5)throw new Error('Connexion instable : impossible de reprendre le média');
-        session=await api('/api/uploads/'+session.id,{},token);offset=Number(session.received||0);await sleep(Math.min(5000,retries*900));
+        retries+=1;if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
+        try{session=await api('/api/uploads/'+session.id,{},token);offset=Number(session.received||0);}catch(statusError){if(retries>=12)throw statusError;}
+        await sleep(Math.min(7000,retries*700));
       }
     }
     try{localStorage.removeItem(found.key);}catch(_e){}

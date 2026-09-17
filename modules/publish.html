@@ -62,7 +62,7 @@
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="../core/media-compression-client-v1.js?v=1048-adaptive-video"></script>
+<script src="../core/media-compression-client-v1.js?v=1051-mobile-resume"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -723,7 +723,8 @@ button:disabled{filter:none;transform:none}
   let progressTimer=null;
   let progressValue=0;
   function setProgress(value,text){
-    progressValue=Math.max(0,Math.min(100,Math.round(value||0)));
+    const requested=Math.max(0,Math.min(100,Math.round(Number(value)||0)));
+    progressValue=requested===0?0:Math.max(progressValue,requested);
     const box=$("publishProgress"), fill=$("progressFill"), num=$("progressNum"), label=$("progressText");
     if(box) box.classList.add("show");
     if(fill) fill.style.width=progressValue+"%";
@@ -732,12 +733,9 @@ button:disabled{filter:none;transform:none}
   }
   function startProgress(text){
     clearInterval(progressTimer);
-    setProgress(3,text||"Publication en cours");
-    progressTimer=setInterval(()=>{
-      if(progressValue<35) setProgress(progressValue+4,"Publication en cours");
-      else if(progressValue<75) setProgress(progressValue+2,"Publication en cours");
-      else if(progressValue<90) setProgress(progressValue+1,"Publication en cours");
-    },450);
+    progressTimer=null;
+    progressValue=0;
+    setProgress(1,text||"Préparation de la publication");
   }
   function finishProgress(text){
     clearInterval(progressTimer);
@@ -1534,11 +1532,12 @@ button:disabled{filter:none;transform:none}
     let c=happySb();
     if(!c){try{c=await window.happyadEnsureSupabaseV936(15000);}catch(_e){}}
     if(!c) throw new Error('Service de publication indisponible');
-    setProgress(8,'Vérification session...');
+    const alreadyPrepared=!!(file&&file.__fyblicPrepared&&file.primary&&file.primary.url);
+    setProgress(alreadyPrepared?94:3,'Vérification session...');
     const auth=await getFreshAuth(c);
     const session=auth.session, user=auth.user, profile=auth.profile;
     if(!user) throw new Error('Session absente : reconnecte-toi');
-    setProgress(18,'Session prête');
+    setProgress(alreadyPrepared?95:5,'Session prête');
     const id=localPost.id;
     const prepared=!!(file&&file.__fyblicPrepared&&file.primary&&file.primary.url);
     const ext=prepared?'mp4':(cleanName((file.name&&file.name.includes('.'))?file.name.split('.').pop():(localPost.kind==='video'?'mp4':'jpg')).replace(/^\.+/,'') || (localPost.kind==='video'?'mp4':'jpg'));
@@ -1564,7 +1563,7 @@ button:disabled{filter:none;transform:none}
       }
       return 90000;
     }
-    setProgress(35,prepared?'Finalisation du média...':'Envoi du média...');
+    setProgress(prepared?96:10,prepared?'Finalisation du média...':'Envoi du média...');
     let up={error:null};
     if(!prepared){
       let keepAuthAlive=setInterval(function(){touchAuthSession(c);},25000);
@@ -1594,7 +1593,7 @@ button:disabled{filter:none;transform:none}
       }
       throw new Error('Storage upload: '+msg);
     }
-    setProgress(78,'Publication en cours');
+    setProgress(prepared?97:78,'Publication en cours');
     const pub=prepared?null:c.storage.from('happyad-media').getPublicUrl(path);
     const mediaUrl=prepared?String(file.primary.url||''):(pub&&pub.data&&pub.data.publicUrl?pub.data.publicUrl:'');
     if(!mediaUrl) throw new Error('Storage publicUrl vide');
@@ -1740,7 +1739,7 @@ return {source:'story',id:storyId};
       }
       return null;
     }
-    setProgress(88,'Publication en cours');
+    setProgress(prepared?98:88,'Enregistrement de la publication');
 
     // STORY/LIVE : ne pas créer une publication normale.
     // Le contenu passe dans happyad_stories ou happyad_lives ; Profil et Radar lisent happyad_stories.
@@ -1770,7 +1769,7 @@ return {source:'story',id:storyId};
       let lastMsg='';
       for(let i=0;i<10;i++){
         try{
-          setProgress(Math.min(98,Math.max(90,progressValue+1)),'Enregistrement publication');
+          setProgress(98,'Enregistrement de la publication');
           const saved=await withTimeout(
             c.from('happyad_posts').upsert(payload,{onConflict:'id'}).select('id').maybeSingle(),
             20000,
@@ -1830,7 +1829,7 @@ return {source:'story',id:storyId};
   async function compressAfterPublishClickV1047(file,kind,auth,postId){
     var engine=window.FyblicMediaCompressionV1;
     if(!engine||!engine.enabled||!engine.enabled())return file;
-    setProgress(Math.max(4,progressValue),'Préparation du média');
+    setProgress(2,'Préparation du média');
     var result=await engine.compress(file,{
       kind:kind,
       accessToken:auth&&auth.session&&auth.session.access_token,
