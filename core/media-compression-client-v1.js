@@ -10,6 +10,11 @@
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
   function message(error,fallback){return String(error&&error.message||fallback||'Compression impossible');}
   function headers(token,extra){var h=Object.assign({},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
+  async function chunkAsBase64(blob){
+    var bytes=new Uint8Array(await blob.arrayBuffer()),parts=[],step=32768;
+    for(var i=0;i<bytes.length;i+=step)parts.push(String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+step,bytes.length))));
+    return btoa(parts.join(''));
+  }
   async function api(path,options,token){
     options=Object.assign({},options||{});options.headers=headers(token,options.headers);
     var response=await fetch(join(path),options);
@@ -26,12 +31,13 @@
     return {session:created,key:key};
   }
   async function upload(file,token,userId,config,onProgress){
-    var found=await sessionFor(file,token,userId),session=found.session,offset=Number(session.received||0),retries=0,chunkBytes=Number(config.chunkBytes||CHUNK_FALLBACK);
+    var found=await sessionFor(file,token,userId),session=found.session,offset=Number(session.received||0),retries=0,chunkBytes=Math.min(Number(config.chunkBytes||CHUNK_FALLBACK),512*1024);
     while(offset<file.size){
       var end=Math.min(offset+chunkBytes,file.size),chunk=file.slice(offset,end);
       onProgress&&onProgress({phase:'upload',percent:Math.round((offset/file.size)*45),text:'Préparation du média'});
       try{
-        var response=await fetch(join('/api/uploads/'+session.id),{method:'POST',headers:headers(token,{'Upload-Offset':String(offset),'Content-Type':'application/octet-stream'}),body:chunk});
+        var encoded=await chunkAsBase64(chunk);
+        var response=await fetch(join('/api/uploads/'+session.id),{method:'POST',headers:headers(token,{'Content-Type':'application/json'}),body:JSON.stringify({offset:offset,data:encoded})});
         if(!response.ok&&response.status!==409){var body=await response.json().catch(function(){return {};});var fatal=new Error(body.error||('Envoi refusé ('+response.status+')'));fatal.fatal=true;throw fatal;}
         if(response.status===409)throw new Error('Reprise du média');
         offset=Number(response.headers.get('Upload-Offset')||end);retries=0;
