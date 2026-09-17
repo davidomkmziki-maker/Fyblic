@@ -1,0 +1,50 @@
+FYBLIC V1047 — COMPRESSEUR DES PUBLICATIONS NORMALES
+
+MISE À JOUR V1048 — QUALITÉ VIDÉO ADAPTÉE
+- Le worker conserve 360p, 540p, 720p et 1080p selon la résolution source.
+- Il envoie directement les variantes vers Supabase après authentification.
+- Fyblic choisit 360p en économie de données/2G, 540p en 3G, 720p sur une bonne
+  connexion et 1080p lorsque le débit mesuré est élevé.
+- Si une qualité dépasse la limite actuelle du bucket, elle est ignorée sans
+  bloquer les qualités plus légères.
+- Le meilleur MP4 disponible reste le secours universel.
+
+ÉTAPE CONNECTÉE
+- La sélection des médias reste celle de Fyblic.
+- Aucune compression ne démarre avant le clic « Publier ».
+- Après le clic, l'envoi vers le worker est reprenable par morceaux.
+- Fyblic attend la compression, récupère la meilleure sortie, puis envoie seulement
+  le fichier compressé dans le bucket public happyad-media.
+- Les albums sont compressés et publiés photo par photo sans les séparer visuellement.
+- Story, Live et Boutique ne sont pas encore activés dans cette étape.
+
+ACTIVATION
+Dans modules/publish.html, renseigner l'adresse HTTPS publique du worker :
+
+window.FYBLIC_MEDIA_COMPRESSOR_URL='https://adresse-du-worker';
+
+Tant que cette valeur reste vide, le système stable actuel continue à publier sans
+passer par le worker. Cela évite de bloquer Fyblic avant le déploiement du serveur.
+
+SUPABASE FREE
+- Compatible pour commencer avec les publications compressées.
+- Limite actuelle du bucket happyad-media détectée : 100 Mio par fichier.
+- Le worker doit donc produire un fichier final inférieur à cette limite.
+- Le worker FFmpeg ne doit pas être exécuté dans Netlify Functions ni dans une Edge
+  Function Supabase ; il doit être déployé comme service Node avec stockage temporaire.
+
+SÉCURITÉ DU WORKER
+- Origines autorisées configurables.
+- Jeton de session Fyblic vérifié via Supabase Auth.
+- Chaque upload et chaque job appartiennent à l'utilisateur authentifié.
+- Ne jamais mettre de clé service_role dans le site ou dans ce module.
+
+TEST EXACT
+1. Laisser l'URL du worker vide et vérifier qu'une publication normale fonctionne
+   exactement comme avant.
+2. Déployer le worker, configurer son URL HTTPS et ses variables d'environnement.
+3. Choisir une vidéo, rester sur l'aperçu : aucune compression ne doit commencer.
+4. Cliquer « Publier » : voir Préparation, Compression, Finalisation puis Publication.
+5. Vérifier dans Supabase Storage que le fichier final est MP4 ou WebP et inférieur
+   au fichier original.
+6. Vérifier que la publication apparaît une seule fois dans Accueil et Profil.

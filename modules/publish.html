@@ -61,6 +61,8 @@
 <script src="../core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical"></script>
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
+<script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
+<script src="../core/media-compression-client-v1.js?v=1048-adaptive-video"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -1538,22 +1540,23 @@ button:disabled{filter:none;transform:none}
     if(!user) throw new Error('Session absente : reconnecte-toi');
     setProgress(18,'Session prête');
     const id=localPost.id;
-    const ext=cleanName((file.name&&file.name.includes('.'))?file.name.split('.').pop():(localPost.kind==='video'?'mp4':'jpg')).replace(/^\.+/,'') || (localPost.kind==='video'?'mp4':'jpg');
+    const prepared=!!(file&&file.__fyblicPrepared&&file.primary&&file.primary.url);
+    const ext=prepared?'mp4':(cleanName((file.name&&file.name.includes('.'))?file.name.split('.').pop():(localPost.kind==='video'?'mp4':'jpg')).replace(/^\.+/,'') || (localPost.kind==='video'?'mp4':'jpg'));
     const path=user.id+'/'+id+'.'+ext;
     // V279 : correction blocage à 90% sur vidéos lourdes.
     // Le 90% était causé par le timeout fixe 120s pendant l'upload Storage.
     // Pour le prototype, on accepte les vidéos jusqu'à environ 200 Mo et on donne
     // plus de temps à Supabase sur réseau mobile lent.
-    const fileSizeMb=(file&&file.size)?(file.size/1024/1024):0;
-    if(localPost.kind==='video' && fileSizeMb>60){
+    const fileSizeMb=prepared?Number(file.primary.bytes||0)/1024/1024:((file&&file.size)?(file.size/1024/1024):0);
+    if(!prepared && localPost.kind==='video' && fileSizeMb>60){
       throw new Error('Vidéo trop lourde pour une lecture fluide : maximum 60 Mo. Coupe ou compresse la vidéo avant publication.');
     }
-    if(localPost.kind==='video' && fileSizeMb>25){
+    if(!prepared && localPost.kind==='video' && fileSizeMb>25){
       try{console.warn('Fyblic: vidéo lourde ('+fileSizeMb.toFixed(1)+' Mo). Pour une fluidité parfaite, viser 6 à 15 Mo.');}catch(_e){}
     }
     // V947 : une nouvelle photo doit connaître son format avant l'upload et avant
     // toute insertion optimiste dans les caches/cartes Accueil.
-    if(localPost.kind==='photo')await happyadAttachPhotoDimensionsV947(localPost,file);
+    if(localPost.kind==='photo'&&!prepared)await happyadAttachPhotoDimensionsV947(localPost,file);
     function uploadTimeoutMs(){
       if(localPost.kind==='video'){
         // 200 Mo sur réseau mobile peut dépasser plusieurs minutes; 15 minutes évite le faux échec à 90%.
@@ -1561,18 +1564,20 @@ button:disabled{filter:none;transform:none}
       }
       return 90000;
     }
-    setProgress(35,'Envoi du média...');
-    let keepAuthAlive=setInterval(function(){touchAuthSession(c);},25000);
-    let up;
-    try{
-      await touchAuthSession(c);
-      up=await withTimeout(
-        c.storage.from('happyad-media').upload(path,file,{upsert:true,cacheControl:'31536000',contentType:file.type||'application/octet-stream'}),
-        uploadTimeoutMs(),
-        'Upload Storage'
-      );
-    }finally{
-      clearInterval(keepAuthAlive);
+    setProgress(35,prepared?'Finalisation du média...':'Envoi du média...');
+    let up={error:null};
+    if(!prepared){
+      let keepAuthAlive=setInterval(function(){touchAuthSession(c);},25000);
+      try{
+        await touchAuthSession(c);
+        up=await withTimeout(
+          c.storage.from('happyad-media').upload(path,file,{upsert:true,cacheControl:'31536000',contentType:file.type||'application/octet-stream'}),
+          uploadTimeoutMs(),
+          'Upload Storage'
+        );
+      }finally{
+        clearInterval(keepAuthAlive);
+      }
     }
     if(up.error){
       const detailParts=[];
@@ -1590,10 +1595,13 @@ button:disabled{filter:none;transform:none}
       throw new Error('Storage upload: '+msg);
     }
     setProgress(78,'Publication en cours');
-    const pub=c.storage.from('happyad-media').getPublicUrl(path);
-    const mediaUrl=pub&&pub.data&&pub.data.publicUrl?pub.data.publicUrl:'';
+    const pub=prepared?null:c.storage.from('happyad-media').getPublicUrl(path);
+    const mediaUrl=prepared?String(file.primary.url||''):(pub&&pub.data&&pub.data.publicUrl?pub.data.publicUrl:'');
     if(!mediaUrl) throw new Error('Storage publicUrl vide');
-    const videoThumbUrl=(localPost.kind==='video')?await happyadUploadVideoThumb(c,user,id,file,localPost.videoFrameTime,localPost.imageCrop):'';
+    const videoThumbUrl=prepared&&file.poster?String(file.poster.url||''):((localPost.kind==='video')?await happyadUploadVideoThumb(c,user,id,file,localPost.videoFrameTime,localPost.imageCrop):'');
+    if(prepared){
+      localPost.imageCrop=Object.assign({},localPost.imageCrop||{}, {adaptive:{v:1,mode:'connection',variants:(file.variants||[]).reduce(function(map,item){map[item.name]=item.url;return map;},{})}});
+    }
     const row={
       id:id,
       user_id:user.id,
@@ -1610,12 +1618,12 @@ button:disabled{filter:none;transform:none}
       location:localPost.location||'',
       kind:localPost.kind||'',
       media_url:mediaUrl,
-      media_path:path,
+      media_path:prepared?String(file.primary.path||''):path,
       media_type:localPost.kind||'',
       thumbnail_url:videoThumbUrl||'',
       poster_url:videoThumbUrl||'',
-      mime_type:file.type||'',
-      file_name:file.name||'',
+      mime_type:prepared?'video/mp4':(file.type||''),
+      file_name:prepared?String(file.primary.path||'').split('/').pop():(file.name||''),
       image_crop:localPost.imageCrop||null,
       cover_frame_time:Number(localPost.videoFrameTime||0),
       batch_id:localPost.batchId||localPost.batch_id||'',
@@ -1814,6 +1822,23 @@ return {source:'story',id:storyId};
     if(row.batch_id)localPost.batchId=row.batch_id;
     if(row.group_index!=null)localPost.groupIndex=row.group_index;
     return localPost;
+  }
+
+  /* V1047 — La sélection et l'aperçu restent 100 % Fyblic. La compression ne
+     commence qu'après le clic Publier. Une URL vide garde la base actuelle
+     intacte jusqu'au déploiement du worker FFmpeg. */
+  async function compressAfterPublishClickV1047(file,kind,auth,postId){
+    var engine=window.FyblicMediaCompressionV1;
+    if(!engine||!engine.enabled||!engine.enabled())return file;
+    setProgress(Math.max(4,progressValue),'Préparation du média');
+    var result=await engine.compress(file,{
+      kind:kind,
+      accessToken:auth&&auth.session&&auth.session.access_token,
+      userId:auth&&auth.user&&auth.user.id,
+      postId:postId,
+      onProgress:function(update){setProgress(update.percent||progressValue,update.text||'Compression du média');}
+    });
+    return result&&result.prepared?result.prepared:(result&&result.file?result.file:file);
   }
 
 
@@ -2041,7 +2066,13 @@ return {source:'story',id:storyId};
           setProgress(12+Math.round((i/groupFiles.length)*70),'Publication photo '+(i+1)+'/'+groupFiles.length);
           const pid=id+'_'+(i+1);
           let groupedPost=Object.assign({},localPost,{id:pid,batchId:batchId,batch_id:batchId,groupIndex:i,group_index:i,photoIndex:i,photo_index:i,createdAt:Date.now()+i});
-          try{ groupedPost=await savePostToSupabase(groupedPost,groupFiles[i]); }
+          try{
+            var groupClient=happySb();
+            if(!groupClient){try{groupClient=await window.happyadEnsureSupabaseV936(15000);}catch(_groupSdk){}}
+            var groupAuth=groupClient?await getFreshAuth(groupClient):null;
+            var groupedUploadFile=await compressAfterPublishClickV1047(groupFiles[i],'photo',groupAuth,pid);
+            groupedPost=await savePostToSupabase(groupedPost,groupedUploadFile);
+          }
           catch(remoteErr){ console.error(remoteErr); toast('Photo '+(i+1)+' non enregistrée : '+(remoteErr.message||remoteErr.error_description||'SQL colonnes/RLS')); throw remoteErr; }
           rememberPublishedCrop(groupedPost);
           savedPosts.push(groupedPost);
@@ -2112,7 +2143,18 @@ return {source:'story',id:storyId};
         setTimeout(()=>{returnHomeAfterPublish('grouped-photos');},350);
         return;
       }
-      try{ localPost=await savePostToSupabase(localPost,state.file); }
+      try{
+        var uploadFile=state.file;
+        /* Première étape activée : publications normales. Story et Live restent
+           sur le chemin stable jusqu'à leur validation séparée. */
+        if(state.mode==='publish'){
+          var publishClient=happySb();
+          if(!publishClient){try{publishClient=await window.happyadEnsureSupabaseV936(15000);}catch(_publishSdk){}}
+          var publishAuth=publishClient?await getFreshAuth(publishClient):null;
+          uploadFile=await compressAfterPublishClickV1047(state.file,state.kind,publishAuth,id);
+        }
+        localPost=await savePostToSupabase(localPost,uploadFile);
+      }
       catch(remoteErr){ console.error(remoteErr); toast("Publication non enregistrée : "+(remoteErr.message||remoteErr.error_description||"SQL colonnes/RLS")); throw remoteErr; }
       rememberPublishedCrop(localPost);
       if(localPost.__radarOnly || state.mode==='story' || state.mode==='live'){

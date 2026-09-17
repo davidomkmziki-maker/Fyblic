@@ -115,6 +115,19 @@
   }
   function normalizeHandle(v){v=clean(v).replace(/^@+/,'');return v?('@'+v):'';}
   function bool(v){return v===true||v===1||String(v).toLowerCase()==='true';}
+  function adaptiveMedia(r,fallback){
+    var crop=r&&((r.image_crop&&typeof r.image_crop==='object')?r.image_crop:r.imageCrop)||{};
+    var variants=crop&&crop.adaptive&&crop.adaptive.variants;if(!variants||typeof variants!=='object')return fallback;
+    var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
+    var effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0),wanted='720p';
+    if(connection.saveData||effective==='slow-2g'||effective==='2g')wanted='360p';
+    else if(effective==='3g'||(down>0&&down<3))wanted='540p';
+    else if(down>=8)wanted='1080p';
+    else wanted='720p';
+    var order=wanted==='1080p'?['1080p','720p','540p','360p']:wanted==='720p'?['720p','540p','360p','1080p']:wanted==='540p'?['540p','360p','720p','1080p']:['360p','540p','720p','1080p'];
+    for(var i=0;i<order.length;i++)if(variants[order[i]])return publicMediaUrl(variants[order[i]]);
+    return fallback;
+  }
   function normalizePost(r){
     r=r||{};
     var mode=clean(r.mode||'publish')||'publish';
@@ -123,7 +136,7 @@
     var showMarketplace=bool(r.marketplace_show_on_home)||bool(r.showOnHome)||bool(details.show_on_home);
     var mediaType=clean(r.marketplace_cover_type||r.media_type||r.home_media_type||r.kind||r.mediaType||'photo').toLowerCase()||'photo';
     var rawMedia=r.marketplace_cover_url||r.media_url||r.mediaUrl||r.home_media_url||r.homeMediaUrl||r.video_url||r.videoUrl||r.url||r.src||r.thumbnail_url||r.cover_url||r.media_path||r.mediaPath||'';
-    var media=publicMediaUrl(rawMedia);
+    var media=adaptiveMedia(r,publicMediaUrl(rawMedia));
     var rawPoster=r.thumbnail_url||r.thumbnailUrl||r.poster_url||r.posterUrl||r.cover_url||r.coverUrl||r.image_url||r.imageUrl||'';
     var poster=publicMediaUrl(rawPoster);
     var owner=clean(r.user_id||r.creator_id||r.owner_id||r.author_id||r.profile_id||r.creatorId||r.userId||r.ownerId||r.authorId||r.profileId||'');

@@ -629,7 +629,16 @@ function mapHappyPost(r){
   r=r||{};
   const mediaPath=String(r.marketplace_cover_path||r.media_path||r.mediaPath||'').trim();
   const directUrl=String(r.marketplace_cover_url||r.media_url||r.mediaUrl||r.home_media_url||r.homeMediaUrl||r.video_url||r.videoUrl||r.url||r.src||'').trim();
-  const url=happyadVideoNormalizeMediaSrc(directUrl||mediaPath,{mediaPath:mediaPath,media_path:mediaPath});
+  let url=happyadVideoNormalizeMediaSrc(directUrl||mediaPath,{mediaPath:mediaPath,media_path:mediaPath});
+  const crop=(r.image_crop&&typeof r.image_crop==='object')?r.image_crop:((r.imageCrop&&typeof r.imageCrop==='object')?r.imageCrop:{});
+  const variants=crop&&crop.adaptive&&crop.adaptive.variants;
+  if(variants&&typeof variants==='object'){
+    const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
+    const effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
+    const wanted=(connection.saveData||effective==='2g'||effective==='slow-2g')?'360p':((effective==='3g'||(down>0&&down<3))?'540p':(down>=8?'1080p':'720p'));
+    const order=wanted==='1080p'?['1080p','720p','540p','360p']:wanted==='720p'?['720p','540p','360p','1080p']:wanted==='540p'?['540p','360p','720p','1080p']:['360p','540p','720p','1080p'];
+    for(const quality of order){if(variants[quality]){url=happyadVideoNormalizeMediaSrc(variants[quality]);break;}}
+  }
   const rawKind=happyadVideoNormalizeKind(r.marketplace_cover_type,r.media_type,r.kind,r.mediaType,r.type,r.mime_type,r.mime,r.home_media_type,r.homeMediaType,(happyadVideoUrlLooksVideo(url)?'video':''));
   const kind=rawKind||'photo';
   return {
@@ -651,6 +660,7 @@ function mapHappyPost(r){
     mediaUrl:url,
     media_url:url,
     mediaPath:mediaPath,
+    imageCrop:crop,image_crop:crop,
     thumbnailUrl:r.thumbnail_url||r.thumbnailUrl||r.poster_url||r.posterUrl||r.cover_url||r.coverUrl||'',
     thumbnail_url:r.thumbnail_url||r.thumbnailUrl||'',
     posterUrl:r.poster_url||r.posterUrl||r.thumbnail_url||r.thumbnailUrl||r.cover_url||r.coverUrl||'',

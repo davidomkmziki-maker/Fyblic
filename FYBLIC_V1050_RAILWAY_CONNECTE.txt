@@ -1,0 +1,23 @@
+FYBLIC V1050 — WORKER RAILWAY CONNECTÉ
+
+Worker public sécurisé :
+https://fyblic-media-worker-production.up.railway.app
+
+Contrôle validé le 17 septembre 2026 :
+- HTTP 200 ;
+- ok: true ;
+- workers: 1 ;
+- queue: 0 ;
+- activeWorkers: 0.
+
+La compression commence uniquement après le clic « Publier » pour les
+publications normales. Les variantes vidéo 360p, 540p, 720p et 1080p sont
+créées selon la résolution source, envoyées vers Supabase, puis choisies selon
+la connexion de lecture.
+
+TEST APRÈS DÉPLOIEMENT NETLIFY
+1. Ouvrir Fyblic connecté au compte utilisateur.
+2. Choisir une petite vidéo de 10 à 30 secondes.
+3. Vérifier qu'aucun transfert ne commence avant « Publier ».
+4. Cliquer « Publier » et laisser l'écran ouvert jusqu'à la fin.
+5. Vérifier une seule publication dans Accueil et Profil.
