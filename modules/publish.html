@@ -62,7 +62,7 @@
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
+<script src="../core/media-compression-client-v1.js?v=1053-story-compression"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -2144,9 +2144,10 @@ return {source:'story',id:storyId};
       }
       try{
         var uploadFile=state.file;
-        /* Première étape activée : publications normales. Story et Live restent
-           sur le chemin stable jusqu'à leur validation séparée. */
-        if(state.mode==='publish'){
+        /* V1053 : les publications normales et les Stories utilisent le même
+           compresseur seulement après le clic Publier. Live reste volontairement
+           sur son chemin stable jusqu'à sa validation séparée. */
+        if(state.mode==='publish' || state.mode==='story'){
           var publishClient=happySb();
           if(!publishClient){try{publishClient=await window.happyadEnsureSupabaseV936(15000);}catch(_publishSdk){}}
           var publishAuth=publishClient?await getFreshAuth(publishClient):null;

@@ -1,0 +1,27 @@
+FYBLIC V1053 — STORIES CONNECTÉES AU COMPRESSEUR
+
+Base conservée : V1052 MOBILE JSON STABLE.
+
+Modifications :
+- les photos et vidéos Story passent désormais par FyblicMediaCompressionV1 ;
+- la compression commence uniquement après le clic sur Publier ;
+- la progression réelle V1052 est conservée sans minuteur artificiel ;
+- les vidéos Story profitent du transport mobile JSON par morceaux et de la reprise automatique ;
+- la Story est créée dans happyad_stories seulement après la réussite du média ;
+- les publications normales conservent exactement leur chemin V1052 ;
+- Live et Boutique ne sont pas modifiés dans cette version ;
+- le cache PWA est renouvelé pour charger immédiatement le nouveau publish.html.
+
+Fichiers fonctionnels modifiés :
+- modules/publish.html
+- service-worker.js
+
+Worker Railway : aucune modification nécessaire.
+
+TESTS MANUELS RECOMMANDÉS
+1. Publier une Story photo puis vérifier son ouverture dans Radar.
+2. Publier une Story vidéo courte et vérifier la progression sans recul.
+3. Télécharger ou inspecter la vidéo publiée pour confirmer la compression.
+4. Tester une Story vidéo sur réseau faible afin de vérifier la reprise.
+5. Publier ensuite une publication normale pour confirmer l'absence de régression.
+6. Vérifier qu'aucune publication normale supplémentaire n'est créée pour la Story.
