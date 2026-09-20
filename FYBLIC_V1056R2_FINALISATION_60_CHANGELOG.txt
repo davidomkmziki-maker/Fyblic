@@ -1,0 +1,9 @@
+FYBLIC V1056R2 — FINALISATION APRES 60 POUR CENT
+
+1. A 60 %, le fichier est deja envoye dans Supabase Storage.
+2. Le site attend maintenant silencieusement que Storage confirme l'objet.
+3. La validation est reessayee huit fois pendant environ 31 secondes.
+4. De 60 a 100 %, le libelle reste simplement « Publication en cours ».
+5. Une erreur de finalisation devient relancable au lieu d'un echec definitif.
+6. L'adresse TUS reste memorisee jusqu'a la validation reussie.
+7. Le worker, la compression et la suppression totale V1056 restent inchanges.

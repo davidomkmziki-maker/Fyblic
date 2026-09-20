@@ -1,4 +1,4 @@
-/* Fyblic V1056R1 — upload reprenable sur double route Supabase. */
+/* Fyblic V1056R2 — finalisation Supabase resiliente apres 60 %. */
 (function(){
   'use strict';
   if(window.FyblicMediaJobsV1055)return;
@@ -121,7 +121,7 @@
     var progress=Math.max(0,Math.min(100,Number(job.progress||0)));
     var failed=status==='failed';
     var activeCount=Array.from(jobs.values()).filter(function(item){return !['published','failed','cancelled'].includes(item.status);}).length;
-    var label=failed?'Échec de la publication':(job.stage||'Publication vidéo');
+    var label=failed?'Échec de la publication':(progress>=60?'Publication en cours':(job.stage||'Publication vidéo'));
     if(activeCount>1)label+=' · '+activeCount+' en cours';
     var sourceReady=Boolean(job.uploaded_at)||Number(job.progress||0)>=62;
     el.className='on'+(failed?' failed':'')+(failed&&job.retryable&&(sourceReady||files.has(job.id))?' retryable':'');
@@ -210,6 +210,31 @@
     if(!sent.response.ok)throw new Error('Reprise upload refusée ('+sent.response.status+')');
     return {offset:Number(sent.response.headers.get('Upload-Offset')||0),url:sent.url};
   }
+  async function markUploaded(job,a){
+    var delays=[0,500,1000,1800,3000,5000,8000,12000];
+    var lastError=null;
+    for(var attempt=0;attempt<delays.length;attempt+=1){
+      if(delays[attempt]){
+        setJob(Object.assign({},jobs.get(job.id)||job,{status:'uploading',stage:'Publication en cours',progress:60}));
+        await wait(delays[attempt]);
+        a=await auth();
+      }
+      var marked=await a.client.rpc('fyblic_mark_media_uploaded_v1055',{p_job_id:job.id});
+      if(!marked.error){setJob(marked.data);return marked.data;}
+      lastError=marked.error;
+      /* Si la requete a reussi cote serveur mais que sa reponse a ete perdue,
+         ne jamais reclasser en echec une tache deja prise par Railway. */
+      try{
+        var state=await a.client.from(TABLE).select('*').eq('id',job.id).maybeSingle();
+        if(state.data&&['uploaded','processing','published'].includes(state.data.status)){
+          setJob(state.data);return state.data;
+        }
+      }catch(_stateError){}
+    }
+    var failure=new Error('Finalisation Supabase différée : '+errorText(lastError));
+    failure.code='UPLOAD_FINALIZATION';
+    throw failure;
+  }
   async function upload(job,file){
     var a=await auth();
     var cfg=config();
@@ -278,17 +303,17 @@
       setJob(current);
       if(percent-lastSaved>=3){lastSaved=percent;await update(job.id,{status:'uploading',stage:'Envoi sécurisé',progress:percent});}
     }
+    await markUploaded(job,a);
     localStorage.removeItem(storageKey(fp));
-    var marked=await a.client.rpc('fyblic_mark_media_uploaded_v1055',{p_job_id:job.id});
-    if(marked.error)throw marked.error;
-    setJob(marked.data);
   }
   async function runUpload(job,file){
     try{await upload(job,file);}
     catch(error){
       console.error('Fyblic V1055 upload:',error);
-      var canRetry=retryable(error);
-      try{await update(job.id,{status:'failed',stage:'Échec',error_code:canRetry?'TEMPORARY_NETWORK':'UPLOAD_ERROR',error_message:errorText(error),retryable:canRetry});}
+      var current=jobs.get(job.id)||job;
+      var finalization=error&&error.code==='UPLOAD_FINALIZATION'||Number(current.progress||0)>=60;
+      var canRetry=finalization||retryable(error);
+      try{await update(job.id,{status:'failed',stage:'Échec',error_code:finalization?'UPLOAD_FINALIZATION':(canRetry?'TEMPORARY_NETWORK':'UPLOAD_ERROR'),error_message:errorText(error),retryable:canRetry});}
       catch(_update){setJob(Object.assign({},jobs.get(job.id)||job,{status:'failed',stage:'Échec',retryable:canRetry,error_message:errorText(error)}));}
     }
   }
@@ -320,9 +345,7 @@
     if(!job)return;
     if(job.uploaded_at||Number(job.progress||0)>=62){
       var a=await auth();
-      var marked=await a.client.rpc('fyblic_mark_media_uploaded_v1055',{p_job_id:id});
-      if(marked.error)throw marked.error;
-      setJob(marked.data);
+      await markUploaded(job,a);
       return;
     }
     if(!file)return;
@@ -367,5 +390,5 @@
   setInterval(function(){void refresh();},5000);
   window.addEventListener('online',function(){void refresh();});
 
-  window.FyblicMediaJobsV1055=Object.freeze({version:'V1056R1_STORAGE_FAILOVER',enqueue:enqueue,retry:retry,refresh:refresh,cancelPosts:cancelPosts,available:function(){return !unavailable;}});
+  window.FyblicMediaJobsV1055=Object.freeze({version:'V1056R2_FINALIZATION_RETRY',enqueue:enqueue,retry:retry,refresh:refresh,cancelPosts:cancelPosts,available:function(){return !unavailable;}});
 })();

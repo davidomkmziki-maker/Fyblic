@@ -1,0 +1,24 @@
+FYBLIC V1057 — PIPELINE MEDIA LOURD RECONSTRUIT
+
+SITE
+1. Suppression du transport TUS manuel par fetch.
+2. Integration locale de tus-js-client 4.3.1, sans dependance CDN.
+3. Blocs fixes de 6 Mio, reprise native et URL TUS stable.
+4. Rafraichissement automatique du jeton Supabase avant chaque requete.
+5. La route secondaire est utilisee uniquement avant le premier octet.
+6. Une session commencee ne change jamais de domaine.
+7. Chaque publication possede une empreinte de reprise unique, meme si le meme fichier est republie.
+8. Progression unique de 1 a 100 avec le texte « Publication en cours ».
+9. Publication affichee immediatement dans l'Accueil apres 100 %.
+
+SUPABASE
+10. Creation, progression, echec, reprise et finalisation geres par RPC securisees.
+11. Verification reelle de la presence et de la taille du fichier source.
+12. Transitions idempotentes contre les doublons et reponses perdues.
+13. RLS en lecture proprietaire; les mutations directes du navigateur sont retirees.
+
+WORKER
+14. Bail et heartbeat persistants.
+15. Reprise automatique des erreurs temporaires avec delai exponentiel.
+16. Six tentatives maximales avant un echec visible.
+17. Suppression proprietaire toujours prioritaire sur toutes les versions.
