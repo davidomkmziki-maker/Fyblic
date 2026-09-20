@@ -1,4 +1,4 @@
-/* Fyblic V1056 — upload reprenable, affichage immediat et suppression totale. */
+/* Fyblic V1056R1 — upload reprenable sur double route Supabase. */
 (function(){
   'use strict';
   if(window.FyblicMediaJobsV1055)return;
@@ -52,6 +52,38 @@
   function directStorageBase(){
     var value=String(config().url||'').replace(/\/+$/,'');
     return value.replace(/^https:\/\/([a-z0-9-]+)\.supabase\.co$/i,'https://$1.storage.supabase.co');
+  }
+  function projectStorageBase(){
+    return String(config().url||'').replace(/\/+$/,'');
+  }
+  function storageBases(){
+    return [directStorageBase(),projectStorageBase()].filter(function(value,index,all){return value&&all.indexOf(value)===index;});
+  }
+  function alternateTusUrl(url){
+    try{
+      var current=new URL(url);
+      var alternate=storageBases().find(function(base){return new URL(base).origin!==current.origin;});
+      return alternate?new URL(current.pathname+current.search,alternate).href:'';
+    }catch(_e){return '';}
+  }
+  function isFetchFailure(error){
+    return /fetch|network|Failed to fetch|Load failed|NetworkError|connexion/i.test(String(error&&error.message||error||''));
+  }
+  async function fetchTus(url,options){
+    try{return {response:await fetch(url,options),url:url};}
+    catch(primaryError){
+      if(!isFetchFailure(primaryError))throw primaryError;
+      var alternate=alternateTusUrl(url);
+      if(!alternate)throw primaryError;
+      try{
+        var response=await fetch(alternate,options);
+        if(response.status===404)throw primaryError;
+        return {response:response,url:alternate};
+      }catch(alternateError){
+        if(alternateError===primaryError)throw primaryError;
+        throw new Error('Stockage Supabase inaccessible sur les deux routes : '+errorText(alternateError));
+      }
+    }
   }
 
   function ensureStrip(){
@@ -145,27 +177,38 @@
   }
   async function createTus(file,sourcePath,a){
     var cfg=config();
-    var response=await fetch(directStorageBase()+'/storage/v1/upload/resumable',{
-      method:'POST',
-      headers:{
-        Authorization:'Bearer '+a.session.access_token,
-        apikey:cfg.key,
-        'Tus-Resumable':'1.0.0',
-        'Upload-Length':String(file.size),
-        'Upload-Metadata':metadata({bucketName:BUCKET,objectName:sourcePath,contentType:file.type||'video/mp4',cacheControl:'31536000'}),
-        'x-upsert':'true'
+    var bases=storageBases(),lastNetworkError=null;
+    for(var index=0;index<bases.length;index+=1){
+      var base=bases[index];
+      try{
+        var response=await fetch(base+'/storage/v1/upload/resumable',{
+          method:'POST',
+          headers:{
+            Authorization:'Bearer '+a.session.access_token,
+            apikey:cfg.key,
+            'Tus-Resumable':'1.0.0',
+            'Upload-Length':String(file.size),
+            'Upload-Metadata':metadata({bucketName:BUCKET,objectName:sourcePath,contentType:file.type||'video/mp4',cacheControl:'31536000'}),
+            'x-upsert':'true'
+          }
+        });
+        if(response.status===404&&index+1<bases.length)continue;
+        if(!response.ok)throw new Error('Initialisation upload refusée ('+response.status+') '+(await response.text()).slice(0,250));
+        var location=response.headers.get('Location');
+        if(!location)throw new Error('Adresse de reprise absente');
+        return new URL(location,base).href;
+      }catch(error){
+        if(!isFetchFailure(error))throw error;
+        lastNetworkError=error;
       }
-    });
-    if(!response.ok)throw new Error('Initialisation upload refusée ('+response.status+') '+(await response.text()).slice(0,250));
-    var location=response.headers.get('Location');
-    if(!location)throw new Error('Adresse de reprise absente');
-    return new URL(location,directStorageBase()).href;
+    }
+    throw new Error('Stockage Supabase inaccessible sur les deux routes : '+errorText(lastNetworkError));
   }
   async function tusOffset(url,a){
     var cfg=config();
-    var response=await fetch(url,{method:'HEAD',headers:{Authorization:'Bearer '+a.session.access_token,apikey:cfg.key,'Tus-Resumable':'1.0.0'}});
-    if(!response.ok)throw new Error('Reprise upload refusée ('+response.status+')');
-    return Number(response.headers.get('Upload-Offset')||0);
+    var sent=await fetchTus(url,{method:'HEAD',headers:{Authorization:'Bearer '+a.session.access_token,apikey:cfg.key,'Tus-Resumable':'1.0.0'}});
+    if(!sent.response.ok)throw new Error('Reprise upload refusée ('+sent.response.status+')');
+    return {offset:Number(sent.response.headers.get('Upload-Offset')||0),url:sent.url};
   }
   async function upload(job,file){
     var a=await auth();
@@ -174,7 +217,7 @@
     var url=uploadUrls.get(job.id)||localStorage.getItem(storageKey(fp))||'';
     var offset=0;
     if(url){
-      try{offset=await tusOffset(url,a);}catch(_resume){url='';offset=0;localStorage.removeItem(storageKey(fp));}
+      try{var resumed=await tusOffset(url,a);offset=resumed.offset;url=resumed.url;}catch(_resume){url='';offset=0;localStorage.removeItem(storageKey(fp));}
     }
     if(!url){
       url=await createTus(file,job.source_path,a);
@@ -190,7 +233,7 @@
           await waitOnline();
           if(attempt>0){
             a=await auth();
-            try{offset=await tusOffset(url,a);}catch(_headError){}
+            try{var currentOffset=await tusOffset(url,a);offset=currentOffset.offset;url=currentOffset.url;}catch(_headError){}
             end=Math.min(file.size,offset+CHUNK);
             if(offset>=file.size){
               response={ok:true,headers:new Headers({'Upload-Offset':String(offset)})};
@@ -198,7 +241,7 @@
               break;
             }
           }
-          response=await fetch(url,{
+          var sent=await fetchTus(url,{
             method:'PATCH',
             headers:{
               Authorization:'Bearer '+a.session.access_token,
@@ -209,6 +252,12 @@
             },
             body:file.slice(offset,end)
           });
+          response=sent.response;
+          if(sent.url!==url){
+            url=sent.url;
+            uploadUrls.set(job.id,url);
+            localStorage.setItem(storageKey(fp),url);
+          }
           if(response.ok){lastError=null;break;}
           var detail=(await response.text()).slice(0,220);
           lastError=new Error('Upload interrompu ('+response.status+') '+detail);
@@ -219,7 +268,7 @@
         }
         if(attempt>=MAX_CHUNK_RETRIES)break;
         var waiting=Math.min(12000,700*Math.pow(1.7,attempt));
-        setJob(Object.assign({},jobs.get(job.id)||job,{status:'uploading',stage:'Réseau instable · reprise automatique',progress:Math.min(60,Number((jobs.get(job.id)||job).progress||1))}));
+        setJob(Object.assign({},jobs.get(job.id)||job,{status:'uploading',stage:'Reconnexion au stockage · reprise automatique',progress:Math.min(60,Number((jobs.get(job.id)||job).progress||1))}));
         await wait(waiting+Math.round(Math.random()*350));
       }
       if(lastError)throw new Error(errorText(lastError)+' · '+(MAX_CHUNK_RETRIES+1)+' tentatives');
@@ -293,7 +342,9 @@
     polling=true;
     try{
       var a=await auth();
-      var result=await a.client.from(TABLE).select('*').eq('user_id',a.user.id).in('status',['uploading','uploaded','processing','published','failed']).order('created_at',{ascending:false}).limit(8);
+      /* Une tache failed ne peut etre reprise apres rechargement car le navigateur
+         ne possede plus le File d'origine. Ne pas ressusciter une barre rouge inutile. */
+      var result=await a.client.from(TABLE).select('*').eq('user_id',a.user.id).in('status',['uploading','uploaded','processing','published']).order('created_at',{ascending:false}).limit(8);
       if(result.error){
         if(result.error.code==='42P01'||/fyblic_media_jobs|does not exist|schema cache/i.test(String(result.error.message||'')))unavailable=true;
         return;
@@ -316,5 +367,5 @@
   setInterval(function(){void refresh();},5000);
   window.addEventListener('online',function(){void refresh();});
 
-  window.FyblicMediaJobsV1055=Object.freeze({version:'V1056_DELETE_ALL',enqueue:enqueue,retry:retry,refresh:refresh,cancelPosts:cancelPosts,available:function(){return !unavailable;}});
+  window.FyblicMediaJobsV1055=Object.freeze({version:'V1056R1_STORAGE_FAILOVER',enqueue:enqueue,retry:retry,refresh:refresh,cancelPosts:cancelPosts,available:function(){return !unavailable;}});
 })();

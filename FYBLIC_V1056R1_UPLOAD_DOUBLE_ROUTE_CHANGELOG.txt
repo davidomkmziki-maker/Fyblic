@@ -1,0 +1,10 @@
+FYBLIC V1056R1 — UPLOAD DOUBLE ROUTE SUPABASE
+
+1. L'upload essaie d'abord le domaine Storage direct recommande par Supabase.
+2. Si le telephone ne peut pas joindre ce domaine, il bascule automatiquement vers la passerelle du projet.
+3. La bascule fonctionne aussi pendant HEAD/PATCH et lors d'une reprise TUS.
+4. L'URL de reprise valide est memorisee apres chaque bascule.
+5. Le libelle trompeur « Reseau instable » devient « Reconnexion au stockage ».
+6. La taille des blocs reste fixee a 6 Mio conformement au protocole Supabase.
+7. Aucun redeploiement du worker et aucune nouvelle requete SQL ne sont necessaires.
+8. Une ancienne tache echouee sans fichier local ne reapparait plus apres rechargement.
