@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1058-worker-direct-20260920';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1052-mobile-json-20260917';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -72,10 +72,8 @@ var HAPPYAD_APP_SHELL = [
   './modules/video.html?v=1048-adaptive-video',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
-  './modules/publish.html?v=1058-worker-direct',
-  './core/media-compression-client-v1.js?v=1053-story-compression',
-  './core/media-jobs-v1055.css?v=1055r2-feed-instant',
-  './core/media-jobs-v1057.js?v=1058-worker-direct',
+  './modules/publish.html?v=1052-mobile-json',
+  './core/media-compression-client-v1.js?v=1052-mobile-json',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
   './modules/user.html?v=974-p1-module-lifecycle-registry',
   './core/startup-master-v727.js?v=727-startup-unique',
@@ -97,7 +95,7 @@ var HAPPYAD_APP_SHELL = [
   './core/filtering-privacy-master-v855r55.js?v=855r55-filtering',
   './core/message-presence-app-master-v855r51.js?v=869-connection-phase2',
   './core/interaction-privacy-master-v855r52.js?v=972-p1-single-client',
-  './core/post-options-master-v693.js?v=1056-delete-all',
+  './core/post-options-master-v693.js?v=1031-storage-security',
   './core/share-button-bridge.js?v=938-guest-share-gate',
   './core/story-master-v699.js?v=1031-storage-security',
   './core/notification-master-v700.js?v=1031-storage-security',
