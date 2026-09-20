@@ -2067,11 +2067,10 @@ return {source:'story',id:storyId};
       };
       localPost.imageCrop=Object.assign({},state.crop||{v:2,scale:1,x:50,y:50}); if(state.kind==='video')localPost.videoFrameTime=Number(state.videoFrame==null?0:state.videoFrame);
 
-      /* V1057 : une vidéo normale est confiée au pipeline TUS officiel.
+      /* V1058 : une vidéo normale est confiée au pipeline direct Railway.
          L'iframe se ferme dès que la tâche existe; le parent conserve le File,
-         poursuit l'upload reprenable et affiche une progression unique sous le Radar.
-         Si la migration V1057 n'est pas encore installée, le chemin V1053 reste
-         disponible afin de ne pas casser la publication existante. */
+         poursuit l'upload binaire reprenable et affiche une progression unique sous le Radar.
+         L'original ne passe plus par le stockage temporaire Supabase. */
       if(state.mode==='publish'&&state.kind==='video'){
         var backgroundManager=null;
         try{backgroundManager=window.parent&&window.parent.FyblicMediaJobsV1055;}catch(_parentManager){}
@@ -2090,7 +2089,7 @@ return {source:'story',id:storyId};
               return;
             }
           }catch(backgroundError){
-            console.warn('Fyblic V1057:',backgroundError);
+            console.warn('Fyblic V1058:',backgroundError);
             /* Le repli classique est autorisé uniquement si la migration V1057
                n'existe réellement pas. Après une erreur réseau ambiguë, démarrer
                un second pipeline pourrait publier la même vidéo deux fois. */

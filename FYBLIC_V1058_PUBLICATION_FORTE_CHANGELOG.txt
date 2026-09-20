@@ -1,0 +1,14 @@
+FYBLIC V1058 — PUBLICATION FORTE
+
+1. Suppression du chemin temporaire TUS/Supabase pour les vidéos normales.
+2. Original envoyé directement au worker Railway par blocs binaires de 5 Mio.
+3. Reprise exacte après coupure réseau à partir de l'offset confirmé.
+4. Limites réelles : 1 100 000 000 octets et 900 secondes.
+5. Validation définitive par FFprobe côté worker, impossible à contourner.
+6. Compression H.264/AAC après le clic Publier seulement.
+7. Publication idempotente : un même postId ne crée pas de doublon.
+8. File persistante restaurée après redémarrage Railway.
+9. Six reprises automatiques pour les erreurs temporaires.
+10. Échec visible avec bouton Réessayer; aucune progression figée indéfiniment.
+11. Tâches V1057 anciennes ignorées afin de supprimer les faux 10–50 % persistants.
+12. Actualisation Accueil et Profil après confirmation réelle de la publication.

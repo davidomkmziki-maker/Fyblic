@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1057-solid-media-pipeline-20260920';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1058-worker-direct-20260920';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -72,11 +72,10 @@ var HAPPYAD_APP_SHELL = [
   './modules/video.html?v=1048-adaptive-video',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
-  './modules/publish.html?v=1057-solid-media-pipeline',
+  './modules/publish.html?v=1058-worker-direct',
   './core/media-compression-client-v1.js?v=1053-story-compression',
   './core/media-jobs-v1055.css?v=1055r2-feed-instant',
-  './core/vendor/tus-js-client-4.3.1.min.js?v=1057-official',
-  './core/media-jobs-v1057.js?v=1057-solid-pipeline',
+  './core/media-jobs-v1057.js?v=1058-worker-direct',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
   './modules/user.html?v=974-p1-module-lifecycle-registry',
   './core/startup-master-v727.js?v=727-startup-unique',
