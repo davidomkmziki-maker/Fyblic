@@ -2024,6 +2024,10 @@ return {source:'story',id:storyId};
       return;
     }
     if(!state.file){toast("Aucun média sélectionné");return;}
+    if(state.kind==='video'&&Number(state.videoDuration||0)>900.05){
+      toast('Vidéo trop longue : maximum 15 minutes');
+      return;
+    }
     $("publishBtn").disabled=true; $("publishBtnTop").disabled=true;
     startProgress("Préparation de la publication...");
     toast("Publication en cours");
@@ -2057,6 +2061,43 @@ return {source:'story',id:storyId};
         createdAt:Date.now()
       };
       localPost.imageCrop=Object.assign({},state.crop||{v:2,scale:1,x:50,y:50}); if(state.kind==='video')localPost.videoFrameTime=Number(state.videoFrame==null?0:state.videoFrame);
+
+      /* V1055 PHASE 1 : une vidéo normale est confiée à la file persistante.
+         L'iframe se ferme dès que la tâche existe; le parent conserve le File,
+         poursuit l'upload TUS et affiche la ligne de progression sous le Radar.
+         Si la migration V1055 n'est pas encore installée, le chemin V1053 reste
+         disponible afin de ne pas casser la publication existante. */
+      if(state.mode==='publish'&&state.kind==='video'){
+        var backgroundManager=null;
+        try{backgroundManager=window.parent&&window.parent.FyblicMediaJobsV1055;}catch(_parentManager){}
+        if(!backgroundManager)backgroundManager=window.FyblicMediaJobsV1055||null;
+        if(backgroundManager&&backgroundManager.available&&backgroundManager.available()){
+          try{
+            setProgress(3,'Création de la publication en arrière-plan');
+            var backgroundJob=await backgroundManager.enqueue({file:state.file,post:localPost});
+            if(backgroundJob&&backgroundJob.id){
+              state.completed=true;
+              finishProgress('Publication lancée');
+              toast('Publication lancée — tu peux continuer à utiliser Fyblic');
+              safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
+              setTimeout(function(){returnHomeAfterPublish('background-video-v1055');},180);
+              return;
+            }
+          }catch(backgroundError){
+            console.warn('Fyblic V1055:',backgroundError);
+            /* Le repli classique est autorisé uniquement si la migration V1055
+               n'existe réellement pas. Après une erreur réseau ambiguë, démarrer
+               un second pipeline pourrait publier la même vidéo deux fois. */
+            if(backgroundManager.available&&backgroundManager.available()===false){
+              toast('Mode renforcé non installé — poursuite avec la publication classique');
+              setProgress(4,'Préparation classique du média');
+            }else{
+              throw backgroundError;
+            }
+          }
+        }
+      }
+
       if(state.kind==='photo' && state.mode==='publish' && state.files && state.files.length>1){
         const groupFiles=state.files.slice(0,18);
         const batchId='grp_'+Date.now();

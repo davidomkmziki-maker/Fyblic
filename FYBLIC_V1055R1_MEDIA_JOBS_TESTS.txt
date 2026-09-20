@@ -1,0 +1,26 @@
+FYBLIC V1055R1 — MEDIA JOBS LOURDS, PHASE 1
+
+Portée volontaire : vidéos des publications normales uniquement.
+Photos, Stories, Live et Boutique conservent leur chemin précédent.
+
+Validations automatiques :
+- scripts externes et 6 scripts internes de publish.html valides ;
+- upload TUS par morceaux exacts de 6 Mio via le domaine Storage direct ;
+- jusqu'à 9 tentatives automatiques par morceau avec reprise de l'offset réel ;
+- limite source 1 100 000 000 octets ;
+- limite vidéo serveur 900 secondes ;
+- retour Accueil après création de la tâche persistante ;
+- progression jaune sous le Radar, rouge en échec, verte à la réussite ;
+- reprise du traitement sans réenvoyer la source déjà présente ;
+- aucun repli classique après une erreur réseau ambiguë, pour éviter les doublons ;
+- cache PWA V1055 ;
+- base stable V1052 conservée.
+
+Tests obligatoires après déploiement :
+1. vidéo 20 à 30 secondes ;
+2. vidéo 86 Mo / 23 secondes ;
+3. coupure réseau puis reprise ;
+4. navigation dans Fyblic pendant l'envoi ;
+5. redémarrage Railway après upload complet ;
+6. publication photo normale ;
+7. Story photo et Story vidéo sur le chemin précédent.

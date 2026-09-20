@@ -43,7 +43,7 @@
     video:'modules/video.html?v=986-base-video-text',
     photo:'modules/photo.html',
     message:'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover',
-    publish:'modules/publish.html?v=1001-public-publication-wording',
+    publish:'modules/publish.html?v=1055r1-heavy-media-phase1',
     map:'modules/map.html'
   };
 
@@ -788,7 +788,7 @@
     if(page==='message')return 'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover';
     if(page==='profile')return 'modules/my-profile.html?v=1001-profile-identity-scale';
     if(page==='profile_public')return VISITOR_PROFILE_PRELOAD_URL_V601;
-    if(page==='publish')return 'modules/publish.html?v=1001-public-publication-wording';
+    if(page==='publish')return 'modules/publish.html?v=1055r1-heavy-media-phase1';
     return pages[page]||'index.html';
   }
   function ownerAuthUidHintV855R23(){
