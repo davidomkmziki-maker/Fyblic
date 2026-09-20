@@ -1,0 +1,8 @@
+FYBLIC V1055R2 — RETOUR FLUIDE ET AFFICHAGE IMMEDIAT
+
+1. Le clic Publier ferme maintenant la surface Publication sans afficher un flash a 100 %.
+2. Le retour vers l'Accueil se fait des que la tache persistante est creee.
+3. Une tache publiee ne reapparait plus sous forme de ligne verte bloquee a 100 %.
+4. Des que le worker rend la premiere version publiable, l'Accueil se rafraichit immediatement.
+5. Les traitements secondaires peuvent continuer silencieusement apres apparition du post.
+6. Les echecs restent visibles avec l'action Reessayer lorsque le probleme est temporaire.

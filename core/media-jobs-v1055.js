@@ -1,4 +1,4 @@
-/* Fyblic V1055R1 — upload TUS reprenable + file persistante Supabase. */
+/* Fyblic V1056 — upload reprenable, affichage immediat et suppression totale. */
 (function(){
   'use strict';
   if(window.FyblicMediaJobsV1055)return;
@@ -15,6 +15,7 @@
   var unavailable=false;
   var strip=null;
   var realtime=null;
+  var publishedHandled=new Set();
 
   function client(){
     try{return window.HappySupabaseClientMasterV972&&window.HappySupabaseClientMasterV972.get();}catch(_e){return null;}
@@ -76,9 +77,9 @@
     return strip;
   }
   function bestJob(){
-    var values=Array.from(jobs.values()).filter(function(job){return job&&job.status!=='cancelled';});
+    var values=Array.from(jobs.values()).filter(function(job){return job&&!['cancelled','published'].includes(job.status);});
     values.sort(function(a,b){return new Date(b.created_at||0)-new Date(a.created_at||0);});
-    return values.find(function(job){return !['published','failed'].includes(job.status);})||values[0]||null;
+    return values.find(function(job){return job.status!=='failed';})||values[0]||null;
   }
   function render(){
     var el=ensureStrip();
@@ -87,26 +88,42 @@
     var status=String(job.status||'uploading');
     var progress=Math.max(0,Math.min(100,Number(job.progress||0)));
     var failed=status==='failed';
-    var published=status==='published';
     var activeCount=Array.from(jobs.values()).filter(function(item){return !['published','failed','cancelled'].includes(item.status);}).length;
-    var label=failed?'Échec de la publication':published?'Publication terminée':(job.stage||'Publication vidéo');
+    var label=failed?'Échec de la publication':(job.stage||'Publication vidéo');
     if(activeCount>1)label+=' · '+activeCount+' en cours';
     var sourceReady=Boolean(job.uploaded_at)||Number(job.progress||0)>=62;
-    el.className='on'+(failed?' failed':'')+(published?' published':'')+(failed&&job.retryable&&(sourceReady||files.has(job.id))?' retryable':'');
+    el.className='on'+(failed?' failed':'')+(failed&&job.retryable&&(sourceReady||files.has(job.id))?' retryable':'');
     el.dataset.jobId=job.id||'';
     el.querySelector('.fyblicJobLabelV1055').textContent=label;
-    el.querySelector('.fyblicJobPercentV1055').textContent=failed?'Échec':Math.round(published?100:progress)+'%';
-    el.querySelector('.fyblicJobFillV1055').style.width=(failed||published?100:progress)+'%';
-    if(published)setTimeout(function(){jobs.delete(job.id);render();},7000);
+    el.querySelector('.fyblicJobPercentV1055').textContent=failed?'Échec':Math.round(progress)+'%';
+    el.querySelector('.fyblicJobFillV1055').style.width=(failed?100:progress)+'%';
+  }
+  function refreshPublishedPost(job){
+    if(!job||!job.id||publishedHandled.has(job.id))return;
+    publishedHandled.add(job.id);
+    try{localStorage.setItem('HAPPYAD_HOME_REFRESH_NEEDED','1');localStorage.setItem('HAPPYAD_PROFILE_REFRESH_NEEDED',String(Date.now()));}catch(_e){}
+    try{window.dispatchEvent(new CustomEvent('fyblic:media-published',{detail:{jobId:job.id,postId:job.post_id}}));}catch(_e2){}
+    [0,450,1400].forEach(function(delay){
+      setTimeout(function(){
+        try{if(typeof window.happyadRefreshHomePostsNow==='function')window.happyadRefreshHomePostsNow('publish-media-job-v1055r2');}catch(_refresh){}
+      },delay);
+    });
   }
   function setJob(job){
     if(!job||!job.id)return;
+    if(job.status==='cancelled'){
+      jobs.delete(job.id);files.delete(job.id);uploadUrls.delete(job.id);render();return;
+    }
+    if(job.status==='published'){
+      jobs.delete(job.id);
+      files.delete(job.id);
+      uploadUrls.delete(job.id);
+      render();
+      refreshPublishedPost(job);
+      return;
+    }
     jobs.set(job.id,job);
     render();
-    if(job.status==='published'){
-      try{localStorage.setItem('HAPPYAD_HOME_REFRESH_NEEDED','1');localStorage.setItem('HAPPYAD_PROFILE_REFRESH_NEEDED',String(Date.now()));}catch(_e){}
-      try{window.dispatchEvent(new CustomEvent('fyblic:media-published',{detail:{jobId:job.id,postId:job.post_id}}));}catch(_e2){}
-    }
   }
   async function auth(){
     var c=await ensureClient();
@@ -263,6 +280,14 @@
     await update(id,{status:'uploading',stage:'Reprise de l’envoi',progress:Math.min(60,Number(job.progress||1)),error_code:null,error_message:null,retryable:false});
     void runUpload(Object.assign({},job,{status:'uploading'}),file);
   }
+  function cancelPosts(postIds){
+    var wanted=new Set((Array.isArray(postIds)?postIds:[postIds]).map(String));
+    Array.from(jobs.entries()).forEach(function(entry){
+      var id=entry[0],job=entry[1];
+      if(job&&wanted.has(String(job.post_id||''))){jobs.delete(id);files.delete(id);uploadUrls.delete(id);}
+    });
+    render();
+  }
   async function refresh(){
     if(polling||unavailable)return;
     polling=true;
@@ -291,5 +316,5 @@
   setInterval(function(){void refresh();},5000);
   window.addEventListener('online',function(){void refresh();});
 
-  window.FyblicMediaJobsV1055=Object.freeze({version:'V1055R1_PHASE1',enqueue:enqueue,retry:retry,refresh:refresh,available:function(){return !unavailable;}});
+  window.FyblicMediaJobsV1055=Object.freeze({version:'V1056_DELETE_ALL',enqueue:enqueue,retry:retry,refresh:refresh,cancelPosts:cancelPosts,available:function(){return !unavailable;}});
 })();

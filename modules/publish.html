@@ -757,7 +757,10 @@ button:disabled{filter:none;transform:none}
      Le module peut être ouvert dans l'iframe de index.html ou seul depuis modules/publish.html. */
   function returnHomeAfterPublish(reason){
     reason=String(reason||'publish-success');
-    try{resetPublishComposer('after-'+reason);state.sessionOpen=false;}catch(_reset){}
+    var framed=false;try{framed=!!(window.parent&&window.parent!==window);}catch(_frame){}
+    /* V1055R2 : fermer d'abord la surface Publication. Effacer son contenu avant
+       le changement de page produisait un bref flash vide perceptible. */
+    function resetAfterClose(){try{resetPublishComposer('after-'+reason);state.sessionOpen=false;}catch(_reset){}}
     try{safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');}catch(_e){}
     try{safeLocalFlag('HAPPYAD_PROFILE_REFRESH_NEEDED',String(Date.now()));}catch(_e){}
     try{safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');}catch(_e){}
@@ -765,7 +768,7 @@ button:disabled{filter:none;transform:none}
     try{sessionStorage.removeItem('HAPPYAD_SESSION_ALL_POSTS_V104');}catch(_e){}
     try{sessionStorage.removeItem('HAPPYAD_HOME_POSTS_LAST_SYNC');}catch(_e){}
     try{
-      if(window.parent&&window.parent!==window){
+      if(framed){
         try{
           /* V927 : une seule intention de retour. L'ancien couple postMessage +
              appel direct pouvait dépiler deux pages avant le premier popstate. */
@@ -774,6 +777,7 @@ button:disabled{filter:none;transform:none}
           else window.parent.postMessage({type:'HAPPYAD_PUBLISH_SUCCESS_RETURN_HOME',reason:reason,ts:Date.now()},'*');
           setTimeout(function(){try{if(typeof window.parent.happyadRefreshHomePostsNow==='function')window.parent.happyadRefreshHomePostsNow('publish-'+reason);}catch(_r){}},120);
           setTimeout(function(){try{if(typeof window.parent.fetchRadarItems==='function')window.parent.fetchRadarItems().then(function(){try{window.parent.renderRadarHome&&window.parent.renderRadarHome();}catch(_rr){}});else if(typeof window.parent.renderRadarHome==='function')window.parent.renderRadarHome();}catch(_radar){}},180);
+          setTimeout(resetAfterClose,320);
           return true;
         }catch(_direct){
           return false;
@@ -781,6 +785,7 @@ button:disabled{filter:none;transform:none}
       }
     }catch(_e){}
     /* V584: aucun retour automatique après publication. */
+    resetAfterClose();
     try{window.location.replace('../index.html?happyad_publish_done=1&t='+Date.now());}catch(_r){window.location.href='../index.html';}
     return true;
   }
@@ -2077,10 +2082,11 @@ return {source:'story',id:storyId};
             var backgroundJob=await backgroundManager.enqueue({file:state.file,post:localPost});
             if(backgroundJob&&backgroundJob.id){
               state.completed=true;
-              finishProgress('Publication lancée');
-              toast('Publication lancée — tu peux continuer à utiliser Fyblic');
+              clearInterval(progressTimer);progressTimer=null;
+              var progressBox=$('publishProgress');if(progressBox)progressBox.classList.remove('show');
               safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
-              setTimeout(function(){returnHomeAfterPublish('background-video-v1055');},180);
+              try{requestAnimationFrame(function(){returnHomeAfterPublish('background-video-v1055r2');});}
+              catch(_raf){returnHomeAfterPublish('background-video-v1055r2');}
               return;
             }
           }catch(backgroundError){

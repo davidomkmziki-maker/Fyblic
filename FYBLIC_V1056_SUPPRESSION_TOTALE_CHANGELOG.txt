@@ -1,0 +1,8 @@
+FYBLIC V1056 — SUPPRESSION TOTALE DES MEDIAS
+
+1. La suppression proprietaire annule toutes les taches liees a la publication.
+2. La carte disparait immediatement de l'Accueil et des caches locaux.
+3. Une compression Railway en cours recoit l'ordre d'arret.
+4. Une tache annulee ne peut plus republier la publication.
+5. La source temporaire, la version principale, la miniature et les variantes sont nettoyees.
+6. Les albums continuent de supprimer toutes leurs lignes groupees.
