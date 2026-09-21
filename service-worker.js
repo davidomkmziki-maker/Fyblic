@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1064-primary-first-20260921';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1065-android-file-lock-20260921';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -72,10 +72,10 @@ var HAPPYAD_APP_SHELL = [
   './modules/video.html?v=1048-adaptive-video',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
-  './modules/publish.html?v=1064-primary-first',
+  './modules/publish.html?v=1065-android-file-lock',
   './core/media-compression-client-v1.js?v=1052-mobile-json',
-  './core/publication-pipeline-v2.js?v=1064-primary-first',
-  './core/publication-background-ui-v2.js?v=1064-primary-first',
+  './core/publication-pipeline-v2.js?v=1065-android-file-lock',
+  './core/publication-background-ui-v2.js?v=1065-android-file-lock',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
   './modules/user.html?v=974-p1-module-lifecycle-registry',
   './core/startup-master-v727.js?v=727-startup-unique',

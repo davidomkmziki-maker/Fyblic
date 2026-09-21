@@ -1,0 +1,21 @@
+FYBLIC V1065 — ACCÈS MÉDIA ANDROID STABLE
+
+CORRECTIONS
+
+1. Le fichier sélectionné reste attaché au champ Galerie pendant tout l’envoi.
+   Le retour vers l’Accueil ne révoque plus prématurément son autorisation Android.
+
+2. Le compositeur est nettoyé seulement après la disponibilité de la première
+   qualité de la publication.
+
+3. Le message anglais de lecture/permission est remplacé par un message français
+   court et compréhensible.
+
+4. Une publication échouée n’est plus relancée à chaque chargement de l’application.
+
+5. Le panneau d’échec possède un bouton X et disparaît automatiquement après
+   sept secondes.
+
+DÉPLOIEMENT
+
+Seul le site doit être déployé. Le SQL et le worker V1064 restent inchangés.

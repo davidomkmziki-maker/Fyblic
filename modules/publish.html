@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-pipeline-v2.js?v=1064-primary-first"></script>
+<script src="../core/publication-pipeline-v2.js?v=1065-android-file-lock"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -756,9 +756,13 @@ button:disabled{filter:none;transform:none}
 
   /* V30 — Après publication terminée, retour direct vers l'accueil réel.
      Le module peut être ouvert dans l'iframe de index.html ou seul depuis modules/publish.html. */
-  function returnHomeAfterPublish(reason){
+  function returnHomeAfterPublish(reason,options){
     reason=String(reason||'publish-success');
-    try{resetPublishComposer('after-'+reason);state.sessionOpen=false;}catch(_reset){}
+    options=options&&typeof options==='object'?options:{};
+    /* V1065 : pendant l'envoi durable Android, conserver le File et la valeur de
+       l'input. Les effacer ici révoquait l'autorisation du fournisseur Galerie. */
+    if(!options.preserveMedia){try{resetPublishComposer('after-'+reason);}catch(_reset){}}
+    state.sessionOpen=false;
     try{safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');}catch(_e){}
     try{safeLocalFlag('HAPPYAD_PROFILE_REFRESH_NEEDED',String(Date.now()));}catch(_e){}
     try{safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');}catch(_e){}
@@ -2073,7 +2077,7 @@ return {source:'story',id:storyId};
             onCreated:function(job){
               state.completed=true;
               setProgress(Math.max(1,Number(job&&job.progress||1)),'Publication en cours');
-              if(!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('pipeline-v2-background');},180);}
+              if(!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('pipeline-v2-background',{preserveMedia:true});},180);}
             },
             onProgress:function(job){setProgress(Number(job&&job.progress||progressValue),String(job&&job.stage||'Publication en cours'));}
           });
@@ -2083,6 +2087,7 @@ return {source:'story',id:storyId};
             return result.completion;
           }).then(function(){
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
+            try{resetPublishComposer('pipeline-v2-completed-v1065');}catch(_reset){}
           }).catch(function(error){
             console.error('Fyblic pipeline V2',error);
             try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:'',postId:id,status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}

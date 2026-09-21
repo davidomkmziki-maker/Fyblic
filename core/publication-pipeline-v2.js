@@ -10,7 +10,13 @@
 
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
   function chunkBytes(){var c=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};if(c.saveData||/^(slow-2g|2g|3g)$/i.test(String(c.effectiveType||'')))return CHUNK_SAFE;return CHUNK_FAST;}
-  function publicError(value){var m=String(value||'').trim();if(!m)return 'Publication impossible. Réessaie.';if(/supabase|23502|failing row|violates|constraint|postgres|pgrst|sql/i.test(m))return 'La publication n’a pas pu être enregistrée. Réessaie après la mise à jour.';return m.slice(0,140);}
+  function publicError(value){
+    var m=String(value||'').trim();
+    if(!m)return 'Publication impossible. Réessaie.';
+    if(/requested file could not be read|permission problems|reference to a file|notreadableerror|file.*could not be read/i.test(m))return 'Le téléphone a interrompu l’accès au média. Sélectionne-le puis réessaie.';
+    if(/supabase|23502|failing row|violates|constraint|postgres|pgrst|sql/i.test(m))return 'La publication n’a pas pu être enregistrée. Réessaie après la mise à jour.';
+    return m.slice(0,140);
+  }
   function client(){try{return window.HappySupabaseClientMasterV972?window.HappySupabaseClientMasterV972.get():(window.happyadSupabase||null);}catch(_e){return null;}}
   async function auth(){var c=client();if(!c)throw new Error('Session Fyblic indisponible');var r=await c.auth.getSession(),s=r&&r.data&&r.data.session;if(!s||!s.access_token||!s.user)throw new Error('Session Fyblic expirée');return {token:s.access_token,user:s.user};}
   function headers(token,extra){var h=Object.assign({},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
@@ -35,7 +41,7 @@
     var detail={jobId:job.id,postId:job.post_id||job.postId||'',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',error:publicError(job.error_message||''),result:job.result||null};
     try{window.dispatchEvent(new CustomEvent('FYBLIC_PUBLICATION_PROGRESS_V2',{detail:detail}));}catch(_e){}
     try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:detail},'*');}catch(_e2){}
-    if(detail.primaryReady||['published','failed','canceled'].indexOf(detail.status)>=0){setTimeout(function(){if(detail.primaryReady||detail.status==='published'||detail.status==='canceled')forget(job.id);},detail.primaryReady?8000:1000);}
+    if(detail.primaryReady||['published','failed','canceled'].indexOf(detail.status)>=0){setTimeout(function(){forget(job.id);},detail.primaryReady?8000:(detail.status==='failed'?9000:1000));}
   }
   async function available(force){
     if(!force&&Date.now()-healthCache.at<30000)return healthCache.value;
@@ -93,12 +99,12 @@
     return {used:true,job:queued,completion:completion};
   }
   async function resumeTracking(){
-    var jobs=readJobs().filter(function(j){return j&&j.id&&j.primaryReady!==true&&['published','canceled'].indexOf(j.status)<0;});if(!jobs.length)return;
+    var jobs=readJobs().filter(function(j){return j&&j.id&&j.primaryReady!==true&&['published','failed','canceled'].indexOf(j.status)<0;});if(!jobs.length)return;
     var a;try{a=await auth();}catch(_e){return;}
     jobs.forEach(function(job){watch(job.id,a.token).catch(function(){});});
   }
   async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+id+'/cancel',{method:'POST'},a.token,30000)).body;event(job);return job;}
 
-  window.FyblicPublicationPipelineV2={version:'1064.1',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
+  window.FyblicPublicationPipelineV2={version:'1065.1',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();
