@@ -1,0 +1,10 @@
+FYBLIC V1062 — RETOUR ACCUEIL ET PROGRESSION
+
+- Corrige le clic Publier qui restait sur la page Détails.
+- Ferme directement la surface Publication avec le routeur parent canonique.
+- Ajoute un message de secours dédié au retour Accueil.
+- Réémet la progression à 120 ms et 420 ms après le retour pour attendre le rendu des Stories.
+- Conserve la publication réelle dans l'iframe montée en arrière-plan.
+- Force le renouvellement du cache PWA et de l'iframe Publication.
+
+Validation : syntaxe JavaScript et intégrité ZIP vérifiées.

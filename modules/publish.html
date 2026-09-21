@@ -62,7 +62,7 @@
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="../core/media-compression-client-v1.js?v=1061-auth-timeout-resume"></script>
+<script src="../core/media-compression-client-v1.js?v=1062-force-home-progress"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -769,10 +769,18 @@ button:disabled{filter:none;transform:none}
   function returnHomeDuringUpload(){
     try{
       if(window.parent&&window.parent!==window){
-        if(window.parent.HappyMainTabsV598&&typeof window.parent.HappyMainTabsV598.open==='function')window.parent.HappyMainTabsV598.open('home',{source:'publish-background-v1061'});
-        else if(window.parent.HappyMainTabsV594&&typeof window.parent.HappyMainTabsV594.open==='function')window.parent.HappyMainTabsV594.open('home',{source:'publish-background-v1061'});
-        else if(typeof window.parent.happyadReturnHomeAfterPublishV30==='function')window.parent.happyadReturnHomeAfterPublishV30('publish-background-v1060');
-        else window.parent.postMessage({type:'HAPPYAD_NAV_BACK_REQUEST',detail:{source:'publish-background-v1060'}},'*');
+        var host=window.parent;
+        try{if(window.top&&window.top!==window)host=window.top;}catch(_top){}
+        /* V1062 : fermer la surface Publication directement. open('home') pouvait
+           être ignoré par l'anti-double-clic du menu et laisser Détails visible. */
+        var closed=false;
+        try{if(host.FyblicPublicationProgressV1061&&typeof host.FyblicPublicationProgressV1061.showHome==='function')closed=host.FyblicPublicationProgressV1061.showHome('publish-background-v1062')!==false;}catch(_progressHome){}
+        if(!closed){try{if(host.HappyNavigation&&typeof host.HappyNavigation.close==='function'){host.HappyNavigation.close('publish-background-v1062',{menu:true,replace:true,source:'publish-background-v1062'});closed=true;}}catch(_navigationHome){}}
+        if(!closed){try{if(host.HappyMainTabsV598&&typeof host.HappyMainTabsV598.open==='function'){host.HappyMainTabsV598.open('home',{source:'publish-background-v1062'});closed=true;}}catch(_tabsHome){}}
+        try{host.postMessage({type:'FYBLIC_PUBLICATION_RETURN_HOME_V1062',detail:{source:'publish-background-v1062'}},'*');}catch(_messageHome){}
+        /* Renvoyer l'état après que l'Accueil est peint : la ligne apparaît même
+           si son conteneur Stories vient juste d'être recréé. */
+        [120,420].forEach(function(delay){setTimeout(function(){notifyParentProgress({id:activePublicationId,status:'started',percent:Math.max(1,progressValue),text:'Publication en cours'});},delay);});
         return true;
       }
     }catch(_e){}

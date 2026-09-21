@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1061-publish-resume-20260921';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1062-force-home-progress-20260921';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -63,7 +63,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-feed-view-v1.js?v=929-prepaint-anchor',
   './core/home-feed-boot-v1.js?v=937-account-story-cache',
   './core/master-registry.js?v=974-p1-module-lifecycle-registry',
-  './core/publication-progress-v1060.js?v=1061-background-progress',
+  './core/publication-progress-v1060.js?v=1062-force-home-progress',
   './core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry',
   './modules/happyad-chat.html?v=1031-storage-security',
   './modules/message-center.html?mode=inbox&source=p1-module-lifecycle&v=1031-storage-security',
@@ -73,7 +73,7 @@ var HAPPYAD_APP_SHELL = [
   './modules/video.html?v=1048-adaptive-video',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
-  './modules/publish.html?v=1061-background-upload',
+  './modules/publish.html?v=1062-force-home-progress',
   './core/media-compression-client-v1.js?v=1061-auth-timeout-resume',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
   './modules/user.html?v=974-p1-module-lifecycle-registry',
