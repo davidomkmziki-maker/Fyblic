@@ -1,0 +1,25 @@
+FYBLIC V1070 — PUBLICATION UNIFIÉE
+Date : 2026-09-21
+
+1. Un seul moteur de publication pour Normal, Story, Boutique et Live.
+2. Un seul bouton de mode dans l'interface : Normal → Story → Boutique → Live.
+3. Compression et upload commencent uniquement après le clic Publier.
+4. Retour immédiat à l'Accueil pendant le travail en arrière-plan.
+5. Progression persistante sous les Stories pour Normal/Boutique/Live.
+6. Progression circulaire autour de « Ta story » pour Story.
+7. Jaune pendant le travail, vert à 100 %, rouge avec Réessayer en cas d'échec.
+8. Limites réellement vérifiées : 1,1 Go et 15 minutes.
+9. Ancien moteur Boutique remplacé par un adaptateur vers le moteur unifié.
+10. Nouveau cache PWA V1070 pour empêcher le retour de l'ancien publish.html.
+
+Fichiers maîtres :
+- core/publication-engine-v1070.js
+- core/publication-progress-v1070.js
+- core/publication-composer-v1070.js
+- modules/publish.html
+
+Tables finales :
+- Normal : happyad_posts
+- Story : happyad_stories
+- Boutique : RPC happyad_publish_listing_v1 → happyad_posts
+- Live : happyad_lives

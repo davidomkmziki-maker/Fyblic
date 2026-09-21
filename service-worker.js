@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1062-force-home-progress-20260921';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1070-unified-publication-20260921';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -38,7 +38,7 @@ var HAPPYAD_APP_SHELL = [
   './core/language-preference-master-v855r59.js?v=855r59-language-storage-real',
   './core/system-notification-master-v807.js?v=855r56-notification-preferences',
   './core/seller-verification-supabase-master-v801.js?v=807-team-wording-system-notifications',
-  './core/listing-publication-supabase-master-v821.js?v=1001-public-publication-wording',
+  './core/listing-publication-supabase-master-v821.js?v=1070-unified-adapter',
   './core/chat-integration-master-v795.js?v=1031-storage-security',
   './core/marketplace-home-master-v828.js?v=991-market-three-line-description',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
@@ -63,7 +63,8 @@ var HAPPYAD_APP_SHELL = [
   './core/home-feed-view-v1.js?v=929-prepaint-anchor',
   './core/home-feed-boot-v1.js?v=937-account-story-cache',
   './core/master-registry.js?v=974-p1-module-lifecycle-registry',
-  './core/publication-progress-v1060.js?v=1062-force-home-progress',
+  './core/publication-progress-v1070.js?v=1070-unified-progress',
+  './core/publication-engine-v1070.js?v=1070-unified-engine',
   './core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry',
   './modules/happyad-chat.html?v=1031-storage-security',
   './modules/message-center.html?mode=inbox&source=p1-module-lifecycle&v=1031-storage-security',
@@ -73,8 +74,9 @@ var HAPPYAD_APP_SHELL = [
   './modules/video.html?v=1048-adaptive-video',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
-  './modules/publish.html?v=1062-force-home-progress',
-  './core/media-compression-client-v1.js?v=1061-auth-timeout-resume',
+  './modules/publish.html?v=1070-unified-publication',
+  './core/publication-composer-v1070.js?v=1070',
+  './core/media-compression-client-v1.js?v=1070-unified',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
   './modules/user.html?v=974-p1-module-lifecycle-registry',
   './core/startup-master-v727.js?v=727-startup-unique',
@@ -82,7 +84,7 @@ var HAPPYAD_APP_SHELL = [
   './core/global-scroll-coordinator-v868.js?v=869-connection-phase2',
   './core/connection-work-coordinator-v869.js?v=869-connection-phase2',
   './core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical',
-  './core/navigation-master-v668.js?v=1061-background-upload',
+  './core/navigation-master-v668.js?v=1070-unified-publication',
   './core/home-scroll-priority-master-v863.js?v=869-connection-phase2',
   './core/profile-avatar-master-v855r32.js?v=1031-storage-security',
   './core/follow-master-v855r34.js?v=986-professional-icons-love',
@@ -107,7 +109,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-scroll-prepaint-master-v696.js?v=855r100-home-scroll-physical-stable',
   './core/profile-edit-clear-master-v742.css?v=742-profile-edit-clear',
   './core/profile-edit-clear-master-v742.js?v=855r93-home-silent',
-  './core/main-tabs-master-v615.js?v=1061-background-upload',
+  './core/main-tabs-master-v615.js?v=1070-unified-publication',
   './core/guest-radar-auth-v599.js?v=940-guest-auth-rainbow',
   './core/auth-frame-gate-v596.js?v=938-guest-passive',
   './core/publish-master-v589.js?v=927-publish-canonical-return',
