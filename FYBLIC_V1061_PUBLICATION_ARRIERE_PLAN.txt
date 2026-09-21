@@ -1,0 +1,30 @@
+FYBLIC V1061 — PUBLICATION EN ARRIERE-PLAN
+
+CORRECTIONS
+- Le sélecteur Galerie demande directement les photos et vidéos au système Android.
+- Le panneau bloquant « Publication en cours » n'est plus affiché.
+- Après Publier, l'accueil est rouvert immédiatement tandis que l'iframe de publication continue son travail.
+- Publication normale et Boutique : ligne jaune et pourcentage sous les Stories, verte à 100 %, puis masquée.
+- Story : progression circulaire sur « Ta story », sans ligne sous les Stories.
+- L'indicateur Story cible le composant Story actuel et non l'ancien bloc masqué.
+- L'authentification média n'interroge plus profil/avatar avant chaque morceau de 5 Mio.
+- Les appels au worker ont maintenant des délais maximaux et une reprise claire.
+- La première qualité jusqu'à 1080p reste prioritaire; les autres qualités continuent ensuite en arrière-plan.
+- Le cache PWA et les URLs de modules ont été changés pour forcer la réception de cette version.
+
+SUPABASE
+- FYBLIC_SUPPRESSION_PROPRIETAIRE_V1060R1.sql conserve la suppression sécurisée des publications appartenant au compte connecté.
+- FYBLIC_SUPPRIMER_PUBLICATION_TEST_V1061.sql annule puis supprime uniquement l'ancien post test p_1789911311411.
+
+VALIDATION LOCALE
+- JavaScript autonome : syntaxe valide.
+- Scripts intégrés de modules/publish.html : 6/6 parsés sans erreur.
+- Worker : npm run check réussi.
+- Worker : npm test réussi, 5 tests sur 5.
+- Limites : 1 100 000 000 octets et 900 secondes.
+
+ORDRE DE DEPLOIEMENT
+1. Exécuter les deux SQL dans Supabase SQL Editor.
+2. Déployer le ZIP worker V1061 sur Railway et vérifier /health puis /api/config.
+3. Déployer le ZIP site V1061 sur Netlify.
+4. Fermer puis rouvrir la PWA une fois pour activer le nouveau service worker.

@@ -62,7 +62,7 @@
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="../core/media-compression-client-v1.js?v=1060-binary-resumable-unified"></script>
+<script src="../core/media-compression-client-v1.js?v=1061-auth-timeout-resume"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -668,7 +668,7 @@ button:disabled{filter:none;transform:none}
   <div class="mentionAutocomplete" id="mentionAutocomplete" hidden aria-label="Suggestions de personnes"></div>
 </div>
 
-<input id="fileInput" type="file" accept="image/*,video/*,.heic,.heif,.avif,.jxl,.dng,.raw,.cr2,.cr3,.nef,.arw,.tif,.tiff,.mkv,.mov,.m4v,.avi,.3gp,.3g2,.mts,.m2ts,.webm,.mpeg,.mpg,.ogv,.ts,.flv,.wmv,.vob" multiple hidden>
+<input id="fileInput" type="file" accept="image/*,video/*" multiple hidden>
 <input id="cameraPhotoInput" type="file" accept="image/*" capture="environment" hidden>
 <input id="cameraVideoInput" type="file" accept="video/*" capture="environment" hidden>
 
@@ -733,7 +733,9 @@ button:disabled{filter:none;transform:none}
     const requested=Math.max(0,Math.min(100,Math.round(Number(value)||0)));
     progressValue=requested===0?0:Math.max(progressValue,requested);
     const box=$("publishProgress"), fill=$("progressFill"), num=$("progressNum"), label=$("progressText");
-    if(box) box.classList.add("show");
+    /* V1061 : la progression appartient à l'accueil. Le compositeur reste
+       monté en arrière-plan, mais ne doit jamais immobiliser l'utilisateur. */
+    if(box) box.classList.remove("show");
     if(fill) fill.style.width=progressValue+"%";
     if(num) num.textContent=progressValue+"%";
     if(label && text) label.textContent=publicPublishMessage(text);
@@ -767,7 +769,8 @@ button:disabled{filter:none;transform:none}
   function returnHomeDuringUpload(){
     try{
       if(window.parent&&window.parent!==window){
-        if(window.parent.HappyMainTabsV615&&typeof window.parent.HappyMainTabsV615.activate==='function')window.parent.HappyMainTabsV615.activate('home',{source:'publish-background-v1060'});
+        if(window.parent.HappyMainTabsV598&&typeof window.parent.HappyMainTabsV598.open==='function')window.parent.HappyMainTabsV598.open('home',{source:'publish-background-v1061'});
+        else if(window.parent.HappyMainTabsV594&&typeof window.parent.HappyMainTabsV594.open==='function')window.parent.HappyMainTabsV594.open('home',{source:'publish-background-v1061'});
         else if(typeof window.parent.happyadReturnHomeAfterPublishV30==='function')window.parent.happyadReturnHomeAfterPublishV30('publish-background-v1060');
         else window.parent.postMessage({type:'HAPPYAD_NAV_BACK_REQUEST',detail:{source:'publish-background-v1060'}},'*');
         return true;
@@ -1497,6 +1500,25 @@ button:disabled{filter:none;transform:none}
     return {session,user,profile};
   }
 
+  /* V1061 : chemin court réservé au pipeline média. L'ancienne fonction
+     rechargeait session, utilisateur, profil et avatar pour chaque morceau de
+     5 Mo. Sur une vidéo lourde cela pouvait laisser l'interface à 1 % pendant
+     des dizaines de minutes. */
+  async function getPublishAuthFastV1061(c, previous){
+    if(!c)throw new Error('Service de publication indisponible');
+    var session=previous&&previous.session||null;
+    if(!session){
+      try{var current=await withTimeout(c.auth.getSession(),8000,'Lecture de la session');session=current&&current.data&&current.data.session||null;}catch(_e){}
+    }
+    var expiresAt=Number(session&&session.expires_at||0)*1000;
+    if(!session||!session.access_token||(expiresAt&&expiresAt-Date.now()<30000)){
+      try{var refreshed=await withTimeout(c.auth.refreshSession(),10000,'Renouvellement de la session');session=refreshed&&refreshed.data&&refreshed.data.session||session;}catch(_refresh){}
+    }
+    var user=session&&session.user||previous&&previous.user||null;
+    if(!user)throw new Error('Session absente : reconnecte-toi');
+    return {session:session,user:user,profile:previous&&previous.profile||null};
+  }
+
   async function touchAuthSession(c){
     try{
       const s=await c.auth.getSession();
@@ -1564,7 +1586,7 @@ button:disabled{filter:none;transform:none}
     if(!c) throw new Error('Service de publication indisponible');
     const alreadyPrepared=!!(file&&file.__fyblicPrepared&&file.primary&&file.primary.url);
     setProgress(alreadyPrepared?94:3,'Vérification session...');
-    const auth=await getFreshAuth(c);
+    const auth=await getPublishAuthFastV1061(c,localPost&&localPost.__publishAuth);
     const session=auth.session, user=auth.user, profile=auth.profile;
     if(!user) throw new Error('Session absente : reconnecte-toi');
     setProgress(alreadyPrepared?95:5,'Session prête');
@@ -1860,11 +1882,12 @@ return {source:'story',id:storyId};
     var engine=window.FyblicMediaCompressionV1;
     if(!engine||!engine.enabled||!engine.enabled())return file;
     setProgress(2,'Préparation du média');
+    var authCache=await getPublishAuthFastV1061(happySb(),auth);
     var result=await engine.compress(file,{
       kind:kind,
-      accessToken:auth&&auth.session&&auth.session.access_token,
-      accessTokenProvider:async function(){var fresh=await getFreshAuth(happySb());return fresh&&fresh.session&&fresh.session.access_token||'';},
-      userId:auth&&auth.user&&auth.user.id,
+      accessToken:authCache&&authCache.session&&authCache.session.access_token,
+      accessTokenProvider:async function(){authCache=await getPublishAuthFastV1061(happySb(),authCache);return authCache&&authCache.session&&authCache.session.access_token||'';},
+      userId:authCache&&authCache.user&&authCache.user.id,
       postId:postId,
       publicationKind:state.mode==='story'?'story':'post',
       onProgress:function(update){setProgress(update.percent||progressValue,update.text||'Compression du média');}
@@ -2108,7 +2131,8 @@ return {source:'story',id:storyId};
           try{
             var groupClient=happySb();
             if(!groupClient){try{groupClient=await window.happyadEnsureSupabaseV936(15000);}catch(_groupSdk){}}
-            var groupAuth=groupClient?await getFreshAuth(groupClient):null;
+            var groupAuth=groupClient?await getPublishAuthFastV1061(groupClient):null;
+            groupedPost.__publishAuth=groupAuth;
             var groupedUploadFile=await compressAfterPublishClickV1047(groupFiles[i],'photo',groupAuth,pid);
             groupedPost=await savePostToSupabase(groupedPost,groupedUploadFile);
           }
@@ -2189,7 +2213,9 @@ return {source:'story',id:storyId};
         if(state.mode==='publish'||state.mode==='story'){
           var publishClient=happySb();
           if(!publishClient){try{publishClient=await window.happyadEnsureSupabaseV936(15000);}catch(_publishSdk){}}
-          var publishAuth=publishClient?await getFreshAuth(publishClient):null;
+          setProgress(2,'Session de publication...');
+          var publishAuth=publishClient?await getPublishAuthFastV1061(publishClient):null;
+          localPost.__publishAuth=publishAuth;
           uploadFile=await compressAfterPublishClickV1047(state.file,state.kind,publishAuth,id);
         }
         localPost=await savePostToSupabase(localPost,uploadFile);
@@ -2260,6 +2286,9 @@ return {source:'story',id:storyId};
     const el=$(inputId);
     if(!el){toast("Sélecteur introuvable");return;}
     try{el.value="";}catch(_e){}
+    /* showPicker ouvre directement le sélecteur média natif quand Android/Chrome
+       le propose; click reste le repli compatible iOS et anciens navigateurs. */
+    try{if(typeof el.showPicker==='function'){el.showPicker();return;}}catch(_picker){}
     el.click();
   }
 
