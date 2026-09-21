@@ -1,0 +1,28 @@
+FYBLIC V1064 — QUALITÉ PRINCIPALE EN PREMIER
+Date : 21 septembre 2026
+
+CORRECTIONS
+- Corrige l’erreur PostgreSQL 23502 pendant l’insertion happyad_posts.
+- Les colonnes absentes utilisent maintenant leurs valeurs DEFAULT au lieu de NULL.
+- Les détails Supabase/PostgreSQL ne sont plus affichés aux utilisateurs.
+- Le message public reste court et compréhensible.
+
+VIDÉO
+- La meilleure qualité disponible est produite en premier.
+- Source 1080p ou supérieure : 1080p en premier.
+- Source 720p : 720p en premier.
+- Dès que cette qualité est stockée, la publication devient visible dans l’Accueil.
+- 720p, 540p et 360p terminent ensuite en arrière-plan.
+- La miniature est préparée avant la qualité principale.
+- Un redémarrage Railway peut reprendre l’optimisation restante.
+
+VITESSE D’ENVOI
+- Réseau 4G/rapide : morceaux JSON de 1 Mio.
+- Réseau lent ou économie de données : retour automatique à 512 Kio.
+- Le nombre de requêtes est environ divisé par deux sur réseau rapide.
+
+ORDRE DE DÉPLOIEMENT
+1. Exécuter FYBLIC_PUBLICATION_PIPELINE_V1064_PRIMARY_FIRST.sql dans Supabase.
+2. Déployer le worker V1064.
+3. Déployer le site V1064.
+4. Tester avec une petite vidéo 1080p.
