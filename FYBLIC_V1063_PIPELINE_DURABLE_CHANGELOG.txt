@@ -1,0 +1,42 @@
+FYBLIC V1063 — PIPELINE DURABLE, PHASE 1
+Date : 21 septembre 2026
+
+BASE PRÉSERVÉE
+- V1052 MOBILE JSON STABLE reste intacte et sert de retour arrière.
+- L’ancien chemin V1052 reste automatiquement utilisé si le pipeline V2 n’est pas activé.
+
+NOUVEAU CHEMIN V2
+- Activation progressive : publication normale avec un seul média.
+- Identifiant UUID au lieu de l’heure seule.
+- Création d’une tâche persistante avant l’envoi.
+- Morceaux mobiles JSON/Base64 de 512 Kio conservés.
+- Chaque morceau est transféré immédiatement vers Supabase Storage avec TUS.
+- Original durable dans le bucket privé fyblic-media-originals.
+- File d’attente persistante dans fyblic_publication_jobs.
+- Lease worker et reprise automatique après redémarrage Railway.
+- Trois tentatives maximales de compression serveur.
+- Progression réelle : 0–44 % envoi, 45 % file, 46–85 % compression,
+  86–98 % stockage/finalisation, 100 % après insertion happyad_posts.
+- Ligne de progression dans l’Accueil.
+- Finalisation serveur : la publication peut terminer après le retour à l’Accueil.
+- Nettoyage de l’original privé après réussite.
+
+SÉCURITÉ
+- La clé service_role n’est jamais placée dans le site.
+- Elle doit exister uniquement dans les variables Railway.
+- Le bucket original est privé.
+- Les utilisateurs peuvent uniquement lire leurs propres tâches.
+- Les fonctions du worker sont réservées au rôle service_role.
+
+PHASES ENCORE CONSERVÉES SUR V1052
+- albums photo ;
+- Stories ;
+- Boutique ;
+- Live (le Live réel nécessitera un moteur de streaming séparé).
+
+ORDRE OBLIGATOIRE
+1. Exécuter FYBLIC_PUBLICATION_PIPELINE_V1063.sql dans Supabase SQL Editor.
+2. Ajouter FYBLIC_SUPABASE_SERVICE_ROLE_KEY dans Railway, sans la partager.
+3. Déployer le worker V1063 et vérifier /health.
+4. Déployer le site V1063.
+5. Tester une petite vidéo normale avant les vidéos lourdes.

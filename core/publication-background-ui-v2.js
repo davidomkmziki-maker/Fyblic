@@ -1,0 +1,21 @@
+(function(){
+  'use strict';
+  if(window.__FYBLIC_PUBLICATION_BACKGROUND_UI_V2__)return;
+  window.__FYBLIC_PUBLICATION_BACKGROUND_UI_V2__=true;
+  var hideTimer=null;
+  function ensure(){
+    var box=document.getElementById('fyblicPublicationProgressV2');if(box)return box;
+    var style=document.createElement('style');style.textContent='#fyblicPublicationProgressV2{position:fixed;z-index:2147482000;left:0;right:0;top:calc(86px + env(safe-area-inset-top));padding:0 12px;pointer-events:none;display:none}#fyblicPublicationProgressV2.show{display:block}.fyblicPubV2Card{max-width:760px;margin:auto;background:rgba(9,12,17,.96);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 10px;box-shadow:0 8px 24px rgba(0,0,0,.3)}.fyblicPubV2Copy{display:flex;justify-content:space-between;gap:10px;color:#fff;font:800 12px/1.25 system-ui,sans-serif;margin-bottom:6px}.fyblicPubV2Copy span:last-child{color:#cfd5df}.fyblicPubV2Track{height:3px;background:#303642;border-radius:99px;overflow:hidden}.fyblicPubV2Fill{height:100%;width:0;background:#ffb000;transition:width .25s ease}.fyblicPubV2Card.ok .fyblicPubV2Fill{background:#29d06f}.fyblicPubV2Card.fail .fyblicPubV2Fill{background:#ff4545}.fyblicPubV2Card.fail{pointer-events:auto}.fyblicPubV2Retry{display:none;border:0;background:transparent;color:#ffb000;font:900 12px system-ui;padding:4px 0 0}.fyblicPubV2Card.fail .fyblicPubV2Retry{display:inline-block}';document.head.appendChild(style);
+    box=document.createElement('div');box.id='fyblicPublicationProgressV2';box.innerHTML='<div class="fyblicPubV2Card"><div class="fyblicPubV2Copy"><span>Publication en cours</span><span>0%</span></div><div class="fyblicPubV2Track"><div class="fyblicPubV2Fill"></div></div><button type="button" class="fyblicPubV2Retry">Réessayer depuis Publications</button></div>';document.body.appendChild(box);return box;
+  }
+  function render(detail){
+    detail=detail||{};var box=ensure(),card=box.firstElementChild,copy=card.querySelector('.fyblicPubV2Copy'),fill=card.querySelector('.fyblicPubV2Fill'),retry=card.querySelector('.fyblicPubV2Retry'),percent=Math.max(0,Math.min(100,Number(detail.progress||0)));
+    clearTimeout(hideTimer);box.classList.add('show');card.classList.remove('ok','fail');fill.style.width=percent+'%';copy.children[0].textContent=detail.stage||'Publication en cours';copy.children[1].textContent=percent+'%';retry.onclick=function(){try{if(window.HappyNavigation&&window.HappyNavigation.open)window.HappyNavigation.open('publish');else location.href='modules/publish.html';}catch(_e){location.href='modules/publish.html';}};
+    if(detail.status==='published'){card.classList.add('ok');copy.children[0].textContent='Publication publiée';fill.style.width='100%';copy.children[1].textContent='100%';try{localStorage.setItem('HAPPYAD_HOME_REFRESH_NEEDED','1');sessionStorage.removeItem('HAPPYAD_HOME_POSTS_LAST_SYNC');if(typeof window.happyadRefreshHomePostsNow==='function')window.happyadRefreshHomePostsNow('pipeline-v2-published');}catch(_e){}hideTimer=setTimeout(function(){box.classList.remove('show');},5000);}
+    else if(detail.status==='failed'){card.classList.add('fail');copy.children[0].textContent=detail.error||'Échec de la publication';copy.children[1].textContent='Échec';}
+    else if(detail.status==='canceled'){box.classList.remove('show');}
+  }
+  window.addEventListener('FYBLIC_PUBLICATION_PROGRESS_V2',function(ev){render(ev&&ev.detail);});
+  window.addEventListener('message',function(ev){var d=ev&&ev.data;if(d&&d.type==='FYBLIC_PUBLICATION_PROGRESS_V2')render(d.detail);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){ensure();},{once:true});else ensure();
+})();

@@ -43,7 +43,7 @@
     video:'modules/video.html?v=986-base-video-text',
     photo:'modules/photo.html',
     message:'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover',
-    publish:'modules/publish.html?v=1070-unified-publication',
+    publish:'modules/publish.html?v=1001-public-publication-wording',
     map:'modules/map.html'
   };
 
@@ -290,10 +290,10 @@
     if(p==='modules/map.html')return 'map';
     return 'home';
   }
-  /* V1070 — une URL canonique et quatre modes du moteur unifié. */
+  /* V886 — Publication utilise une URL canonique unique. Seuls Publier, Story
+     et Live restent publics. Les anciens modes Reel/Carte retombent sur Publier. */
   function normalizePublishModeV885(mode){
     mode=String(mode||'').trim().toLowerCase();
-    if(mode==='boutique'||mode==='marketplace')return 'marketplace';
     return (mode==='story'||mode==='live')?mode:'publish';
   }
   function publishModeFromRequestV885(url,extra){
@@ -788,7 +788,7 @@
     if(page==='message')return 'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover';
     if(page==='profile')return 'modules/my-profile.html?v=1001-profile-identity-scale';
     if(page==='profile_public')return VISITOR_PROFILE_PRELOAD_URL_V601;
-    if(page==='publish')return 'modules/publish.html?v=1070-unified-publication';
+    if(page==='publish')return 'modules/publish.html?v=1001-public-publication-wording';
     return pages[page]||'index.html';
   }
   function ownerAuthUidHintV855R23(){
