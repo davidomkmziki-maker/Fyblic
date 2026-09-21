@@ -1,0 +1,15 @@
+FYBLIC V1066 — PUBLICATION SILENCIEUSE, STORY ET BOUTIQUE
+
+- Le bouton X masque définitivement la progression du travail concerné.
+- Dès que la publication principale est visible, la barre disparaît.
+- Les autres qualités continuent en arrière-plan sans gêner l'accueil.
+- Une notification finale supprimable avec X apparaît dans Mon profil.
+- Les anciennes tâches terminées ou masquées ne réapparaissent plus à 1 %.
+- La compression est activée pour les vidéos Story.
+- La compression est activée pour les médias Boutique.
+- La limite vidéo Boutique côté interface passe à 1,1 Go; le worker conserve
+  la limite de durée à 15 minutes.
+- Le cache PWA est renouvelé en V1066.
+
+SQL : aucun nouveau script SQL requis pour cette version.
+

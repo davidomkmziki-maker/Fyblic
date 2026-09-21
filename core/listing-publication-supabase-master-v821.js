@@ -182,7 +182,7 @@
     var kind=publicMediaKind(file);
     if(!kind)throw new Error('Les médias publics acceptent uniquement des images ou vidéos.');
     if(kind==='image'&&Number(file.size||0)>20*1024*1024)throw new Error('Chaque image doit faire au maximum 20 Mo.');
-    if(kind==='video'&&Number(file.size||0)>100*1024*1024)throw new Error('Chaque vidéo doit faire au maximum 100 Mo.');
+    if(kind==='video'&&Number(file.size||0)>1100000000)throw new Error('Chaque vidéo doit faire au maximum 1,1 Go.');
   }
   function validatePrivateFile(file){
     var type=lower(file&&file.type);
@@ -264,14 +264,35 @@
     wrapped.happyadNetwork=isNetworkError(lastError);
     throw wrapped;
   }
-  async function uploadPublic(c,user,listingId,file,index,payload){
+  async function compressPublic(file,user,listingId,index,session,payload){
+    var engine=window.FyblicMediaCompressionV1,kind=publicMediaKind(file)||'image';
+    if(!engine||!engine.enabled||!engine.enabled())return {file:file,compressed:false};
+    progress(payload,'Compression du média '+(index+1)+'…');
+    var result=await engine.compress(file,{
+      kind:kind==='video'?'video':'photo',
+      accessToken:session&&session.access_token,
+      userId:user&&user.id,
+      postId:listingId+'_media_'+(index+1),
+      onProgress:function(update){progress(payload,'Média '+(index+1)+' — '+String(update&&update.text||'compression en cours'));}
+    });
+    if(result&&result.prepared)return {prepared:result.prepared,compressed:true,original:file};
+    return {file:result&&result.file||file,compressed:!!(result&&result.compressed),original:file};
+  }
+  async function uploadPublic(c,user,listingId,source,index,payload){
+    if(source&&source.prepared){
+      var ready=source.prepared,primary=ready.primary||{},variants=Array.isArray(ready.variants)?ready.variants:[],poster=ready.poster||null;
+      if(!primary.url||!primary.path)throw new Error('La qualité principale compressée est indisponible.');
+      var cleanup=[primary.path].concat(variants.map(function(x){return x&&x.path;})).concat(poster&&poster.path?[poster.path]:[]).filter(Boolean);
+      return {path:primary.path,src:primary.url,type:'video',mime:'video/mp4',name:source.original&&source.original.name||'',size:Number(primary.bytes||0),poster:poster&&poster.url||'',variants:variants,cleanupPaths:Array.from(new Set(cleanup))};
+    }
+    var file=source&&source.file||source;
     var kind=publicMediaKind(file)||'image';
     var path=user.id+'/marketplace/'+listingId+'/public/'+String(index+1).padStart(2,'0')+'-'+uuid()+'.'+extension(file);
     await uploadWithRetry(c,PUBLIC_BUCKET,path,file,{upsert:false,cacheControl:'31536000',contentType:inferredMime(file)},'Envoi du média '+(index+1),payload);
     var publicResult=c.storage.from(PUBLIC_BUCKET).getPublicUrl(path);
     var src=publicResult&&publicResult.data&&publicResult.data.publicUrl||'';
     if(!src)throw new Error('URL publique du média introuvable.');
-    return {path:path,src:src,type:kind,mime:inferredMime(file),name:file.name||'',size:Number(file.size||0),poster:''};
+    return {path:path,src:src,type:kind,mime:inferredMime(file),name:file.name||'',size:Number(file.size||0),poster:'',cleanupPaths:[path]};
   }
   async function uploadPrivate(c,user,listingId,file,kind,index,payload){
     var path=user.id+'/marketplace/'+listingId+'/private/'+kind+'/'+String(index+1).padStart(2,'0')+'-'+uuid()+'.'+extension(file);
@@ -354,6 +375,15 @@
     try{localStorage.setItem('HAPPYAD_HOME_REFRESH_NEEDED','1');}catch(_e){}
     try{sessionStorage.removeItem('HAPPYAD_ALL_POSTS_LAST_SYNC');sessionStorage.removeItem('HAPPYAD_PROFILE_POSTS_LAST_SYNC');}catch(_e){}
   }
+  function queueProfileNotice(listing){
+    try{
+      var key='FYBLIC_PROFILE_PUBLICATION_NOTICES_V1',list=JSON.parse(localStorage.getItem(key)||'[]');
+      if(!Array.isArray(list))list=[];
+      var id='boutique_'+clean(listing&&listing.id||Date.now()),item={id:id,postId:clean(listing&&listing.id),text:'Ta publication Boutique est entièrement prête.',kind:'success',at:Date.now()};
+      list=[item].concat(list.filter(function(x){return x&&String(x.id)!==id;})).slice(0,12);
+      localStorage.setItem(key,JSON.stringify(list));
+    }catch(_e){}
+  }
   async function findPublishedListing(c,listingId,userId){
     try{
       var found=await withTimeout(c.from('happyad_posts').select('*').eq('id',listingId).maybeSingle(),20000,'Vérification de publication');
@@ -401,11 +431,13 @@
     progress(payload,'Vérification du vendeur…');
     var verification=await approvedSeller();
     var listingId='market_'+Date.now().toString(36)+'_'+uuid().replace(/-/g,'').slice(0,12);
-    var media=[],publicPaths=[],ownershipPaths=[],officialPaths=[];
+    var media=[],publicPaths=[],allPublicPaths=[],ownershipPaths=[],officialPaths=[];
     try{
+      var compressionSession=await freshSession(c);
       for(var i=0;i<parsed.files.length;i++){
-        var item=await uploadPublic(c,user,listingId,parsed.files[i],i,payload);
-        media.push(item);publicPaths.push(item.path);
+        var preparedMedia=await compressPublic(parsed.files[i],user,listingId,i,compressionSession,payload);
+        var item=await uploadPublic(c,user,listingId,preparedMedia,i,payload);
+        media.push(item);publicPaths.push(item.path);allPublicPaths=allPublicPaths.concat(item.cleanupPaths||[item.path]);
       }
       for(var j=0;j<parsed.ownership.length;j++)ownershipPaths.push(await uploadPrivate(c,user,listingId,parsed.ownership[j],'ownership',j,payload));
       for(var k=0;k<parsed.official.length;k++)officialPaths.push(await uploadPrivate(c,user,listingId,parsed.official[k],'official',k,payload));
@@ -422,6 +454,7 @@
       if(!clean(listing&&listing.id))throw new Error('PUBLICATION_RETURN_INVALID');
       progress(payload,'Annonce publiée.');
       patchCaches(listing);
+      queueProfileNotice(listing);
       try{document.dispatchEvent(new CustomEvent('happyad:marketplace-listing-published',{detail:{listing:listing,source:VERSION}}));}catch(_e){}
       try{document.dispatchEvent(new CustomEvent('HAPPYAD_REAL_OFFERS_READY',{detail:{count:1,listing:listing,source:VERSION}}));}catch(_e){}
       try{if(window.HappyadChatIntegrationV795&&typeof window.HappyadChatIntegrationV795.reloadListings==='function')setTimeout(function(){window.HappyadChatIntegrationV795.reloadListings();},80);}catch(_e){}
@@ -430,7 +463,7 @@
       /* En cas d’échec réseau ambigu, ne pas supprimer automatiquement les fichiers :
          la requête serveur peut avoir abouti sans que le téléphone reçoive la réponse. */
       if(!isNetworkError(error)&&!error.happyadNetwork){
-        await cleanup(c,PUBLIC_BUCKET,publicPaths);
+        await cleanup(c,PUBLIC_BUCKET,allPublicPaths);
         await cleanup(c,PRIVATE_BUCKET,ownershipPaths.concat(officialPaths));
       }
       throw new Error(errorText(error));

@@ -41,7 +41,7 @@
     var detail={jobId:job.id,postId:job.post_id||job.postId||'',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',error:publicError(job.error_message||''),result:job.result||null};
     try{window.dispatchEvent(new CustomEvent('FYBLIC_PUBLICATION_PROGRESS_V2',{detail:detail}));}catch(_e){}
     try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:detail},'*');}catch(_e2){}
-    if(detail.primaryReady||['published','failed','canceled'].indexOf(detail.status)>=0){setTimeout(function(){forget(job.id);},detail.primaryReady?8000:(detail.status==='failed'?9000:1000));}
+    if(['published','failed','canceled'].indexOf(detail.status)>=0){setTimeout(function(){forget(job.id);},detail.status==='failed'?9000:1000);}
   }
   async function available(force){
     if(!force&&Date.now()-healthCache.at<30000)return healthCache.value;
@@ -60,7 +60,7 @@
       try{
         for(;;){
           var job=await status(id,token);event(job);if(onProgress)onProgress(job);
-          if(job.primary_ready===true||['published','failed','canceled'].indexOf(job.status)>=0)return job;
+          if(['published','failed','canceled'].indexOf(job.status)>=0)return job;
           await sleep(job.status==='uploading'?2500:1200);
         }
       }finally{delete watchers[id];}
@@ -99,12 +99,12 @@
     return {used:true,job:queued,completion:completion};
   }
   async function resumeTracking(){
-    var jobs=readJobs().filter(function(j){return j&&j.id&&j.primaryReady!==true&&['published','failed','canceled'].indexOf(j.status)<0;});if(!jobs.length)return;
+    var jobs=readJobs().filter(function(j){return j&&j.id&&['published','failed','canceled'].indexOf(j.status)<0;});if(!jobs.length)return;
     var a;try{a=await auth();}catch(_e){return;}
     jobs.forEach(function(job){watch(job.id,a.token).catch(function(){});});
   }
   async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+id+'/cancel',{method:'POST'},a.token,30000)).body;event(job);return job;}
 
-  window.FyblicPublicationPipelineV2={version:'1065.1',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
+  window.FyblicPublicationPipelineV2={version:'1066.1',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

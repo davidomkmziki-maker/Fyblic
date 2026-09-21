@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-pipeline-v2.js?v=1065-android-file-lock"></script>
+<script src="../core/publication-pipeline-v2.js?v=1066-silent-story-boutique"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -803,6 +803,16 @@ button:disabled{filter:none;transform:none}
       clearHeavyPublicationCaches();
       try{localStorage.setItem(key,String(value));return true;}catch(_e){return false;}
     }
+  }
+  function queueProfilePublicationNoticeV1066(id,text,kind){
+    try{
+      var key='FYBLIC_PROFILE_PUBLICATION_NOTICES_V1',list=JSON.parse(localStorage.getItem(key)||'[]');
+      if(!Array.isArray(list))list=[];
+      id=String(id||('publication_'+Date.now()));
+      var item={id:id,postId:id,text:String(text||'Publication entièrement prête.'),kind:String(kind||'success'),at:Date.now()};
+      list=[item].concat(list.filter(function(x){return x&&String(x.id)!==id;})).slice(0,12);
+      localStorage.setItem(key,JSON.stringify(list));
+    }catch(_e){}
   }
 
   function rememberPublishedCrop(post){
@@ -2087,7 +2097,7 @@ return {source:'story',id:storyId};
             return result.completion;
           }).then(function(){
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
-            try{resetPublishComposer('pipeline-v2-completed-v1065');}catch(_reset){}
+            try{resetPublishComposer('pipeline-v2-completed-v1066');}catch(_reset){}
           }).catch(function(error){
             console.error('Fyblic pipeline V2',error);
             try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:'',postId:id,status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}
@@ -2183,9 +2193,9 @@ return {source:'story',id:storyId};
       }
       try{
         var uploadFile=state.file;
-        /* Première étape activée : publications normales. Story et Live restent
-           sur le chemin stable jusqu'à leur validation séparée. */
-        if(state.mode==='publish'){
+        /* V1066 : la Story utilise aussi le compresseur. Elle conserve ensuite
+           sa destination unique happyad_stories; aucun post normal n'est créé. */
+        if(state.mode==='publish'||state.mode==='story'){
           var publishClient=happySb();
           if(!publishClient){try{publishClient=await window.happyadEnsureSupabaseV936(15000);}catch(_publishSdk){}}
           var publishAuth=publishClient?await getFreshAuth(publishClient):null;
@@ -2198,6 +2208,7 @@ return {source:'story',id:storyId};
       if(localPost.__radarOnly || state.mode==='story' || state.mode==='live'){
         saveMediaBestEffort({id,blob:state.file,type:state.file.type,kind:state.kind,name:state.file.name||"media"});
         state.completed=true;
+        if(state.mode==='story')queueProfilePublicationNoticeV1066('story_'+String(localPost.sourceId||id),'Ta Story est entièrement prête.','success');
         finishProgress((state.mode==='live'?'Live':'Story')+" envoyé dans le Radar");
         toast((state.mode==='live'?'Live':'Story')+" envoyé dans le Radar");
         safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1')

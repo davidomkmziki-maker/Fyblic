@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1065-android-file-lock-20260921';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1066-silent-story-boutique-20260921';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -38,7 +38,7 @@ var HAPPYAD_APP_SHELL = [
   './core/language-preference-master-v855r59.js?v=855r59-language-storage-real',
   './core/system-notification-master-v807.js?v=855r56-notification-preferences',
   './core/seller-verification-supabase-master-v801.js?v=807-team-wording-system-notifications',
-  './core/listing-publication-supabase-master-v821.js?v=1001-public-publication-wording',
+  './core/listing-publication-supabase-master-v821.js?v=1066-story-boutique',
   './core/chat-integration-master-v795.js?v=1031-storage-security',
   './core/marketplace-home-master-v828.js?v=991-market-three-line-description',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
@@ -72,10 +72,11 @@ var HAPPYAD_APP_SHELL = [
   './modules/video.html?v=1048-adaptive-video',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
-  './modules/publish.html?v=1065-android-file-lock',
-  './core/media-compression-client-v1.js?v=1052-mobile-json',
-  './core/publication-pipeline-v2.js?v=1065-android-file-lock',
-  './core/publication-background-ui-v2.js?v=1065-android-file-lock',
+  './modules/publish.html?v=1066-silent-story-boutique',
+  './core/media-compression-client-v1.js?v=1066-story-boutique',
+  './core/publication-pipeline-v2.js?v=1066-silent-story-boutique',
+  './core/publication-background-ui-v2.js?v=1066-silent-story-boutique',
+  './core/profile-publication-notice-v1066.js?v=1066-silent-finish',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
   './modules/user.html?v=974-p1-module-lifecycle-registry',
   './core/startup-master-v727.js?v=727-startup-unique',
@@ -126,7 +127,7 @@ var HAPPYAD_APP_SHELL = [
   './core/frame-first-render-v622.js?v=622',
   './core/internal-return-fast-v611.js?v=611',
   './core/assistance-supabase-realtime-v750.js?v=851r12-ecriture-stable',
-  './modules/my-profile.html?v=1001-profile-identity-scale',
+  './modules/my-profile.html?v=1066-silent-finish',
   './modules/profile-edit.html?v=974-p1-module-lifecycle-registry',
   './core/vendor/heic2any-v0.0.4.min.js?v=855r32-local-heif-decoder',
   './modules/settings.html?v=974-p1-module-lifecycle-registry',
