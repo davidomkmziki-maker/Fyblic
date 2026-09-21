@@ -1,0 +1,20 @@
+FYBLIC V1067 — PROGRESSION DISCRÈTE SOUS STORIES ET COMPRESSION STABLE
+
+- La progression n'est plus un popup fixe.
+- Elle est montée dans le flux Accueil, immédiatement sous le Radar/Stories.
+- Le rendu est discret : texte compact, ligne de 2 px, aucun fond, aucune bordure,
+  aucune ombre et aucun déplacement flottant au-dessus des publications.
+- Le bouton X masque seulement la progression du travail affiché. Il n'appelle
+  jamais l'annulation et ne supprime jamais la tâche serveur.
+- Si le Radar est réconcilié ou remonté, la ligne retrouve automatiquement sa
+  place sous les Stories sans duplication.
+- Les anciennes tâches impossibles restées à 1 % après un rechargement sont
+  nettoyées localement au lieu de réapparaître indéfiniment.
+- La compression Story reste reliée à happyad_stories uniquement : aucun post
+  normal parallèle n'est créé.
+- La compression Boutique reste reliée à son unique publication Boutique et à
+  ses variantes; aucun média compressé n'est republié comme carte séparée.
+- Un verrou d'exécution empêche deux compressions identiques de partir en même
+  temps lors d'un double clic ou d'un événement répété.
+- Les limites du worker restent 1,1 Go et 15 minutes.
+- Aucun nouveau SQL n'est requis.

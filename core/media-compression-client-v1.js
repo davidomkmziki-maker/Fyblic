@@ -4,6 +4,7 @@
 
   var configured=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'').trim().replace(/\/+$/,'');
   var CHUNK_FALLBACK=5*1024*1024;
+  var activeCompressions={};
 
   function enabled(){return /^https?:\/\//i.test(configured);}
   function join(path){return configured+path;}
@@ -66,7 +67,7 @@
     if(kind==='video')return outputs.filter(function(x){return x.mime==='video/mp4';}).sort(function(a,b){return Number(b.name.replace(/\D/g,''))-Number(a.name.replace(/\D/g,''));})[0];
     return outputs.find(function(x){return x.name==='fullscreen';})||outputs.find(function(x){return x.name==='feed';})||outputs[0];
   }
-  async function compress(file,options){
+  async function compressOnce(file,options){
     options=options||{};
     if(!enabled())return {file:file,compressed:false,reason:'not-configured'};
     if(!file)throw new Error('Média absent');
@@ -90,5 +91,14 @@
     var name=(String(file.name||'media').replace(/\.[^.]+$/,'')||'media')+'.'+extension;
     return {file:new File([blob],name,{type:output.mime,lastModified:Date.now()}),compressed:true,job:job,output:output,originalBytes:file.size,compressedBytes:blob.size};
   }
-  window.FyblicMediaCompressionV1={version:'1.0.0',enabled:enabled,compress:compress,message:message};
+  function compressionKey(file,options){
+    options=options||{};return [String(options.userId||''),String(options.postId||''),String(options.kind||''),String(file&&file.name||''),Number(file&&file.size||0),Number(file&&file.lastModified||0)].join(':');
+  }
+  function compress(file,options){
+    var key=compressionKey(file,options);
+    if(activeCompressions[key])return activeCompressions[key];
+    activeCompressions[key]=compressOnce(file,options).finally(function(){delete activeCompressions[key];});
+    return activeCompressions[key];
+  }
+  window.FyblicMediaCompressionV1={version:'1.0.1-v1067',enabled:enabled,compress:compress,message:message};
 })();

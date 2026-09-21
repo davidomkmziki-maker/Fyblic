@@ -33,7 +33,7 @@
   }
   function readJobs(){try{var v=JSON.parse(localStorage.getItem(JOBS_KEY)||'[]');return Array.isArray(v)?v:[];}catch(_e){return [];}}
   function writeJobs(list){try{localStorage.setItem(JOBS_KEY,JSON.stringify((list||[]).slice(0,20)));}catch(_e){}}
-  function remember(job){if(!job||!job.id)return;var list=readJobs().filter(function(x){return x&&x.id!==job.id;});list.unshift({id:job.id,postId:job.post_id||job.postId||'',status:job.status||'uploading',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',createdAt:job.created_at||new Date().toISOString()});writeJobs(list);}
+  function remember(job){if(!job||!job.id)return;var list=readJobs().filter(function(x){return x&&x.id!==job.id;});list.unshift({id:job.id,postId:job.post_id||job.postId||'',status:job.status||'uploading',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',createdAt:job.created_at||new Date().toISOString(),updatedAt:Date.now()});writeJobs(list);}
   function forget(id){writeJobs(readJobs().filter(function(x){return x&&x.id!==id;}));}
   function event(job){
     if(!job)return;
@@ -99,12 +99,22 @@
     return {used:true,job:queued,completion:completion};
   }
   async function resumeTracking(){
-    var jobs=readJobs().filter(function(j){return j&&j.id&&['published','failed','canceled'].indexOf(j.status)<0;});if(!jobs.length)return;
+    var now=Date.now(),jobs=readJobs().filter(function(j){
+      if(!j||!j.id||['published','failed','canceled'].indexOf(j.status)>=0)return false;
+      var age=now-(Number(j.updatedAt)||Date.parse(j.createdAt||'')||now);
+      /* Après un rechargement, un upload resté au tout début ne possède plus le File
+         Android nécessaire pour envoyer les morceaux restants. Ne jamais ressusciter
+         indéfiniment une ancienne ligne à 1 %. Les tâches déjà remises au serveur
+         (queued/processing/finalizing) restent, elles, suivies normalement. */
+      if(String(j.status)==='uploading'&&Number(j.progress||0)<=1&&age>30*60*1000)return false;
+      if(age>24*60*60*1000)return false;
+      return true;
+    });writeJobs(jobs);if(!jobs.length)return;
     var a;try{a=await auth();}catch(_e){return;}
     jobs.forEach(function(job){watch(job.id,a.token).catch(function(){});});
   }
   async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+id+'/cancel',{method:'POST'},a.token,30000)).body;event(job);return job;}
 
-  window.FyblicPublicationPipelineV2={version:'1066.1',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
+  window.FyblicPublicationPipelineV2={version:'1067.0',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-pipeline-v2.js?v=1066-silent-story-boutique"></script>
+<script src="../core/publication-pipeline-v2.js?v=1067-stale-job-cleanup"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -2097,7 +2097,7 @@ return {source:'story',id:storyId};
             return result.completion;
           }).then(function(){
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
-            try{resetPublishComposer('pipeline-v2-completed-v1066');}catch(_reset){}
+            try{resetPublishComposer('pipeline-v2-completed-v1067');}catch(_reset){}
           }).catch(function(error){
             console.error('Fyblic pipeline V2',error);
             try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:'',postId:id,status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}
