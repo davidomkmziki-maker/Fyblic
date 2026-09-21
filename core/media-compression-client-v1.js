@@ -32,7 +32,7 @@
     return {session:created,key:key};
   }
   async function upload(file,token,userId,config,onProgress){
-    var found=await sessionFor(file,token,userId),session=found.session,offset=Number(session.received||0),retries=0,chunkBytes=Math.min(Number(config.chunkBytes||CHUNK_FALLBACK),512*1024);
+    var found=await sessionFor(file,token,userId),session=found.session,offset=Number(session.received||0),retries=0,chunkBytes=Math.min(Number(config.chunkBytes||CHUNK_FALLBACK),2*1024*1024);
     while(offset<file.size){
       var end=Math.min(offset+chunkBytes,file.size),chunk=file.slice(offset,end);
       onProgress&&onProgress({phase:'upload',percent:Math.round((offset/file.size)*45),text:'Préparation du média'});
@@ -44,7 +44,7 @@
         offset=Number(response.headers.get('Upload-Offset')||end);retries=0;
       }catch(error){
         if(error.fatal)throw error;
-        retries+=1;if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
+        retries+=1;chunkBytes=Math.max(256*1024,Math.floor(chunkBytes/2));if(retries>30)throw new Error('Envoi interrompu après 30 reprises automatiques');
         try{session=await api('/api/uploads/'+session.id,{},token);offset=Number(session.received||0);}catch(statusError){if(retries>=12)throw statusError;}
         await sleep(Math.min(7000,retries*700));
       }

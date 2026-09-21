@@ -4,8 +4,8 @@
 
   var BASE=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app').replace(/\/+$/,'');
   var JOBS_KEY='FYBLIC_PUBLICATION_JOBS_V2';
-  var CHUNK_SAFE=512*1024,CHUNK_FAST=1024*1024;
-  var healthCache={at:0,value:false};
+  var CHUNK_SAFE=1024*1024,CHUNK_FAST=4*1024*1024;
+  var healthCache={at:0,value:false,types:[]};
   var watchers={};
 
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
@@ -33,19 +33,22 @@
   }
   function readJobs(){try{var v=JSON.parse(localStorage.getItem(JOBS_KEY)||'[]');return Array.isArray(v)?v:[];}catch(_e){return [];}}
   function writeJobs(list){try{localStorage.setItem(JOBS_KEY,JSON.stringify((list||[]).slice(0,20)));}catch(_e){}}
-  function remember(job){if(!job||!job.id)return;var list=readJobs().filter(function(x){return x&&x.id!==job.id;});list.unshift({id:job.id,postId:job.post_id||job.postId||'',status:job.status||'uploading',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',createdAt:job.created_at||new Date().toISOString(),updatedAt:Date.now()});writeJobs(list);}
+  function remember(job){if(!job||!job.id)return;var list=readJobs().filter(function(x){return x&&x.id!==job.id;});list.unshift({id:job.id,postId:job.post_id||job.postId||'',publicationType:job.publication_type||job.publicationType||'normal',status:job.status||'uploading',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',createdAt:job.created_at||new Date().toISOString(),updatedAt:Date.now()});writeJobs(list);}
   function forget(id){writeJobs(readJobs().filter(function(x){return x&&x.id!==id;}));}
   function event(job){
     if(!job)return;
     remember(job);
-    var detail={jobId:job.id,postId:job.post_id||job.postId||'',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',error:publicError(job.error_message||''),result:job.result||null};
+    var detail={jobId:job.id,postId:job.post_id||job.postId||'',publicationType:job.publication_type||job.publicationType||'normal',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',error:publicError(job.error_message||job.error||''),result:job.result||null};
     try{window.dispatchEvent(new CustomEvent('FYBLIC_PUBLICATION_PROGRESS_V2',{detail:detail}));}catch(_e){}
     try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:detail},'*');}catch(_e2){}
     if(['published','failed','canceled'].indexOf(detail.status)>=0){setTimeout(function(){forget(job.id);},detail.status==='failed'?9000:1000);}
   }
-  async function available(force){
-    if(!force&&Date.now()-healthCache.at<30000)return healthCache.value;
-    try{var r=await request('/health',{},'',10000),v=!!(r.body&&r.body.ok&&r.body.pipelineV2&&r.body.pipelineV2.enabled);healthCache={at:Date.now(),value:v};return v;}catch(_e){healthCache={at:Date.now(),value:false};return false;}
+  async function available(force,publicationType){
+    publicationType=String(publicationType||'normal').toLowerCase();
+    if(force||Date.now()-healthCache.at>=30000){
+      try{var r=await request('/health',{},'',10000),p=r.body&&r.body.pipelineV2||{},v=!!(r.body&&r.body.ok&&p.enabled),types=Array.isArray(p.publicationTypes)?p.publicationTypes.map(String):['normal'];healthCache={at:Date.now(),value:v,types:types};}catch(_e){healthCache={at:Date.now(),value:false,types:[]};}
+    }
+    return healthCache.value&&healthCache.types.indexOf(publicationType)>=0;
   }
   async function chunkBase64(blob){
     var bytes=new Uint8Array(await blob.arrayBuffer()),parts=[],step=32768;
@@ -70,7 +73,7 @@
   async function submit(file,options){
     options=options||{};
     if(!file)throw new Error('Média absent');
-    if(!(await available(true)))return {used:false,reason:'pipeline-v2-unavailable'};
+    if(!(await available(true,options.publicationType||'normal')))return {used:false,reason:'pipeline-v2-unavailable'};
     var a=await auth();
     var created=(await request('/api/v2/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       filename:file.name||'media',size:file.size,mime:file.type||'application/octet-stream',kind:options.kind||'photo',publicationType:options.publicationType||'normal',postId:options.postId,payload:options.payload||{},fingerprint:fingerprint(file)
@@ -78,19 +81,20 @@
     remember(created);event(created);
     if(typeof options.onCreated==='function')options.onCreated(created);
     if(created.primary_ready===true||created.status==='published'){return {used:true,job:created,completion:Promise.resolve(created)};}
-    var offset=Number(created.uploaded_bytes||0),retries=0;
+    var offset=Number(created.uploaded_bytes||0),retries=0,targetChunk=chunkBytes(),activeChunk=targetChunk;
     while(offset<file.size){
-      var end=Math.min(offset+chunkBytes(),file.size),blob=file.slice(offset,end),data=await chunkBase64(blob);
+      var end=Math.min(offset+activeChunk,file.size),blob=file.slice(offset,end),data=await chunkBase64(blob);
       try{
-        var sent=await request('/api/v2/publications/'+created.id+'/chunks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({offset:offset,data:data})},a.token,60000);
-        offset=Number(sent.response.headers.get('Upload-Offset')||end);retries=0;
+        var sent=await request('/api/v2/publications/'+created.id+'/chunks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({offset:offset,data:data})},a.token,120000);
+        offset=Number(sent.response.headers.get('Upload-Offset')||end);retries=0;if(activeChunk<targetChunk)activeChunk=Math.min(targetChunk,activeChunk*2);
         var uploadState=Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/file.size*44))),stage:'Envoi sécurisé du média'});event(uploadState);if(options.onProgress)options.onProgress(uploadState);
       }catch(error){
         retries++;
         if(error.status===409&&error.response){offset=Number(error.response.headers.get('Upload-Offset')||offset);continue;}
-        if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
+        activeChunk=Math.max(256*1024,Math.floor(activeChunk/2));
+        if(retries>30)throw new Error('Envoi interrompu après 30 reprises automatiques');
         try{var fresh=await status(created.id,a.token);offset=Number(fresh.uploaded_bytes||offset);event(fresh);}catch(_statusError){}
-        await sleep(Math.min(8000,retries*800));
+        await sleep(Math.min(15000,500*Math.pow(1.45,retries)));
       }
     }
     var queued=(await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},a.token,45000)).body;
@@ -115,6 +119,6 @@
   }
   async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+id+'/cancel',{method:'POST'},a.token,30000)).body;event(job);return job;}
 
-  window.FyblicPublicationPipelineV2={version:'1067.0',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
+  window.FyblicPublicationPipelineV2={version:'1068.0',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

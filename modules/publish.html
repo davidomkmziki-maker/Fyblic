@@ -62,8 +62,8 @@
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-pipeline-v2.js?v=1067-stale-job-cleanup"></script>
+<script src="../core/media-compression-client-v1.js?v=1068-fast-resume"></script>
+<script src="../core/publication-pipeline-v2.js?v=1068-story-durable"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -2072,17 +2072,20 @@ return {source:'story',id:storyId};
         createdAt:Date.now()
       };
       localPost.imageCrop=Object.assign({},state.crop||{v:2,scale:1,x:50,y:50}); if(state.kind==='video')localPost.videoFrameTime=Number(state.videoFrame==null?0:state.videoFrame);
-      /* V1063 — chemin durable activé progressivement pour une publication normale
-         à média unique. Dès que la tâche serveur existe, l’utilisateur revient à
-         l’Accueil; l’iframe conservée poursuit l’envoi et Railway finalise seul. */
-      if(state.mode==='publish' && !(state.kind==='photo'&&state.files&&state.files.length>1)){
+      /* V1068 — publication normale et Story passent par la même file durable.
+         L’Accueil reste utilisable pendant l’envoi; le worker reprend les gros
+         fichiers sans dépendre de la page Détails ni de l’écran Android. */
+      if((state.mode==='publish'||state.mode==='story') && !(state.kind==='photo'&&state.files&&state.files.length>1)){
         var durable=window.FyblicPublicationPipelineV2;
-        if(durable&&typeof durable.available==='function'&&await durable.available(true)){
+        var durableType=state.mode==='story'?'story':'normal';
+        if(durable&&typeof durable.available==='function'&&await durable.available(true,durableType)){
           var returnedHome=false;
+          var durablePostId=durableType==='story'&&window.crypto&&typeof window.crypto.randomUUID==='function'?window.crypto.randomUUID():id;
+          if(durableType==='story'){localPost.id=durablePostId;localPost.sourceId=durablePostId;localPost.sourceType='story';}
           var backgroundTask=durable.submit(state.file,{
             kind:state.kind,
-            publicationType:'normal',
-            postId:id,
+            publicationType:durableType,
+            postId:durablePostId,
             payload:localPost,
             onCreated:function(job){
               state.completed=true;
@@ -2097,10 +2100,10 @@ return {source:'story',id:storyId};
             return result.completion;
           }).then(function(){
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
-            try{resetPublishComposer('pipeline-v2-completed-v1067');}catch(_reset){}
+            try{resetPublishComposer('pipeline-v2-completed-v1068');}catch(_reset){}
           }).catch(function(error){
             console.error('Fyblic pipeline V2',error);
-            try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:'',postId:id,status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}
+            try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:'',postId:durablePostId,publicationType:durableType,status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}
             if(!returnedHome){state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));updatePublishButtonsState();}
           });
           return;

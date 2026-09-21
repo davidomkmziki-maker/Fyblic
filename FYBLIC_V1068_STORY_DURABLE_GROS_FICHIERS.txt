@@ -1,0 +1,23 @@
+FYBLIC V1068 — STORY DURABLE ET GROS FICHIERS
+
+CORRECTIONS
+- La Story utilise désormais le pipeline serveur durable, comme une publication normale.
+- Sa progression est affichée par un cercle orange autour de « Ta story » dans l'Accueil.
+- La ligne horizontale reste réservée aux publications normales sous les stories.
+- L'envoi rapide utilise jusqu'à 4 Mio par morceau et redescend automatiquement si le réseau faiblit.
+- Jusqu'à 30 reprises automatiques protègent les fichiers lourds ou longs.
+- FFmpeg utilise le préréglage veryfast pour réduire fortement le temps de préparation.
+- La qualité principale (1080p si la source le permet) est affichée en premier.
+- Une qualité secondaire en échec ne supprime plus la publication déjà affichée.
+
+ORDRE OBLIGATOIRE
+1. Dans Supabase SQL Editor, exécuter FYBLIC_PUBLICATION_PIPELINE_V1068_STORY_DURABLE.sql.
+2. Déployer le ZIP worker V1068 sur le dépôt Railway puis vérifier /health :
+   pipelineV2.enabled=true, version=1068, publicationTypes=[normal,story].
+3. Déployer ensuite le ZIP site V1068 sur le dépôt Netlify.
+4. Fermer complètement Fyblic puis le rouvrir afin de remplacer l'ancien Service Worker.
+
+IMPORTANT
+- Le X de la ligne normale masque seulement l'affichage; il n'annule jamais la tâche serveur.
+- Ne jamais placer FYBLIC_SUPABASE_SERVICE_ROLE_KEY dans le site ou dans GitHub.
+- Le gain de vitesse réel dépend aussi du CPU et de la RAM attribués au service Railway.
