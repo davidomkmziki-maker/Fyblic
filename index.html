@@ -123,6 +123,9 @@ html body #happyadSmartSearchV427 .haDiscoverySpinnerV1017{
 </style>
 <!-- Fyblic P1.02.09 : registre canonique chargé avant tous les maîtres -->
 <script src="core/master-registry.js?v=974-p1-module-lifecycle-registry"></script>
+<script src="core/publication-progress-v1060.js?v=1060-unified-real-progress"></script>
+<script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
+<script src="core/media-compression-client-v1.js?v=1060-binary-resumable-unified"></script>
 <script src="core/global-scroll-coordinator-v868.js?v=869-connection-phase2"></script>
 <script src="core/connection-work-coordinator-v869.js?v=869-connection-phase2"></script>
 <script src="core/startup-master-v727.js?v=727-startup-unique"></script>
@@ -535,9 +538,6 @@ html body #list.homeTimeline .miniMedia:not(.haPhotoUserCropV613D)>img{transform
 <script src="core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script id="happyad-auth-storage-quota-master-v752" src="core/auth-storage-quota-master-v752.js?v=937-idb-auth-purge"></script>
 <script src="core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
-<link rel="stylesheet" href="core/media-jobs-v1055.css?v=1055r2-feed-instant">
-<script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="core/media-jobs-v1057.js?v=1058-worker-direct"></script>
 <script src="core/account-isolation-master-v937.js?v=938-action-memory-reset"></script>
 <script src="core/auth-session-master-v598.js?v=1031-storage-security"></script>
 <script src="core/message-privacy-master-v855r51.js?v=972-p1-single-client"></script>
@@ -547,7 +547,7 @@ html body #list.homeTimeline .miniMedia:not(.haPhotoUserCropV613D)>img{transform
 <script src="core/interaction-privacy-master-v855r52.js?v=972-p1-single-client"></script>
 <script src="core/message-presence-app-master-v855r51.js?v=869-connection-phase2"></script>
 <script src="core/mention-render-master-v943.js?v=944-photo-profile-handoff"></script>
-<script src="core/post-options-master-v693.js?v=1056-delete-all"></script>
+<script src="core/post-options-master-v693.js?v=1060r1-owner-delete"></script>
 <style id="happyad-v107-hide-home-count">#postCount{display:none!important}
 /* V114 — Home officiel: rectangle dynamique, Radar Pour Toi, lives, recherche simple */
 .topRow{grid-template-columns:44px 1fr 44px!important}.searchRound{background:#11151d!important;border-color:rgba(255,255,255,.14)!important}.searchIcon{width:21px;height:21px;display:block}.searchIcon svg{width:100%;height:100%;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}.bellLineIcon,.messageLineIcon{width:22px;height:22px;margin:0 auto 2px;display:block}.bellLineIcon svg,.messageLineIcon svg{width:100%;height:100%;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}

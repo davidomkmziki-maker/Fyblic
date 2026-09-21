@@ -1,94 +1,21 @@
 (function(){
   'use strict';
-  if(window.FyblicMediaCompressionV1)return;
-
+  if(window.FyblicMediaCompressionV2)return;
   var configured=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'').trim().replace(/\/+$/,'');
-  var CHUNK_FALLBACK=5*1024*1024;
-
+  var FALLBACK_CHUNK=5*1024*1024,MAX_RETRIES=30;
   function enabled(){return /^https?:\/\//i.test(configured);}
   function join(path){return configured+path;}
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
-  function message(error,fallback){return String(error&&error.message||fallback||'Compression impossible');}
-  function headers(token,extra){var h=Object.assign({},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
-  async function chunkAsBase64(blob){
-    var bytes=new Uint8Array(await blob.arrayBuffer()),parts=[],step=32768;
-    for(var i=0;i<bytes.length;i+=step)parts.push(String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+step,bytes.length))));
-    return btoa(parts.join(''));
-  }
-  async function api(path,options,token){
-    options=Object.assign({},options||{});options.headers=headers(token,options.headers);
-    var response=await fetch(join(path),options);
-    if(!response.ok){var body=await response.json().catch(function(){return {};});throw new Error(body.error||('Service média indisponible ('+response.status+')'));}
-    if(response.status===204)return null;
-    return response.json();
-  }
-  function uploadKey(file,userId){return 'FYBLIC_COMPRESS_UPLOAD_V1:'+String(userId||'')+':'+file.name+':'+file.size+':'+file.lastModified;}
-  async function sessionFor(file,token,userId){
-    var key=uploadKey(file,userId),existing='';try{existing=localStorage.getItem(key)||'';}catch(_e){}
-    if(existing){try{var old=await api('/api/uploads/'+existing,{},token);if(old.size===file.size&&old.status==='uploading')return {session:old,key:key};}catch(_e2){try{localStorage.removeItem(key);}catch(_e3){}}}
-    var created=await api('/api/uploads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:file.name,size:file.size,mime:file.type})},token);
-    try{localStorage.setItem(key,created.id);}catch(_e4){}
-    return {session:created,key:key};
-  }
-  async function upload(file,token,userId,config,onProgress){
-    var found=await sessionFor(file,token,userId),session=found.session,offset=Number(session.received||0),retries=0,chunkBytes=Math.min(Number(config.chunkBytes||CHUNK_FALLBACK),512*1024);
-    while(offset<file.size){
-      var end=Math.min(offset+chunkBytes,file.size),chunk=file.slice(offset,end);
-      onProgress&&onProgress({phase:'upload',percent:Math.round((offset/file.size)*45),text:'Préparation du média'});
-      try{
-        var encoded=await chunkAsBase64(chunk);
-        var response=await fetch(join('/api/uploads/'+session.id),{method:'POST',headers:headers(token,{'Content-Type':'application/json'}),body:JSON.stringify({offset:offset,data:encoded})});
-        if(!response.ok&&response.status!==409){var body=await response.json().catch(function(){return {};});var fatal=new Error(body.error||('Envoi refusé ('+response.status+')'));fatal.fatal=true;throw fatal;}
-        if(response.status===409)throw new Error('Reprise du média');
-        offset=Number(response.headers.get('Upload-Offset')||end);retries=0;
-      }catch(error){
-        if(error.fatal)throw error;
-        retries+=1;if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
-        try{session=await api('/api/uploads/'+session.id,{},token);offset=Number(session.received||0);}catch(statusError){if(retries>=12)throw statusError;}
-        await sleep(Math.min(7000,retries*700));
-      }
-    }
-    try{localStorage.removeItem(found.key);}catch(_e){}
-    return session.id;
-  }
-  async function waitJob(jobId,token,onProgress){
-    for(;;){
-      var job=await api('/api/jobs/'+jobId,{},token);
-      if(job.status==='failed')throw new Error(job.error||'Compression impossible');
-      if(job.status==='completed')return job;
-      var internal=Math.max(0,Math.min(100,Number(job.progress||0)));
-      onProgress&&onProgress({phase:'compression',percent:45+Math.round(internal*.4),text:'Compression du média'});
-      await sleep(900);
-    }
-  }
-  function preferred(job,kind){
-    var outputs=Array.isArray(job.outputs)?job.outputs:[];
-    if(kind==='video')return outputs.filter(function(x){return x.mime==='video/mp4';}).sort(function(a,b){return Number(b.name.replace(/\D/g,''))-Number(a.name.replace(/\D/g,''));})[0];
-    return outputs.find(function(x){return x.name==='fullscreen';})||outputs.find(function(x){return x.name==='feed';})||outputs[0];
-  }
-  async function compress(file,options){
-    options=options||{};
-    if(!enabled())return {file:file,compressed:false,reason:'not-configured'};
-    if(!file)throw new Error('Média absent');
-    var token=String(options.accessToken||'');if(!token)throw new Error('Session Fyblic expirée');
-    var config=await api('/api/config',{},token);
-    if(file.size>Number(config.maxBytes||0))throw new Error('Média trop lourd pour la compression');
-    var uploadId=await upload(file,token,options.userId,config,options.onProgress);
-    var started=await api('/api/uploads/'+uploadId+'/complete',{method:'POST'},token);
-    var job=await waitJob(started.jobId,token,options.onProgress);
-    if((options.kind||'photo')==='video'){
-      options.onProgress&&options.onProgress({phase:'publish-variants',percent:88,text:'Enregistrement des qualités vidéo'});
-      var remote=await api('/api/jobs/'+started.jobId+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({postId:options.postId})},token);
-      if(!remote||!remote.primary)throw new Error('Versions vidéo adaptées indisponibles');
-      return {prepared:{__fyblicPrepared:true,kind:'video',primary:remote.primary,poster:remote.poster,variants:remote.variants||[],job:job},compressed:true,job:job,originalBytes:file.size,compressedBytes:(remote.primary&&remote.primary.bytes)||0};
-    }
-    var output=preferred(job,options.kind||'photo');if(!output)throw new Error('Aucun média compressé disponible');
-    options.onProgress&&options.onProgress({phase:'download',percent:88,text:'Finalisation du média'});
-    var response=await fetch(join(output.url),{headers:headers(token)});if(!response.ok)throw new Error('Récupération du média compressé impossible');
-    var blob=await response.blob();
-    var extension=output.mime==='video/mp4'?'mp4':'webp';
-    var name=(String(file.name||'media').replace(/\.[^.]+$/,'')||'media')+'.'+extension;
-    return {file:new File([blob],name,{type:output.mime,lastModified:Date.now()}),compressed:true,job:job,output:output,originalBytes:file.size,compressedBytes:blob.size};
-  }
-  window.FyblicMediaCompressionV1={version:'1.0.0',enabled:enabled,compress:compress,message:message};
+  function message(error,fallback){return String(error&&error.message||fallback||'Publication impossible');}
+  async function tokenFor(options){var token='';if(options&&typeof options.accessTokenProvider==='function')token=await options.accessTokenProvider();if(!token)token=options&&options.accessToken||'';if(!token)throw new Error('Session Fyblic expirée');return String(token);}
+  async function request(path,options,context){options=Object.assign({},options||{});var token=await tokenFor(context||{});options.headers=Object.assign({},options.headers||{},{Authorization:'Bearer '+token});var response=await fetch(join(path),options);if(!response.ok){var body=await response.json().catch(function(){return {};});var error=new Error(body.error||('Service média indisponible ('+response.status+')'));error.status=response.status;throw error;}if(response.status===204)return {response:response,data:null};return {response:response,data:await response.json()};}
+  function fingerprint(file,userId){return [userId||'',file.name||'',file.size||0,file.lastModified||0].join(':');}
+  function uploadKey(file,userId){return 'FYBLIC_UPLOAD_V2:'+fingerprint(file,userId);}
+  async function sessionFor(file,context){var key=uploadKey(file,context.userId),existing='';try{existing=localStorage.getItem(key)||'';}catch(_e){}if(existing){try{var old=(await request('/api/uploads/'+existing,{},context)).data;if(old.size===file.size&&(old.status==='uploading'||old.status==='uploaded'))return {session:old,key:key};}catch(_e2){try{localStorage.removeItem(key);}catch(_e3){}}}var created=(await request('/api/uploads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:file.name,size:file.size,mime:file.type||'application/octet-stream',fingerprint:fingerprint(file,context.userId)})},context)).data;try{localStorage.setItem(key,created.id);}catch(_e4){}return {session:created,key:key};}
+  async function sendChunk(sessionId,chunk,offset,context){var token=await tokenFor(context);var controller=new AbortController(),timer=setTimeout(function(){controller.abort();},180000);try{return await fetch(join('/api/uploads/'+sessionId),{method:'PUT',signal:controller.signal,body:chunk,headers:{Authorization:'Bearer '+token,'Content-Type':'application/octet-stream','Upload-Offset':String(offset)}});}finally{clearTimeout(timer);}}
+  async function upload(file,config,context,onProgress){var found=await sessionFor(file,context),session=found.session,offset=Number(session.received||0),chunkBytes=Math.max(256*1024,Math.min(Number(config.chunkBytes||FALLBACK_CHUNK),8*1024*1024)),retries=0;while(offset<file.size){var end=Math.min(offset+chunkBytes,file.size),chunk=file.slice(offset,end);onProgress&&onProgress({phase:'upload',percent:Math.min(55,Math.round(offset/file.size*55)),text:'Publication en cours'});try{var response=await sendChunk(session.id,chunk,offset,context);if(response.status===409){offset=Number(response.headers.get('Upload-Offset')||offset);throw new Error('Reprise synchronisée');}if(!response.ok){var body=await response.json().catch(function(){return {};});var err=new Error(body.error||('Envoi refusé ('+response.status+')'));err.status=response.status;throw err;}offset=Number(response.headers.get('Upload-Offset')||end);retries=0;}catch(error){retries+=1;if(error&&error.status>=400&&error.status<500&&![401,408,409,429].includes(error.status))throw error;if(retries>MAX_RETRIES)throw new Error('Connexion trop instable après '+MAX_RETRIES+' reprises automatiques');try{session=(await request('/api/uploads/'+session.id,{},context)).data;offset=Number(session.received||0);}catch(statusError){if(retries>=MAX_RETRIES)throw statusError;}await sleep(Math.min(15000,500*Math.pow(1.45,Math.min(retries,9))));}}onProgress&&onProgress({phase:'upload',percent:55,text:'Média envoyé'});return {id:session.id,key:found.key};}
+  async function waitPrimary(jobId,context,onProgress){var failures=0;for(;;){try{var job=(await request('/api/jobs/'+jobId,{},context)).data;failures=0;if(job.status==='failed')throw new Error(job.error||'Compression impossible');if(job.primaryReady||job.status==='completed')return job;var internal=Math.max(0,Math.min(100,Number(job.progress||0)));onProgress&&onProgress({phase:'compression',percent:55+Math.round(internal*.35),text:job.stage||'Compression du média'});}catch(error){if(error&&/Compression|Vidéo trop longue|piste visuelle|Résolution/i.test(error.message||''))throw error;failures+=1;if(failures>MAX_RETRIES)throw error;}await sleep(Math.min(4000,850+failures*300));}}
+  async function finishVariants(jobId,postId,context){var failures=0;for(;;){try{var job=(await request('/api/jobs/'+jobId,{},context)).data;if(job.status==='failed'||job.status==='completed')break;failures=0;}catch(_error){if(++failures>MAX_RETRIES)return;}await sleep(Math.min(10000,1800+failures*500));}try{await request('/api/jobs/'+jobId+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({postId:postId,primaryOnly:false})},context);}catch(_error){}}
+  async function compress(file,options){options=options||{};if(!enabled())throw new Error('Service média Fyblic non configuré');if(!file||!Number(file.size))throw new Error('Média absent ou vide');var context={accessToken:options.accessToken,accessTokenProvider:options.accessTokenProvider,userId:options.userId};var config=(await request('/api/config',{},context)).data;if(file.size>Number(config.maxBytes||0))throw new Error('Média supérieur à 1,1 Go');var uploaded=await upload(file,config,context,options.onProgress);var started=(await request('/api/uploads/'+uploaded.id+'/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({postId:options.postId,publicationKind:options.publicationKind||'post'})},context)).data;var job=await waitPrimary(started.jobId,context,options.onProgress);options.onProgress&&options.onProgress({phase:'primary-publish',percent:93,text:'Mise en ligne de la première qualité'});var remote=(await request('/api/jobs/'+started.jobId+'/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({postId:options.postId,primaryOnly:true})},context)).data;if(!remote||!remote.primary)throw new Error('Première qualité indisponible');try{localStorage.removeItem(uploaded.key);}catch(_e){}options.onProgress&&options.onProgress({phase:'ready',percent:98,text:'Enregistrement de la publication'});setTimeout(function(){finishVariants(started.jobId,options.postId,context);},0);return {prepared:{__fyblicPrepared:true,kind:options.kind||job.media&&job.media.kind||'photo',primary:remote.primary,poster:remote.poster,variants:remote.variants||[],manifestUrl:remote.manifestUrl||'',jobId:started.jobId},compressed:true,job:job,originalBytes:file.size,compressedBytes:Number(remote.primary.bytes||0)};}
+  var api={version:'2.0.0',enabled:enabled,compress:compress,message:message};window.FyblicMediaCompressionV2=api;window.FyblicMediaCompressionV1=api;
 })();

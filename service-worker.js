@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1052-mobile-json-20260917';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1060r1-owner-delete-20260921';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -63,6 +63,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-feed-view-v1.js?v=929-prepaint-anchor',
   './core/home-feed-boot-v1.js?v=937-account-story-cache',
   './core/master-registry.js?v=974-p1-module-lifecycle-registry',
+  './core/publication-progress-v1060.js?v=1060-unified-real-progress',
   './core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry',
   './modules/happyad-chat.html?v=1031-storage-security',
   './modules/message-center.html?mode=inbox&source=p1-module-lifecycle&v=1031-storage-security',
@@ -73,7 +74,7 @@ var HAPPYAD_APP_SHELL = [
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
   './modules/publish.html?v=1052-mobile-json',
-  './core/media-compression-client-v1.js?v=1052-mobile-json',
+  './core/media-compression-client-v1.js?v=1060-binary-resumable-unified',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
   './modules/user.html?v=974-p1-module-lifecycle-registry',
   './core/startup-master-v727.js?v=727-startup-unique',
@@ -95,7 +96,7 @@ var HAPPYAD_APP_SHELL = [
   './core/filtering-privacy-master-v855r55.js?v=855r55-filtering',
   './core/message-presence-app-master-v855r51.js?v=869-connection-phase2',
   './core/interaction-privacy-master-v855r52.js?v=972-p1-single-client',
-  './core/post-options-master-v693.js?v=1031-storage-security',
+  './core/post-options-master-v693.js?v=1060r1-owner-delete',
   './core/share-button-bridge.js?v=938-guest-share-gate',
   './core/story-master-v699.js?v=1031-storage-security',
   './core/notification-master-v700.js?v=1031-storage-security',

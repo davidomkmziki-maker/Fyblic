@@ -1,0 +1,51 @@
+FYBLIC V1060 — PUBLICATION UNIFIÉE ET REPRENABLE
+Date : 21 septembre 2026
+
+CORRECTIF V1060R1 AVANT DEPLOIEMENT
+- La suppression appelle maintenant un RPC atomique reserve au proprietaire connecte.
+- Le serveur annule les jobs media associes et marque uniquement les lignes dont user_id = auth.uid().
+- Le site refuse une session locale differente de la session Supabase avant toute suppression.
+- Executer FYBLIC_SUPPRESSION_PROPRIETAIRE_V1060R1.sql avant le deploiement du site.
+
+BASE
+- Construit depuis FYBLIC_V1052_MOBILE_JSON_STABLE.
+- Les trois chemins publics utilisent maintenant le même moteur média :
+  publication normale, Story et Boutique.
+
+CORRECTIONS PRINCIPALES
+- Suppression du transport production JSON/base64 de 512 Ko.
+- Upload binaire reprenable par morceaux de 5 Mio.
+- Resynchronisation exacte avec le worker après coupure réseau.
+- Jusqu'à 30 reprises automatiques avec renouvellement de session.
+- Limite réelle worker : 1 100 000 000 octets et 900 secondes.
+- Détection image/vidéo par MIME ou extension, puis vérification du vrai contenu
+  par FFprobe côté worker.
+- Première qualité jusqu'à 1080p mise en ligne dès qu'elle est prête.
+- Qualités secondaires et manifeste adaptatif terminés en arrière-plan.
+
+PROGRESSION
+- Publication normale et Boutique : ligne fine réelle sous le Radar dans Accueil.
+- Story : progression conique autour de « Ta story ».
+- Échec : indicateur rouge ; reprise proposée pour une coupure réseau.
+- L'utilisateur revient immédiatement à Accueil pendant le travail.
+
+STABILITÉ
+- Le fichier sélectionné reste dans la frame Publication persistante pendant
+  l'upload ; il n'est pas copié dans IndexedDB avant l'envoi.
+- Les anciens caches Accueil ne sont pas vidés par le nouveau pipeline.
+- Aucun nouveau SQL obligatoire : le manifeste adaptatif est référencé dans
+  image_crop, colonne déjà utilisée par Fyblic.
+
+TESTS EFFECTUÉS
+- Analyse syntaxique de tous les fichiers modifiés.
+- Compression FFmpeg réelle photo et vidéo.
+- Rejet réel d'une vidéo de 901 secondes.
+- Limite réelle 1,1 Go.
+- Upload HTTP binaire par morceaux et première qualité prête.
+- Reprise exacte après mauvais offset.
+
+IMPORTANT POUR LA PRODUCTION
+- Déployer aussi FYBLIC_MEDIA_WORKER_V1060_PIPELINE_UNIFIE.
+- Conserver FYBLIC_MEDIA_REQUIRE_AUTH=true.
+- Monter un volume Railway sur /app/data.
+- Garder toute clé service_role uniquement dans les variables privées Railway.

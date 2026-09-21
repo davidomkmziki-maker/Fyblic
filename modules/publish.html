@@ -62,7 +62,7 @@
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
+<script src="../core/media-compression-client-v1.js?v=1060-binary-resumable-unified"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -668,7 +668,7 @@ button:disabled{filter:none;transform:none}
   <div class="mentionAutocomplete" id="mentionAutocomplete" hidden aria-label="Suggestions de personnes"></div>
 </div>
 
-<input id="fileInput" type="file" accept="image/*,video/*" multiple hidden>
+<input id="fileInput" type="file" accept="image/*,video/*,.heic,.heif,.avif,.jxl,.dng,.raw,.cr2,.cr3,.nef,.arw,.tif,.tiff,.mkv,.mov,.m4v,.avi,.3gp,.3g2,.mts,.m2ts,.webm,.mpeg,.mpg,.ogv,.ts,.flv,.wmv,.vob" multiple hidden>
 <input id="cameraPhotoInput" type="file" accept="image/*" capture="environment" hidden>
 <input id="cameraVideoInput" type="file" accept="video/*" capture="environment" hidden>
 
@@ -722,6 +722,13 @@ button:disabled{filter:none;transform:none}
 
   let progressTimer=null;
   let progressValue=0;
+  let activePublicationId='';
+  let lastPublicationFailed=false;
+  function progressKind(){return state.mode==='story'?'story':'post';}
+  function notifyParentProgress(detail){
+    detail=Object.assign({id:activePublicationId,kind:progressKind(),percent:progressValue,status:'started'},detail||{});
+    try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:detail},'*');}catch(_e){}
+  }
   function setProgress(value,text){
     const requested=Math.max(0,Math.min(100,Math.round(Number(value)||0)));
     progressValue=requested===0?0:Math.max(progressValue,requested);
@@ -730,8 +737,10 @@ button:disabled{filter:none;transform:none}
     if(fill) fill.style.width=progressValue+"%";
     if(num) num.textContent=progressValue+"%";
     if(label && text) label.textContent=publicPublishMessage(text);
+    notifyParentProgress({percent:progressValue,text:publicPublishMessage(text||'Publication en cours')});
   }
   function startProgress(text){
+    lastPublicationFailed=false;
     clearInterval(progressTimer);
     progressTimer=null;
     progressValue=0;
@@ -740,16 +749,31 @@ button:disabled{filter:none;transform:none}
   function finishProgress(text){
     clearInterval(progressTimer);
     setProgress(100,text||"Publication terminée");
+    notifyParentProgress({status:'success',percent:100,text:publicPublishMessage(text||'Publication terminée')});
   }
   function stopProgress(){
     clearInterval(progressTimer);
     setTimeout(()=>{ const box=$("publishProgress"); if(box) box.classList.remove("show"); },700);
   }
   function failProgress(text){
+    lastPublicationFailed=true;
     clearInterval(progressTimer);
     const label=$("progressText");
     if(label) label.textContent=publicPublishMessage(text||"Échec publication");
+    notifyParentProgress({status:'failed',percent:progressValue,text:publicPublishMessage(text||'Échec'),retryable:/réseau|connexion|network|fetch/i.test(String(text||''))});
     setTimeout(()=>{ const box=$("publishProgress"); if(box) box.classList.remove("show"); },1400);
+  }
+
+  function returnHomeDuringUpload(){
+    try{
+      if(window.parent&&window.parent!==window){
+        if(window.parent.HappyMainTabsV615&&typeof window.parent.HappyMainTabsV615.activate==='function')window.parent.HappyMainTabsV615.activate('home',{source:'publish-background-v1060'});
+        else if(typeof window.parent.happyadReturnHomeAfterPublishV30==='function')window.parent.happyadReturnHomeAfterPublishV30('publish-background-v1060');
+        else window.parent.postMessage({type:'HAPPYAD_NAV_BACK_REQUEST',detail:{source:'publish-background-v1060'}},'*');
+        return true;
+      }
+    }catch(_e){}
+    return false;
   }
 
 
@@ -1339,7 +1363,7 @@ button:disabled{filter:none;transform:none}
     state.completed=false;
     state.file=file;
     state.files=(allFiles&&allFiles.length)?allFiles:[file];
-    state.kind=(file.type&&file.type.startsWith('video/'))?'video':((file.type&&file.type.startsWith('image/'))?'photo':'file');
+    state.kind=fileKind(file);
     state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';
     state.objectUrl=URL.createObjectURL(file);
     renderSelectionPreview();
@@ -1348,7 +1372,7 @@ button:disabled{filter:none;transform:none}
   }
 
   function showFiles(fileList){
-    const files=Array.from(fileList||[]).filter(function(f){return f&&f.type&&(f.type.startsWith('image/')||f.type.startsWith('video/'));}).slice(0,18);
+    const files=Array.from(fileList||[]).filter(function(f){return f&&fileKind(f);}).slice(0,18);
     if(!files.length){toast('Choisis une photo ou une vidéo');return;}
     if((fileList||[]).length>18)toast('Maximum 18 médias dans une publication');
     setSelectedFile(files[0],files);
@@ -1357,7 +1381,7 @@ button:disabled{filter:none;transform:none}
 
   function showFile(file){
     if(!file)return;
-    if(!(file.type&&(/^(image|video)\//).test(file.type))){toast('Cette publication accepte une photo ou une vidéo');return;}
+    if(!fileKind(file)){toast('Cette publication accepte une photo ou une vidéo');return;}
     setSelectedFile(file,[file]);
     toast(state.kind==='video'?'Vidéo affichée immédiatement':'Photo affichée immédiatement');
   }
@@ -1441,6 +1465,12 @@ button:disabled{filter:none;transform:none}
       const s=await withTimeout(c.auth.getSession(),20000,'Lecture de la session');
       session=s&&s.data&&s.data.session?s.data.session:null;
     }catch(_e){}
+    if(session&&Number(session.expires_at||0)*1000-Date.now()<120000){
+      try{
+        const refreshed=await withTimeout(c.auth.refreshSession(),25000,'Renouvellement de la session');
+        session=refreshed&&refreshed.data&&refreshed.data.session?refreshed.data.session:session;
+      }catch(_refreshError){}
+    }
     if(!session){
       try{
         const r=await withTimeout(c.auth.refreshSession(),25000,'Renouvellement de la session');
@@ -1540,7 +1570,7 @@ button:disabled{filter:none;transform:none}
     setProgress(alreadyPrepared?95:5,'Session prête');
     const id=localPost.id;
     const prepared=!!(file&&file.__fyblicPrepared&&file.primary&&file.primary.url);
-    const ext=prepared?'mp4':(cleanName((file.name&&file.name.includes('.'))?file.name.split('.').pop():(localPost.kind==='video'?'mp4':'jpg')).replace(/^\.+/,'') || (localPost.kind==='video'?'mp4':'jpg'));
+    const ext=prepared?(String(file.primary.mime||'').indexOf('video/')===0?'mp4':'webp'):(cleanName((file.name&&file.name.includes('.'))?file.name.split('.').pop():(localPost.kind==='video'?'mp4':'jpg')).replace(/^\.+/,'') || (localPost.kind==='video'?'mp4':'jpg'));
     const path=user.id+'/'+id+'.'+ext;
     // V279 : correction blocage à 90% sur vidéos lourdes.
     // Le 90% était causé par le timeout fixe 120s pendant l'upload Storage.
@@ -1599,7 +1629,7 @@ button:disabled{filter:none;transform:none}
     if(!mediaUrl) throw new Error('Storage publicUrl vide');
     const videoThumbUrl=prepared&&file.poster?String(file.poster.url||''):((localPost.kind==='video')?await happyadUploadVideoThumb(c,user,id,file,localPost.videoFrameTime,localPost.imageCrop):'');
     if(prepared){
-      localPost.imageCrop=Object.assign({},localPost.imageCrop||{}, {adaptive:{v:1,mode:'connection',variants:(file.variants||[]).reduce(function(map,item){map[item.name]=item.url;return map;},{})}});
+      localPost.imageCrop=Object.assign({},localPost.imageCrop||{}, {adaptive:{v:2,mode:'connection',manifest:file.manifestUrl||'',jobId:file.jobId||'',variants:(file.variants||[]).reduce(function(map,item){map[item.name]=item.url;return map;},{})}});
     }
     const row={
       id:id,
@@ -1621,7 +1651,7 @@ button:disabled{filter:none;transform:none}
       media_type:localPost.kind||'',
       thumbnail_url:videoThumbUrl||'',
       poster_url:videoThumbUrl||'',
-      mime_type:prepared?'video/mp4':(file.type||''),
+      mime_type:prepared?String(file.primary.mime||'application/octet-stream'):(file.type||''),
       file_name:prepared?String(file.primary.path||'').split('/').pop():(file.name||''),
       image_crop:localPost.imageCrop||null,
       cover_frame_time:Number(localPost.videoFrameTime||0),
@@ -1833,8 +1863,10 @@ return {source:'story',id:storyId};
     var result=await engine.compress(file,{
       kind:kind,
       accessToken:auth&&auth.session&&auth.session.access_token,
+      accessTokenProvider:async function(){var fresh=await getFreshAuth(happySb());return fresh&&fresh.session&&fresh.session.access_token||'';},
       userId:auth&&auth.user&&auth.user.id,
       postId:postId,
+      publicationKind:state.mode==='story'?'story':'post',
       onProgress:function(update){setProgress(update.percent||progressValue,update.text||'Compression du média');}
     });
     return result&&result.prepared?result.prepared:(result&&result.file?result.file:file);
@@ -1846,7 +1878,12 @@ return {source:'story',id:storyId};
     const n=Number((raw.match(/[0-9.]+/)||['0'])[0])||0;
     return n;
   }
-  function fileKind(file){return (file&&file.type&&file.type.startsWith('video/'))?'video':'photo';}
+  function fileKind(file){
+    var type=String(file&&file.type||'').toLowerCase(),name=String(file&&file.name||'').toLowerCase();
+    if(type.indexOf('video/')===0||/\.(mp4|webm|mov|m4v|3gp|3g2|mkv|avi|mpeg|mpg|ogv|ts|mts|m2ts|flv|wmv|vob|asf|divx)$/.test(name))return 'video';
+    if(type.indexOf('image/')===0||/\.(jpg|jpeg|jfif|png|webp|avif|heic|heif|gif|apng|bmp|tif|tiff|svg|jxl|ico|dng|raw|cr2|cr3|nef|arw)$/.test(name))return 'photo';
+    return '';
+  }
 
   /* V947 — ratio natif connu AVANT la première carte.
      On lit les dimensions directement depuis le File local puis on les conserve
@@ -2026,7 +2063,10 @@ return {source:'story',id:storyId};
     if(!state.file){toast("Aucun média sélectionné");return;}
     $("publishBtn").disabled=true; $("publishBtnTop").disabled=true;
     startProgress("Préparation de la publication...");
+    activePublicationId='pub_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    notifyParentProgress({id:activePublicationId,status:'started',percent:1,text:'Publication en cours'});
     toast("Publication en cours");
+    setTimeout(returnHomeDuringUpload,80);
     try{
       const id="p_"+Date.now();
       // V210 : ne pas attendre IndexedDB avant Supabase.
@@ -2146,7 +2186,7 @@ return {source:'story',id:storyId};
         var uploadFile=state.file;
         /* Première étape activée : publications normales. Story et Live restent
            sur le chemin stable jusqu'à leur validation séparée. */
-        if(state.mode==='publish'){
+        if(state.mode==='publish'||state.mode==='story'){
           var publishClient=happySb();
           if(!publishClient){try{publishClient=await window.happyadEnsureSupabaseV936(15000);}catch(_publishSdk){}}
           var publishAuth=publishClient?await getFreshAuth(publishClient):null;
@@ -2313,6 +2353,7 @@ return {source:'story',id:storyId};
   window.addEventListener('message',function(ev){
     try{
       var d=ev&&ev.data;if(!d)return;
+      if(d.type==='FYBLIC_PUBLICATION_RETRY_V2'&&lastPublicationFailed){savePublish();return;}
       if(d.type==='HAPPYAD_PUBLISH_SET_MODE_V885'){
         setPublishModeV885(d.publishMode||d.mode||'publish',d.source||'parent-mode-v885');
         return;

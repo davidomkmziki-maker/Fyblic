@@ -48,10 +48,10 @@
       .replace(/Enregistrement\s+Supabase/gi,'Enregistrement de la publication')
       .replace(/Supabase/gi,'Fyblic');
   }
-  function progress(payload,message){
+  function progress(payload,message,percent){
     message=publicMessage(message);
-    try{if(payload&&typeof payload.onProgress==='function')payload.onProgress(message);}catch(_e){}
-    try{document.dispatchEvent(new CustomEvent('happyad:listing-publication-progress',{detail:{message:message,source:VERSION}}));}catch(_e){}
+    try{if(payload&&typeof payload.onProgress==='function')payload.onProgress(message,percent);}catch(_e){}
+    try{document.dispatchEvent(new CustomEvent('happyad:listing-publication-progress',{detail:{message:message,percent:Number(percent||0),source:VERSION}}));}catch(_e){}
   }
   function client(){
     try{if(typeof window.happyadSb==='function'){var c=window.happyadSb();if(c&&c.from&&c.storage&&c.auth)return c;}}catch(_e){}
@@ -181,8 +181,8 @@
   function validatePublicFile(file){
     var kind=publicMediaKind(file);
     if(!kind)throw new Error('Les médias publics acceptent uniquement des images ou vidéos.');
-    if(kind==='image'&&Number(file.size||0)>20*1024*1024)throw new Error('Chaque image doit faire au maximum 20 Mo.');
-    if(kind==='video'&&Number(file.size||0)>100*1024*1024)throw new Error('Chaque vidéo doit faire au maximum 100 Mo.');
+    if(kind==='image'&&Number(file.size||0)>200*1024*1024)throw new Error('Chaque image doit faire au maximum 200 Mo.');
+    if(kind==='video'&&Number(file.size||0)>1_100_000_000)throw new Error('Chaque vidéo doit faire au maximum 1,1 Go.');
   }
   function validatePrivateFile(file){
     var type=lower(file&&file.type);
@@ -266,6 +266,17 @@
   }
   async function uploadPublic(c,user,listingId,file,index,payload){
     var kind=publicMediaKind(file)||'image';
+    var engine=window.FyblicMediaCompressionV2||window.FyblicMediaCompressionV1;
+    if(engine&&engine.enabled&&engine.enabled()){
+      var prepared=await engine.compress(file,{
+        kind:kind==='video'?'video':'photo',userId:user.id,postId:listingId+'_'+String(index+1),publicationKind:'marketplace',
+        accessTokenProvider:async function(){var s=await freshSession(c);return s&&s.access_token||'';},
+        onProgress:function(update){progress(payload,update&&update.text||('Envoi du média '+(index+1)),update&&update.percent||0);}
+      });
+      var ready=prepared&&prepared.prepared;
+      if(!ready||!ready.primary||!ready.primary.url)throw new Error('Média '+(index+1)+' non préparé.');
+      return {path:ready.primary.path,src:ready.primary.url,type:kind,mime:ready.primary.mime||inferredMime(file),name:file.name||'',size:Number(ready.primary.bytes||0),poster:ready.poster&&ready.poster.url||'',manifest:ready.manifestUrl||''};
+    }
     var path=user.id+'/marketplace/'+listingId+'/public/'+String(index+1).padStart(2,'0')+'-'+uuid()+'.'+extension(file);
     await uploadWithRetry(c,PUBLIC_BUCKET,path,file,{upsert:false,cacheControl:'31536000',contentType:inferredMime(file)},'Envoi du média '+(index+1),payload);
     var publicResult=c.storage.from(PUBLIC_BUCKET).getPublicUrl(path);
@@ -394,6 +405,7 @@
   }
   async function publishListing(payload){
     var parsed=validate(payload);
+    setTimeout(function(){try{if(typeof window.happyadReturnHomeAfterPublishV30==='function')window.happyadReturnHomeAfterPublishV30('marketplace-background-v1060');}catch(_e){}},80);
     var c=client();
     if(!c)throw new Error('Le service Fyblic est momentanément indisponible.');
     progress(payload,'Vérification de la connexion…');
@@ -433,6 +445,7 @@
         await cleanup(c,PUBLIC_BUCKET,publicPaths);
         await cleanup(c,PRIVATE_BUCKET,ownershipPaths.concat(officialPaths));
       }
+      try{document.dispatchEvent(new CustomEvent('happyad:listing-publication-failed',{detail:{message:errorText(error),source:VERSION}}));}catch(_eventError){}
       throw new Error(errorText(error));
     }
   }
