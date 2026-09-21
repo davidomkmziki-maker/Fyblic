@@ -1,0 +1,18 @@
+FYBLIC V1067R1 — CORRECTION MINIMALE SUR LA BASE STABLE
+
+BASE CONSERVÉE
+- Site V1067 stable.
+- Worker V1066 inchangé.
+- SQL V1064 inchangé.
+- Compression, qualités et architecture de publication non remplacées.
+
+SEULES CORRECTIONS
+1. Pendant une Story, le contour orange progresse autour de « Ta story » dans l'Accueil.
+2. Une deuxième publication ne peut pas démarrer tant que la première travaille encore.
+3. En cas d'échec, la tâche locale, le verrou, la fausse progression et les caches temporaires sont nettoyés; le bouton + redevient utilisable.
+
+DÉPLOIEMENT
+- Déployer uniquement ce ZIP du site.
+- Ne pas redéployer le Worker V1068.
+- Conserver ou remettre le Worker V1066.
+- Aucun nouveau SQL n'est nécessaire.

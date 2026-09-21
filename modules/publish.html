@@ -62,8 +62,8 @@
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="../core/media-compression-client-v1.js?v=1068-fast-resume"></script>
-<script src="../core/publication-pipeline-v2.js?v=1068-story-durable"></script>
+<script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
+<script src="../core/publication-pipeline-v2.js?v=1067r1-single-publication-clean"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -723,6 +723,19 @@ button:disabled{filter:none;transform:none}
 
   let progressTimer=null;
   let progressValue=0;
+  const ACTIVE_PUBLICATION_KEY_V1067R1='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
+  let activePublicationIdV1067R1='';
+  function activePublicationV1067R1(){
+    try{var value=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');if(!value||!value.id)return null;if(Date.now()-Number(value.at||0)>2*60*60*1000){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}return value;}catch(_e){try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_x){}return null;}
+  }
+  function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');try{localStorage.setItem(ACTIVE_PUBLICATION_KEY_V1067R1,JSON.stringify({id:activePublicationIdV1067R1,mode:String(mode||'publish'),at:Date.now()}));}catch(_e){}}
+  function endPublicationV1067R1(){activePublicationIdV1067R1='';try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_e){}}
+  function storyProgressV1067R1(status,text){
+    if(state.mode!=='story'||!activePublicationIdV1067R1)return;
+    var detail={jobId:activePublicationIdV1067R1,postId:activePublicationIdV1067R1,publicationType:'story',status:String(status||'processing'),primaryReady:false,progress:progressValue,stage:publicPublishMessage(text||'Story en cours')};
+    try{window.dispatchEvent(new CustomEvent('FYBLIC_PUBLICATION_PROGRESS_V2',{detail:detail}));}catch(_e){}
+    try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:detail},'*');}catch(_e2){}
+  }
   function setProgress(value,text){
     const requested=Math.max(0,Math.min(100,Math.round(Number(value)||0)));
     progressValue=requested===0?0:Math.max(progressValue,requested);
@@ -731,6 +744,7 @@ button:disabled{filter:none;transform:none}
     if(fill) fill.style.width=progressValue+"%";
     if(num) num.textContent=progressValue+"%";
     if(label && text) label.textContent=publicPublishMessage(text);
+    storyProgressV1067R1('processing',text);
   }
   function startProgress(text){
     clearInterval(progressTimer);
@@ -741,6 +755,8 @@ button:disabled{filter:none;transform:none}
   function finishProgress(text){
     clearInterval(progressTimer);
     setProgress(100,text||"Publication terminée");
+    storyProgressV1067R1('published',text||'Story publiée');
+    endPublicationV1067R1();
   }
   function stopProgress(){
     clearInterval(progressTimer);
@@ -750,6 +766,9 @@ button:disabled{filter:none;transform:none}
     clearInterval(progressTimer);
     const label=$("progressText");
     if(label) label.textContent=publicPublishMessage(text||"Échec publication");
+    storyProgressV1067R1('failed',text||'Échec Story');
+    endPublicationV1067R1();
+    try{clearHeavyPublicationCaches();localStorage.removeItem('FYBLIC_PUBLICATION_JOBS_V2');localStorage.removeItem('FYBLIC_PUBLICATION_MUTED_V1');}catch(_e){}
     setTimeout(()=>{ const box=$("publishProgress"); if(box) box.classList.remove("show"); },1400);
   }
 
@@ -2032,6 +2051,10 @@ return {source:'story',id:storyId};
   }
 
   async function savePublish(){
+    if(activePublicationV1067R1()){
+      toast('Une publication est déjà en cours');
+      return;
+    }
     const validation=validatePublishForm();
     if(!validation.valid){
       toast(validation.errors[0]||"Complète tous les champs obligatoires");
@@ -2042,8 +2065,14 @@ return {source:'story',id:storyId};
     $("publishBtn").disabled=true; $("publishBtnTop").disabled=true;
     startProgress("Préparation de la publication...");
     toast("Publication en cours");
+    let returnedHomeForStoryV1067R1=false;
     try{
       const id="p_"+((window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID().replace(/-/g,''):(Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14)));
+      beginPublicationV1067R1(id,state.mode);
+      if(state.mode==='story'){
+        returnedHomeForStoryV1067R1=true;
+        setTimeout(function(){returnHomeAfterPublish('story-background-v1067r1',{preserveMedia:true});},180);
+      }
       // V210 : ne pas attendre IndexedDB avant Supabase.
       // La publication officielle doit passer par Storage + happyad_posts ;
       // le cache média local est écrit plus bas en arrière-plan, sans bloquer l'utilisateur.
@@ -2072,22 +2101,20 @@ return {source:'story',id:storyId};
         createdAt:Date.now()
       };
       localPost.imageCrop=Object.assign({},state.crop||{v:2,scale:1,x:50,y:50}); if(state.kind==='video')localPost.videoFrameTime=Number(state.videoFrame==null?0:state.videoFrame);
-      /* V1068 — publication normale et Story passent par la même file durable.
-         L’Accueil reste utilisable pendant l’envoi; le worker reprend les gros
-         fichiers sans dépendre de la page Détails ni de l’écran Android. */
-      if((state.mode==='publish'||state.mode==='story') && !(state.kind==='photo'&&state.files&&state.files.length>1)){
+      /* V1063 — chemin durable activé progressivement pour une publication normale
+         à média unique. Dès que la tâche serveur existe, l’utilisateur revient à
+         l’Accueil; l’iframe conservée poursuit l’envoi et Railway finalise seul. */
+      if(state.mode==='publish' && !(state.kind==='photo'&&state.files&&state.files.length>1)){
         var durable=window.FyblicPublicationPipelineV2;
-        var durableType=state.mode==='story'?'story':'normal';
-        if(durable&&typeof durable.available==='function'&&await durable.available(true,durableType)){
+        if(durable&&typeof durable.available==='function'&&await durable.available(true)){
           var returnedHome=false;
-          var durablePostId=durableType==='story'&&window.crypto&&typeof window.crypto.randomUUID==='function'?window.crypto.randomUUID():id;
-          if(durableType==='story'){localPost.id=durablePostId;localPost.sourceId=durablePostId;localPost.sourceType='story';}
           var backgroundTask=durable.submit(state.file,{
             kind:state.kind,
-            publicationType:durableType,
-            postId:durablePostId,
+            publicationType:'normal',
+            postId:id,
             payload:localPost,
             onCreated:function(job){
+              window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1=String(job&&job.id||'');
               state.completed=true;
               setProgress(Math.max(1,Number(job&&job.progress||1)),'Publication en cours');
               if(!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('pipeline-v2-background',{preserveMedia:true});},180);}
@@ -2098,13 +2125,19 @@ return {source:'story',id:storyId};
           backgroundTask.then(function(result){
             if(!result||!result.used)throw new Error('Pipeline durable indisponible');
             return result.completion;
-          }).then(function(){
+          }).then(function(finalJob){
+            if(finalJob&&finalJob.status==='failed')throw new Error(finalJob.error_message||'Publication échouée');
+            if(finalJob&&finalJob.status==='canceled')throw new Error('Publication annulée');
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
-            try{resetPublishComposer('pipeline-v2-completed-v1068');}catch(_reset){}
+            endPublicationV1067R1();
+            try{resetPublishComposer('pipeline-v2-completed-v1067');}catch(_reset){}
           }).catch(function(error){
             console.error('Fyblic pipeline V2',error);
-            try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:'',postId:durablePostId,publicationType:durableType,status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}
-            if(!returnedHome){state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));updatePublishButtonsState();}
+            try{if(window.FyblicPublicationPipelineV2&&typeof window.FyblicPublicationPipelineV2.forget==='function'&&window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1)window.FyblicPublicationPipelineV2.forget(window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1);}catch(_forget){}
+            endPublicationV1067R1();
+            try{clearHeavyPublicationCaches();localStorage.removeItem('FYBLIC_PUBLICATION_JOBS_V2');}catch(_clean){}
+            try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:'',postId:id,status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}
+            state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));try{resetPublishComposer('failed-pipeline-v1067r1');}catch(_reset){}updatePublishButtonsState();
           });
           return;
         }
@@ -2215,7 +2248,8 @@ return {source:'story',id:storyId};
         finishProgress((state.mode==='live'?'Live':'Story')+" envoyé dans le Radar");
         toast((state.mode==='live'?'Live':'Story')+" envoyé dans le Radar");
         safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1')
-        setTimeout(()=>{returnHomeAfterPublish('story-live');},350);
+        if(returnedHomeForStoryV1067R1)setTimeout(function(){try{resetPublishComposer('story-completed-v1067r1');}catch(_e){}},350);
+        else setTimeout(()=>{returnHomeAfterPublish('story-live');},350);
         return;
       }
       saveMediaBestEffort({id,blob:state.file,type:state.file.type,kind:state.kind,name:state.file.name||"media"});
@@ -2265,6 +2299,7 @@ return {source:'story',id:storyId};
       const m=(err&&err.message)?err.message:String(err||'Erreur inconnue');
       failProgress('Échec : '+m.slice(0,90));
       toast('Échec publication : '+m.slice(0,120));
+      try{resetPublishComposer('failed-clean-v1067r1');}catch(_reset){}
       updatePublishButtonsState();
     }
   }
