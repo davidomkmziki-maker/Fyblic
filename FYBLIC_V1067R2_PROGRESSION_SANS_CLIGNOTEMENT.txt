@@ -1,0 +1,17 @@
+FYBLIC V1067R2 — PROGRESSION SANS CLIGNOTEMENT
+
+BASE CONSERVÉE
+- Site V1067R1.
+- Worker V1066 inchangé.
+- Compression, SQL, qualité média et interface générale inchangés.
+
+CORRECTIONS CIBLÉES
+1. Une seule tâche active peut piloter la barre de progression.
+2. Les événements retardés d'anciennes publications ne peuvent plus masquer la tâche actuelle.
+3. Au rechargement, seuls les traitements serveur réellement reprenables sont suivis.
+4. Un upload abandonné sans son fichier Android n'est plus ressuscité artificiellement.
+5. L'échec nettoie uniquement la tâche concernée et libère son verrou.
+6. Le contour Story V1067R1 est conservé.
+
+WORKER
+- Aucun changement requis : les deux ZIP V1066 fournis contiennent exactement les mêmes fichiers.

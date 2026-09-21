@@ -11,7 +11,7 @@
   if(window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__)return;
   window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__=true;
 
-  var VERSION='V1067_STORY_BOUTIQUE_COMPRESSION_VERIFIED';
+  var VERSION='V1068_BOUTIQUE_DURABLE_PIPELINE';
   var PUBLIC_BUCKET='happyad-media';
   var PRIVATE_BUCKET='happyad-marketplace-private';
   var RPC='happyad_publish_listing_v1';
@@ -265,7 +265,25 @@
     throw wrapped;
   }
   async function compressPublic(file,user,listingId,index,session,payload){
-    var engine=window.FyblicMediaCompressionV1,kind=publicMediaKind(file)||'image';
+    var kind=publicMediaKind(file)||'image';
+    var durable=window.FyblicPublicationPipelineV2;
+    if(durable&&typeof durable.available==='function'&&await durable.available(true)){
+      progress(payload,'Compression durable du média '+(index+1)+'…');
+      var submitted=await durable.submit(file,{
+        kind:kind==='video'?'video':'photo',
+        publicationType:'boutique',
+        postId:listingId+'_media_'+(index+1),
+        payload:{listingId:listingId,mediaIndex:index,source:'boutique-v1068'},
+        onProgress:function(job){progress(payload,'Média '+(index+1)+' — '+String(job&&job.stage||'compression en cours'));}
+      });
+      if(!submitted||!submitted.used)throw new Error('Pipeline durable Boutique indisponible');
+      var finalJob=await submitted.completion;
+      if(!finalJob||finalJob.status!=='published')throw new Error(finalJob&&finalJob.error_message||'Compression durable Boutique incomplète');
+      var ready=finalJob.result||{},outputs=Array.isArray(ready.outputs)?ready.outputs:[];
+      if(!ready.primary||!ready.primary.url||!ready.primary.path)throw new Error('Qualité principale Boutique indisponible');
+      return {prepared:{__fyblicPrepared:true,kind:kind==='video'?'video':'photo',primary:ready.primary,poster:ready.poster||null,variants:outputs.filter(function(x){return x&&x.path&&x.path!==ready.primary.path&&(!ready.poster||x.path!==ready.poster.path);}),job:finalJob},compressed:true,original:file,durable:true};
+    }
+    var engine=window.FyblicMediaCompressionV1;
     if(!engine||!engine.enabled||!engine.enabled())return {file:file,compressed:false};
     progress(payload,'Compression du média '+(index+1)+'…');
     var result=await engine.compress(file,{
@@ -283,7 +301,8 @@
       var ready=source.prepared,primary=ready.primary||{},variants=Array.isArray(ready.variants)?ready.variants:[],poster=ready.poster||null;
       if(!primary.url||!primary.path)throw new Error('La qualité principale compressée est indisponible.');
       var cleanup=[primary.path].concat(variants.map(function(x){return x&&x.path;})).concat(poster&&poster.path?[poster.path]:[]).filter(Boolean);
-      return {path:primary.path,src:primary.url,type:'video',mime:'video/mp4',name:source.original&&source.original.name||'',size:Number(primary.bytes||0),poster:poster&&poster.url||'',variants:variants,cleanupPaths:Array.from(new Set(cleanup))};
+      var mediaKind=String(primary.mime||'').indexOf('video/')===0?'video':'image';
+      return {path:primary.path,src:primary.url,type:mediaKind,mime:primary.mime||(mediaKind==='video'?'video/mp4':'image/webp'),name:source.original&&source.original.name||'',size:Number(primary.bytes||0),poster:poster&&poster.url||'',variants:variants,cleanupPaths:Array.from(new Set(cleanup))};
     }
     var file=source&&source.file||source;
     var kind=publicMediaKind(file)||'image';

@@ -4,9 +4,14 @@
   window.__FYBLIC_PUBLICATION_BACKGROUND_UI_V2__=true;
   var MUTED_KEY='FYBLIC_PUBLICATION_MUTED_V1';
   var NOTICE_KEY='FYBLIC_PROFILE_PUBLICATION_NOTICES_V1';
+  var ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
   var hideTimer=null,currentJobId='',mountTimer=null,lastStoryDetail=null;
   function json(key,fallback){try{var x=JSON.parse(localStorage.getItem(key)||'');return x&&typeof x==='object'?x:fallback;}catch(_e){return fallback;}}
   function muted(){return json(MUTED_KEY,{});}
+  function active(){return json(ACTIVE_KEY,null);}
+  function isCurrent(id){var value=active();return !value||!value.id||String(value.id)===String(id||'');}
+  function clearActive(id){var value=active();if(value&&String(value.id)===String(id||'')){try{localStorage.removeItem(ACTIVE_KEY);}catch(_e){}}}
+  function forgetOnly(id){try{var list=JSON.parse(localStorage.getItem('FYBLIC_PUBLICATION_JOBS_V2')||'[]');if(Array.isArray(list))localStorage.setItem('FYBLIC_PUBLICATION_JOBS_V2',JSON.stringify(list.filter(function(x){return x&&String(x.id)!==String(id||'');})));}catch(_e){}}
   function isMuted(id){return !!(id&&muted()[id]);}
   function writeMuted(map){
     var now=Date.now();Object.keys(map||{}).forEach(function(id){if(!Number(map[id])||now-Number(map[id])>7*24*60*60*1000)delete map[id];});
@@ -56,25 +61,33 @@
   function render(detail){
     detail=detail||{};var box=ensure(),jobId=String(detail.jobId||'');if(jobId)currentJobId=jobId;mount(box);
     if(String(detail.publicationType||'')==='story'){
+      if(jobId&&!isCurrent(jobId))return;
       box.classList.remove('show');
-      if(detail.status==='published'||detail.status==='canceled'){clearStoryRing();refreshHome();return;}
+      if(detail.status==='published'){addProfileNotice(detail,'Ta Story est entièrement prête.','success');try{localStorage.setItem('HAPPYAD_RADAR_REFRESH_NEEDED','1');}catch(_e){}clearStoryRing();refreshHome();return;}
+      if(detail.status==='canceled'){clearStoryRing();refreshHome();return;}
       paintStoryRing(detail);
       if(detail.status==='failed')setTimeout(clearStoryRing,1400);
       return;
     }
+    /* Une seule tâche possède la barre. Les événements retardés d'une ancienne
+       publication ne peuvent plus afficher/masquer la progression courante. */
+    if(jobId&&!isCurrent(jobId))return;
+    if(String(detail.publicationType||'')==='boutique'&&detail.status==='published'){
+      unmute(jobId);clearActive(jobId);forgetOnly(jobId);box.classList.remove('show');return;
+    }
     if(detail.status==='published'){
       addProfileNotice(detail,'Toutes les qualités de ta publication sont prêtes.','success');
-      unmute(jobId);refreshHome();box.classList.remove('show');return;
+      unmute(jobId);clearActive(jobId);forgetOnly(jobId);refreshHome();box.classList.remove('show');return;
     }
     if(detail.primaryReady===true){mute(jobId);refreshHome();box.classList.remove('show');return;}
-    if(detail.status==='canceled'){unmute(jobId);box.classList.remove('show');return;}
+    if(detail.status==='canceled'){unmute(jobId);clearActive(jobId);forgetOnly(jobId);box.classList.remove('show');return;}
     if(isMuted(jobId)){
       if(detail.status==='failed'){addProfileNotice(detail,'Publication affichée, mais certaines qualités n’ont pas été terminées.','warning');unmute(jobId);}
       box.classList.remove('show');return;
     }
     var card=box.firstElementChild,copy=card.querySelector('.fyblicPubV2Copy'),fill=card.querySelector('.fyblicPubV2Fill'),retry=card.querySelector('.fyblicPubV2Retry'),percent=Math.max(0,Math.min(100,Number(detail.progress||0)));
     clearTimeout(hideTimer);box.classList.add('show');card.classList.remove('fail');fill.style.width=percent+'%';copy.children[0].textContent=detail.stage||'Publication en cours';copy.children[1].textContent=percent+'%';retry.onclick=function(){try{if(window.HappyNavigation&&window.HappyNavigation.open)window.HappyNavigation.open('publish');else location.href='modules/publish.html';}catch(_e){location.href='modules/publish.html';}};
-    if(detail.status==='failed'){card.classList.add('fail');copy.children[0].textContent=safeError(detail.error);copy.children[1].textContent='Échec';try{localStorage.removeItem('FYBLIC_PUBLICATION_JOBS_V2');localStorage.removeItem('FYBLIC_ACTIVE_PUBLICATION_V1067R1');}catch(_e){}hideTimer=setTimeout(function(){unmute(jobId);box.classList.remove('show');},1400);}
+    if(detail.status==='failed'){card.classList.add('fail');copy.children[0].textContent=safeError(detail.error);copy.children[1].textContent='Échec';forgetOnly(jobId);clearActive(jobId);hideTimer=setTimeout(function(){unmute(jobId);box.classList.remove('show');},1400);}
   }
   window.addEventListener('FYBLIC_PUBLICATION_PROGRESS_V2',function(ev){render(ev&&ev.detail);});
   window.addEventListener('message',function(ev){var d=ev&&ev.data;if(d&&d.type==='FYBLIC_PUBLICATION_PROGRESS_V2')render(d.detail);});

@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-pipeline-v2.js?v=1067r1-single-publication-clean"></script>
+<script src="../core/publication-pipeline-v2.js?v=1068-story-boutique-durable"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -726,7 +726,7 @@ button:disabled{filter:none;transform:none}
   const ACTIVE_PUBLICATION_KEY_V1067R1='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
   let activePublicationIdV1067R1='';
   function activePublicationV1067R1(){
-    try{var value=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');if(!value||!value.id)return null;if(Date.now()-Number(value.at||0)>2*60*60*1000){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}return value;}catch(_e){try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_x){}return null;}
+    try{var value=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');if(!value||!value.id)return null;var age=Date.now()-Number(value.at||0);if(age>2*60*60*1000){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}if(age>2*60*1000){var jobs=JSON.parse(localStorage.getItem('FYBLIC_PUBLICATION_JOBS_V2')||'[]');var found=Array.isArray(jobs)&&jobs.some(function(job){return job&&String(job.id)===String(value.id)&&['published','failed','canceled'].indexOf(String(job.status||''))<0;});if(!found){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}}return value;}catch(_e){try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_x){}return null;}
   }
   function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');try{localStorage.setItem(ACTIVE_PUBLICATION_KEY_V1067R1,JSON.stringify({id:activePublicationIdV1067R1,mode:String(mode||'publish'),at:Date.now()}));}catch(_e){}}
   function endPublicationV1067R1(){activePublicationIdV1067R1='';try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_e){}}
@@ -2101,20 +2101,20 @@ return {source:'story',id:storyId};
         createdAt:Date.now()
       };
       localPost.imageCrop=Object.assign({},state.crop||{v:2,scale:1,x:50,y:50}); if(state.kind==='video')localPost.videoFrameTime=Number(state.videoFrame==null?0:state.videoFrame);
-      /* V1063 — chemin durable activé progressivement pour une publication normale
-         à média unique. Dès que la tâche serveur existe, l’utilisateur revient à
-         l’Accueil; l’iframe conservée poursuit l’envoi et Railway finalise seul. */
-      if(state.mode==='publish' && !(state.kind==='photo'&&state.files&&state.files.length>1)){
+      /* V1068 — chemin durable définitif pour publication normale ou Story
+         à média unique. La Story reste exclusivement dans happyad_stories. */
+      if((state.mode==='publish'||state.mode==='story') && !(state.mode==='publish'&&state.kind==='photo'&&state.files&&state.files.length>1)){
         var durable=window.FyblicPublicationPipelineV2;
         if(durable&&typeof durable.available==='function'&&await durable.available(true)){
-          var returnedHome=false;
+          var returnedHome=returnedHomeForStoryV1067R1;
           var backgroundTask=durable.submit(state.file,{
             kind:state.kind,
-            publicationType:'normal',
+            publicationType:state.mode==='story'?'story':'normal',
             postId:id,
             payload:localPost,
             onCreated:function(job){
               window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1=String(job&&job.id||'');
+              if(job&&job.id)beginPublicationV1067R1(job.id,state.mode);
               state.completed=true;
               setProgress(Math.max(1,Number(job&&job.progress||1)),'Publication en cours');
               if(!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('pipeline-v2-background',{preserveMedia:true});},180);}
@@ -2129,8 +2129,9 @@ return {source:'story',id:storyId};
             if(finalJob&&finalJob.status==='failed')throw new Error(finalJob.error_message||'Publication échouée');
             if(finalJob&&finalJob.status==='canceled')throw new Error('Publication annulée');
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
+            if(state.mode==='story')safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');
             endPublicationV1067R1();
-            try{resetPublishComposer('pipeline-v2-completed-v1067');}catch(_reset){}
+            try{resetPublishComposer('pipeline-v2-completed-v1068');}catch(_reset){}
           }).catch(function(error){
             console.error('Fyblic pipeline V2',error);
             try{if(window.FyblicPublicationPipelineV2&&typeof window.FyblicPublicationPipelineV2.forget==='function'&&window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1)window.FyblicPublicationPipelineV2.forget(window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1);}catch(_forget){}

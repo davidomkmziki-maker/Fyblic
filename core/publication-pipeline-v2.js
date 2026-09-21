@@ -4,6 +4,7 @@
 
   var BASE=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app').replace(/\/+$/,'');
   var JOBS_KEY='FYBLIC_PUBLICATION_JOBS_V2';
+  var ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
   var CHUNK_SAFE=512*1024,CHUNK_FAST=1024*1024;
   var healthCache={at:0,value:false};
   var watchers={};
@@ -33,16 +34,22 @@
   }
   function readJobs(){try{var v=JSON.parse(localStorage.getItem(JOBS_KEY)||'[]');return Array.isArray(v)?v:[];}catch(_e){return [];}}
   function writeJobs(list){try{localStorage.setItem(JOBS_KEY,JSON.stringify((list||[]).slice(0,20)));}catch(_e){}}
+  function activeJob(){try{var value=JSON.parse(localStorage.getItem(ACTIVE_KEY)||'null');return value&&value.id?value:null;}catch(_e){return null;}}
+  function activate(job,options){
+    if(!job||!job.id)return;
+    try{localStorage.setItem(ACTIVE_KEY,JSON.stringify({id:String(job.id),postId:String(job.post_id||job.postId||options&&options.postId||''),mode:String(options&&options.publicationType||job.publication_type||job.publicationType||'normal'),at:Date.now()}));}catch(_e){}
+  }
+  function clearActive(id){var active=activeJob();if(active&&String(active.id)===String(id||'')){try{localStorage.removeItem(ACTIVE_KEY);}catch(_e){}}}
   function remember(job){if(!job||!job.id)return;var list=readJobs().filter(function(x){return x&&x.id!==job.id;});list.unshift({id:job.id,postId:job.post_id||job.postId||'',status:job.status||'uploading',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',createdAt:job.created_at||new Date().toISOString(),updatedAt:Date.now()});writeJobs(list);}
   function forget(id){writeJobs(readJobs().filter(function(x){return x&&x.id!==id;}));}
   function event(job){
     if(!job)return;
     remember(job);
-    var detail={jobId:job.id,postId:job.post_id||job.postId||'',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',error:publicError(job.error_message||''),result:job.result||null};
+    var detail={jobId:job.id,postId:job.post_id||job.postId||'',publicationType:job.publication_type||job.publicationType||'',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',error:publicError(job.error_message||''),result:job.result||null};
     try{window.dispatchEvent(new CustomEvent('FYBLIC_PUBLICATION_PROGRESS_V2',{detail:detail}));}catch(_e){}
     try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:detail},'*');}catch(_e2){}
-    if(detail.status==='failed'||detail.status==='canceled'){forget(job.id);try{localStorage.removeItem('FYBLIC_ACTIVE_PUBLICATION_V1067R1');}catch(_e3){}}
-    else if(detail.status==='published'){setTimeout(function(){forget(job.id);},1000);}
+    if(detail.status==='failed'||detail.status==='canceled'){forget(job.id);clearActive(job.id);}
+    else if(detail.status==='published'){clearActive(job.id);setTimeout(function(){forget(job.id);},1000);}
   }
   async function available(force){
     if(!force&&Date.now()-healthCache.at<30000)return healthCache.value;
@@ -76,7 +83,7 @@
     var created=(await request('/api/v2/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       filename:file.name||'media',size:file.size,mime:file.type||'application/octet-stream',kind:options.kind||'photo',publicationType:options.publicationType||'normal',postId:options.postId,payload:options.payload||{},fingerprint:fingerprint(file)
     })},a.token,45000)).body;
-    remember(created);event(created);
+    activate(created,options);remember(created);event(created);
     if(typeof options.onCreated==='function')options.onCreated(created);
     if(created.primary_ready===true||created.status==='published'){return {used:true,job:created,completion:Promise.resolve(created)};}
     var offset=Number(created.uploaded_bytes||0),retries=0;
@@ -100,22 +107,27 @@
     return {used:true,job:queued,completion:completion};
   }
   async function resumeTracking(){
-    var now=Date.now(),jobs=readJobs().filter(function(j){
+    var now=Date.now(),active=activeJob(),jobs=readJobs().filter(function(j){
       if(!j||!j.id||['published','failed','canceled'].indexOf(j.status)>=0)return false;
       var age=now-(Number(j.updatedAt)||Date.parse(j.createdAt||'')||now);
       /* Après un rechargement, un upload resté au tout début ne possède plus le File
          Android nécessaire pour envoyer les morceaux restants. Ne jamais ressusciter
          indéfiniment une ancienne ligne à 1 %. Les tâches déjà remises au serveur
          (queued/processing/finalizing) restent, elles, suivies normalement. */
-      if(String(j.status)==='uploading'&&Number(j.progress||0)<=1&&age>30*60*1000)return false;
+      /* Un upload interrompu ne peut pas reprendre sans l'objet File Android.
+         Seule la page qui possède encore ce File envoie ses morceaux et ses événements. */
+      if(String(j.status)==='uploading')return false;
       if(age>24*60*60*1000)return false;
+      if(active&&active.id&&String(j.id)!==String(active.id))return false;
       return true;
-    });writeJobs(jobs);if(!jobs.length)return;
+    });
+    if(!active&&jobs.length>1)jobs.sort(function(a,b){return Number(b.updatedAt||0)-Number(a.updatedAt||0);}).splice(1);
+    writeJobs(jobs);if(!jobs.length)return;
     var a;try{a=await auth();}catch(_e){return;}
     jobs.forEach(function(job){watch(job.id,a.token).catch(function(){});});
   }
   async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+id+'/cancel',{method:'POST'},a.token,30000)).body;event(job);return job;}
 
-  window.FyblicPublicationPipelineV2={version:'1067.1',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
+  window.FyblicPublicationPipelineV2={version:'1068.0',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

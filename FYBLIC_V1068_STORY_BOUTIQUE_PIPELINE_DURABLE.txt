@@ -1,0 +1,14 @@
+FYBLIC V1068 — STORY ET BOUTIQUE SUR LE PIPELINE DURABLE
+
+ORDRE OBLIGATOIRE
+1. Exécuter FYBLIC_PUBLICATION_PIPELINE_V1068_STORY_BOUTIQUE.sql dans Supabase.
+2. Déployer FYBLIC_MEDIA_WORKER_V1068_STORY_BOUTIQUE_DURABLE.zip sur Railway.
+3. Déployer FYBLIC_SITE_V1068_STORY_BOUTIQUE_DURABLE.zip sur Netlify.
+
+GARANTIES
+- Publication normale, Story et Boutique utilisent /api/v2/publications.
+- Reprise par morceaux et compression serveur conservées.
+- Story est enregistrée uniquement dans happyad_stories.
+- Boutique conserve son RPC officiel, ses catégories et ses justificatifs privés.
+- L'ancien compresseur reste un secours si le pipeline durable est indisponible.
+- Live et albums photo multiples restent inchangés.
