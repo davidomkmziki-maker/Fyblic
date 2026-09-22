@@ -1,0 +1,10 @@
+FYBLIC SITE V1072 — PUBLICATION ET STORY
+
+- seulement deux étapes visibles : Envoi du média, puis Publication en cours ;
+- suppression des textes techniques Vidéo 1080p/720p/540p/360p ;
+- pourcentage affiché au centre du cercle Story ;
+- cercle Story rouge avec le mot Échec si la tâche échoue ;
+- état Échec conservé au lieu de disparaître après 1,4 seconde ;
+- cache PWA renouvelé pour charger immédiatement les correctifs V1072.
+
+Aucun nouveau SQL. Déployer le worker V1072 avant ce site.

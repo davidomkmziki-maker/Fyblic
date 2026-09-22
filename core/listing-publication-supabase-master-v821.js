@@ -11,7 +11,7 @@
   if(window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__)return;
   window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__=true;
 
-  var VERSION='V1071_STORY_BOUTIQUE_REPRISE';
+  var VERSION='V1072_FINALISATION_RESEAU';
   var PUBLIC_BUCKET='happyad-media';
   var PRIVATE_BUCKET='happyad-marketplace-private';
   var RPC='happyad_publish_listing_v1';
@@ -48,8 +48,9 @@
       .replace(/Enregistrement\s+Supabase/gi,'Enregistrement de la publication')
       .replace(/Supabase/gi,'Fyblic');
   }
+  function simpleProgressMessage(message){var raw=clean(message);if(/échec|echec|failed|erreur/i.test(raw))return 'Échec';if(/publiée|publiee|published|terminée|terminee/i.test(raw))return 'Publication terminée';if(/envoi|upload/i.test(raw))return 'Envoi du média';return 'Publication en cours';}
   function progress(payload,message){
-    message=publicMessage(message);
+    message=simpleProgressMessage(publicMessage(message));
     try{if(payload&&typeof payload.onProgress==='function')payload.onProgress(message);}catch(_e){}
     try{document.dispatchEvent(new CustomEvent('happyad:listing-publication-progress',{detail:{message:message,source:VERSION}}));}catch(_e){}
   }

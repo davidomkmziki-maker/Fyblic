@@ -6,7 +6,7 @@
   var JOBS_KEY='FYBLIC_PUBLICATION_JOBS_V2';
   var ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
   var REQUIRED_SCHEMA_VERSION=1071;
-  var REQUIRED_PROTOCOL_VERSION=1071;
+  var REQUIRED_PROTOCOL_VERSION=1072;
   var DIRECT_TUS_CHUNK=6*1024*1024;
   var healthCache={at:0,value:false,detail:null};
   var watchers={};
@@ -35,6 +35,8 @@
   }
   function readJobs(){try{var v=JSON.parse(localStorage.getItem(JOBS_KEY)||'[]');return Array.isArray(v)?v:[];}catch(_e){return [];}}
   function writeJobs(list){try{localStorage.setItem(JOBS_KEY,JSON.stringify((list||[]).slice(0,20)));}catch(_e){}}
+  function publicStage(job){var status=String(job&&job.status||'');if(status==='uploading')return 'Envoi du média';if(status==='failed')return 'Échec';if(status==='canceled')return 'Publication annulée';if(status==='published')return 'Publication terminée';return 'Publication en cours';}
+  function visibleJob(job){if(!job||typeof job!=='object')return job;var copy=Object.assign({},job);copy.stage=publicStage(copy);return copy;}
   function activeJob(){try{var value=JSON.parse(localStorage.getItem(ACTIVE_KEY)||'null');return value&&value.id?value:null;}catch(_e){return null;}}
   function activate(job,options){
     if(!job||!job.id)return;
@@ -46,7 +48,7 @@
   function event(job){
     if(!job)return;
     remember(job);
-    var detail={jobId:job.id,postId:job.post_id||job.postId||'',publicationType:job.publication_type||job.publicationType||'',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',error:publicError(job.error_message||''),result:job.result||null};
+    var detail={jobId:job.id,postId:job.post_id||job.postId||'',publicationType:job.publication_type||job.publicationType||'',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:publicStage(job),error:publicError(job.error_message||''),result:job.result||null};
     try{window.dispatchEvent(new CustomEvent('FYBLIC_PUBLICATION_PROGRESS_V2',{detail:detail}));}catch(_e){}
     try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:detail},'*');}catch(_e2){}
     if(detail.status==='failed'||detail.status==='canceled'){forget(job.id);clearActive(job.id);}
@@ -60,7 +62,7 @@
       healthCache={at:Date.now(),value:v,detail:p};return v;
     }catch(error){healthCache={at:Date.now(),value:false,detail:{schemaError:error&&error.message||'Service média indisponible'}};return false;}
   }
-  function readinessMessage(){var d=healthCache.detail||{},e=String(d.schemaError||'');if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1071|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1071 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1071 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
+  function readinessMessage(){var d=healthCache.detail||{},e=String(d.schemaError||'');if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1071|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1071 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1072 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
   function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':String(upload&&upload.tusVersion||'1.0.0'),apikey:String(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY||'')},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
   async function directFetch(url,options,timeoutMs){
     var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;
@@ -98,7 +100,7 @@
     return offset;
   }
   function fingerprint(file){return [file.name||'media',file.size||0,file.lastModified||0,file.type||''].join(':');}
-  async function status(id,token){return (await request('/api/v2/publications/'+id,{},token,30000)).body;}
+  async function status(id,token){return visibleJob((await request('/api/v2/publications/'+id,{},token,30000)).body);}
   async function watch(id,token,onProgress){
     if(watchers[id])return watchers[id];
     watchers[id]=(async function(){
@@ -117,9 +119,9 @@
     if(!file)throw new Error('Média absent');
     if(!(await available(true)))return {used:false,reason:'pipeline-v2-unavailable'};
     var a=await auth();
-    var created=(await request('/api/v2/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    var created=visibleJob((await request('/api/v2/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       filename:file.name||'media',size:file.size,mime:file.type||'application/octet-stream',kind:options.kind||'photo',publicationType:options.publicationType||'normal',postId:options.postId,payload:options.payload||{},fingerprint:fingerprint(file)
-    })},a.token,45000)).body;
+    })},a.token,45000)).body);
     activate(created,options);remember(created);event(created);
     if(typeof options.onCreated==='function')options.onCreated(created);
     if(created.primary_ready===true||created.status==='published'){return {used:true,job:created,completion:Promise.resolve(created)};}
@@ -128,7 +130,7 @@
       return {used:true,job:created,completion:existingCompletion};
     }
     await uploadDirect(file,created,a,options);
-    var queued=(await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},a.token,45000)).body;
+    var queued=visibleJob((await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},a.token,45000)).body);
     event(queued);if(options.onProgress)options.onProgress(queued);
     var completion=watch(created.id,a.token,options.onProgress).catch(function(error){event({id:created.id,post_id:options.postId,status:'failed',progress:45,stage:'Échec',error_message:error.message});throw error;});
     return {used:true,job:queued,completion:completion};
@@ -155,6 +157,6 @@
   }
   async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+id+'/cancel',{method:'POST'},a.token,30000)).body;event(job);return job;}
 
-  window.FyblicPublicationPipelineV2={version:'1071.0',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
+  window.FyblicPublicationPipelineV2={version:'1072.0',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

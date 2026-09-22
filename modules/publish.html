@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-pipeline-v2.js?v=1071-story-boutique-reprise"></script>
+<script src="../core/publication-pipeline-v2.js?v=1072-finalisation-reseau"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -730,9 +730,10 @@ button:disabled{filter:none;transform:none}
   }
   function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');try{localStorage.setItem(ACTIVE_PUBLICATION_KEY_V1067R1,JSON.stringify({id:activePublicationIdV1067R1,mode:String(mode||'publish'),at:Date.now()}));}catch(_e){}}
   function endPublicationV1067R1(){activePublicationIdV1067R1='';try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_e){}}
+  function simpleProgressMessage(text,value){var raw=String(text||'');if(/échec|echec|failed|erreur/i.test(raw))return 'Échec';if(/termin|publiée|publiee|published/i.test(raw))return 'Publication terminée';if(Number(value||0)<=45||/envoi|upload/i.test(raw))return 'Envoi du média';return 'Publication en cours';}
   function storyProgressV1067R1(status,text){
     if(state.mode!=='story'||!activePublicationIdV1067R1)return;
-    var detail={jobId:activePublicationIdV1067R1,postId:activePublicationIdV1067R1,publicationType:'story',status:String(status||'processing'),primaryReady:false,progress:progressValue,stage:publicPublishMessage(text||'Story en cours')};
+    var detail={jobId:activePublicationIdV1067R1,postId:activePublicationIdV1067R1,publicationType:'story',status:String(status||'processing'),primaryReady:false,progress:progressValue,stage:simpleProgressMessage(text,progressValue)};
     try{window.dispatchEvent(new CustomEvent('FYBLIC_PUBLICATION_PROGRESS_V2',{detail:detail}));}catch(_e){}
     try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:detail},'*');}catch(_e2){}
   }
@@ -743,7 +744,7 @@ button:disabled{filter:none;transform:none}
     if(box) box.classList.add("show");
     if(fill) fill.style.width=progressValue+"%";
     if(num) num.textContent=progressValue+"%";
-    if(label && text) label.textContent=publicPublishMessage(text);
+    if(label) label.textContent=simpleProgressMessage(text,progressValue);
     storyProgressV1067R1('processing',text);
   }
   function startProgress(text){
@@ -765,7 +766,7 @@ button:disabled{filter:none;transform:none}
   function failProgress(text){
     clearInterval(progressTimer);
     const label=$("progressText");
-    if(label) label.textContent=publicPublishMessage(text||"Échec publication");
+    if(label) label.textContent="Échec";
     storyProgressV1067R1('failed',text||'Échec Story');
     endPublicationV1067R1();
     try{clearHeavyPublicationCaches();localStorage.removeItem('FYBLIC_PUBLICATION_JOBS_V2');localStorage.removeItem('FYBLIC_PUBLICATION_MUTED_V1');}catch(_e){}
