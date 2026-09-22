@@ -1,0 +1,15 @@
+FYBLIC V1069 — GARDE DE SCHÉMA NORMAL / STORY / BOUTIQUE
+
+1. Exécuter d'abord FYBLIC_PUBLICATION_PIPELINE_V1069_SCHEMA_GUARD.sql dans Supabase.
+2. Déployer ensuite le worker V1069 sur Railway.
+3. Vérifier /health : pipelineV2.ready=true, schemaReady=true et schemaVersion=1069.
+4. Déployer le site V1069 seulement après cette vérification.
+
+Sécurité ajoutée :
+- le worker refuse une nouvelle publication si le SQL V1069 manque ;
+- Normal, Story et Boutique utilisent les finaliseurs V1069 ;
+- le site ne retombe plus silencieusement sur l'ancien pipeline ;
+- la migration est idempotente et peut être réexécutée.
+
+Cette version corrige uniquement le point 1. L'upload Base64 et la vitesse FFmpeg
+ne sont pas encore modifiés.

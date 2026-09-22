@@ -1,0 +1,10 @@
+FYBLIC V1071 — STORY ET BOUTIQUE SANS BLOCAGE
+
+- Story reste créée par le worker dans happyad_stories et expire après 24 heures.
+- Boutique attend des médias réellement publiés avant l'appel final de l'annonce.
+- Les tâches interrompues pendant optimizing sont maintenant reprises.
+- Un battement de vie empêche l'expiration pendant une compression longue.
+- Après trois interruptions, la tâche devient un échec propre et nettoyable.
+- L'upload TUS binaire direct de 6 Mio de V1070 est conservé.
+
+Ordre : SQL V1071, worker V1071, puis site V1071.

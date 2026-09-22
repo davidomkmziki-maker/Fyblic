@@ -11,7 +11,7 @@
   if(window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__)return;
   window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__=true;
 
-  var VERSION='V1068_BOUTIQUE_DURABLE_PIPELINE';
+  var VERSION='V1071_STORY_BOUTIQUE_REPRISE';
   var PUBLIC_BUCKET='happyad-media';
   var PRIVATE_BUCKET='happyad-marketplace-private';
   var RPC='happyad_publish_listing_v1';
@@ -267,13 +267,14 @@
   async function compressPublic(file,user,listingId,index,session,payload){
     var kind=publicMediaKind(file)||'image';
     var durable=window.FyblicPublicationPipelineV2;
-    if(durable&&typeof durable.available==='function'&&await durable.available(true)){
+    if(!durable||typeof durable.available!=='function')throw new Error('Système durable V1071 indisponible.');
+    if(await durable.available(true)){
       progress(payload,'Compression durable du média '+(index+1)+'…');
       var submitted=await durable.submit(file,{
         kind:kind==='video'?'video':'photo',
         publicationType:'boutique',
         postId:listingId+'_media_'+(index+1),
-        payload:{listingId:listingId,mediaIndex:index,source:'boutique-v1068'},
+        payload:{listingId:listingId,mediaIndex:index,source:'boutique-v1071'},
         onProgress:function(job){progress(payload,'Média '+(index+1)+' — '+String(job&&job.stage||'compression en cours'));}
       });
       if(!submitted||!submitted.used)throw new Error('Pipeline durable Boutique indisponible');
@@ -283,18 +284,7 @@
       if(!ready.primary||!ready.primary.url||!ready.primary.path)throw new Error('Qualité principale Boutique indisponible');
       return {prepared:{__fyblicPrepared:true,kind:kind==='video'?'video':'photo',primary:ready.primary,poster:ready.poster||null,variants:outputs.filter(function(x){return x&&x.path&&x.path!==ready.primary.path&&(!ready.poster||x.path!==ready.poster.path);}),job:finalJob},compressed:true,original:file,durable:true};
     }
-    var engine=window.FyblicMediaCompressionV1;
-    if(!engine||!engine.enabled||!engine.enabled())return {file:file,compressed:false};
-    progress(payload,'Compression du média '+(index+1)+'…');
-    var result=await engine.compress(file,{
-      kind:kind==='video'?'video':'photo',
-      accessToken:session&&session.access_token,
-      userId:user&&user.id,
-      postId:listingId+'_media_'+(index+1),
-      onProgress:function(update){progress(payload,'Média '+(index+1)+' — '+String(update&&update.text||'compression en cours'));}
-    });
-    if(result&&result.prepared)return {prepared:result.prepared,compressed:true,original:file};
-    return {file:result&&result.file||file,compressed:!!(result&&result.compressed),original:file};
+    throw new Error(typeof durable.readinessMessage==='function'?durable.readinessMessage():'Mise à jour SQL V1071 requise avant de publier.');
   }
   async function uploadPublic(c,user,listingId,source,index,payload){
     if(source&&source.prepared){

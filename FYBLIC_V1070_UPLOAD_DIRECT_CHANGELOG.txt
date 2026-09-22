@@ -1,0 +1,11 @@
+FYBLIC V1070 — UPLOAD TUS BINAIRE DIRECT
+
+- suppression du Base64/JSON dans le pipeline durable ;
+- morceaux binaires reprenables de 6 Mio ;
+- trajet téléphone vers Supabase direct ;
+- Railway conserve la création, l'authentification et le contrôle de la tâche ;
+- reprise sur l'offset TUS réel après coupure réseau ;
+- renouvellement de la session utilisateur sur erreur 401/403 ;
+- verrouillage du site tant que le worker V1070 n'est pas actif.
+
+Pré-requis : SQL V1069 déjà installé et worker V1070 déployé avant ce site.

@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-pipeline-v2.js?v=1068-story-boutique-durable"></script>
+<script src="../core/publication-pipeline-v2.js?v=1071-story-boutique-reprise"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -1857,24 +1857,6 @@ return {source:'story',id:storyId};
     return localPost;
   }
 
-  /* V1047 — La sélection et l'aperçu restent 100 % Fyblic. La compression ne
-     commence qu'après le clic Publier. Une URL vide garde la base actuelle
-     intacte jusqu'au déploiement du worker FFmpeg. */
-  async function compressAfterPublishClickV1047(file,kind,auth,postId){
-    var engine=window.FyblicMediaCompressionV1;
-    if(!engine||!engine.enabled||!engine.enabled())return file;
-    setProgress(2,'Préparation du média');
-    var result=await engine.compress(file,{
-      kind:kind,
-      accessToken:auth&&auth.session&&auth.session.access_token,
-      userId:auth&&auth.user&&auth.user.id,
-      postId:postId,
-      onProgress:function(update){setProgress(update.percent||progressValue,update.text||'Compression du média');}
-    });
-    return result&&result.prepared?result.prepared:(result&&result.file?result.file:file);
-  }
-
-
   function parsePositiveAmount(v){
     const raw=String(v||'').replace(/\s/g,'').replace(/,/g,'.');
     const n=Number((raw.match(/[0-9.]+/)||['0'])[0])||0;
@@ -2101,11 +2083,12 @@ return {source:'story',id:storyId};
         createdAt:Date.now()
       };
       localPost.imageCrop=Object.assign({},state.crop||{v:2,scale:1,x:50,y:50}); if(state.kind==='video')localPost.videoFrameTime=Number(state.videoFrame==null?0:state.videoFrame);
-      /* V1068 — chemin durable définitif pour publication normale ou Story
+      /* V1071 — chemin durable vérifié pour publication normale ou Story
          à média unique. La Story reste exclusivement dans happyad_stories. */
       if((state.mode==='publish'||state.mode==='story') && !(state.mode==='publish'&&state.kind==='photo'&&state.files&&state.files.length>1)){
         var durable=window.FyblicPublicationPipelineV2;
-        if(durable&&typeof durable.available==='function'&&await durable.available(true)){
+        if(!durable||typeof durable.available!=='function')throw new Error('Système durable V1071 indisponible.');
+        if(await durable.available(true)){
           var returnedHome=returnedHomeForStoryV1067R1;
           var backgroundTask=durable.submit(state.file,{
             kind:state.kind,
@@ -2131,7 +2114,7 @@ return {source:'story',id:storyId};
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
             if(state.mode==='story')safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');
             endPublicationV1067R1();
-            try{resetPublishComposer('pipeline-v2-completed-v1068');}catch(_reset){}
+            try{resetPublishComposer('pipeline-v2-completed-v1071');}catch(_reset){}
           }).catch(function(error){
             console.error('Fyblic pipeline V2',error);
             try{if(window.FyblicPublicationPipelineV2&&typeof window.FyblicPublicationPipelineV2.forget==='function'&&window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1)window.FyblicPublicationPipelineV2.forget(window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1);}catch(_forget){}
@@ -2142,6 +2125,7 @@ return {source:'story',id:storyId};
           });
           return;
         }
+        throw new Error(typeof durable.readinessMessage==='function'?durable.readinessMessage():'Mise à jour SQL V1071 requise avant de publier.');
       }
       if(state.kind==='photo' && state.mode==='publish' && state.files && state.files.length>1){
         const groupFiles=state.files.slice(0,18);
@@ -2155,8 +2139,22 @@ return {source:'story',id:storyId};
             var groupClient=happySb();
             if(!groupClient){try{groupClient=await window.happyadEnsureSupabaseV936(15000);}catch(_groupSdk){}}
             var groupAuth=groupClient?await getFreshAuth(groupClient):null;
-            var groupedUploadFile=await compressAfterPublishClickV1047(groupFiles[i],'photo',groupAuth,pid);
-            groupedPost=await savePostToSupabase(groupedPost,groupedUploadFile);
+            var groupDurable=window.FyblicPublicationPipelineV2;
+            if(!groupClient||!groupAuth||!groupAuth.user)throw new Error('Session Fyblic indisponible');
+            if(!groupDurable||typeof groupDurable.available!=='function'||!(await groupDurable.available(true)))throw new Error(groupDurable&&typeof groupDurable.readinessMessage==='function'?groupDurable.readinessMessage():'Worker V1071 indisponible');
+            var groupSubmitted=await groupDurable.submit(groupFiles[i],{
+              kind:'photo',publicationType:'normal',postId:pid,payload:groupedPost,
+              onProgress:function(job){var part=Math.max(0,Math.min(100,Number(job&&job.progress||0)));setProgress(10+Math.round(((i+part/100)/groupFiles.length)*78),'Publication photo '+(i+1)+'/'+groupFiles.length+' · '+String(job&&job.stage||'en cours'));}
+            });
+            if(!groupSubmitted||!groupSubmitted.used)throw new Error('Pipeline direct V1071 indisponible');
+            var groupFinal=await groupSubmitted.completion;
+            if(!groupFinal||groupFinal.status!=='published')throw new Error(groupFinal&&groupFinal.error_message||'Publication photo incomplète');
+            var groupResult=groupFinal.result||{},groupPrimary=groupResult.primary||{},groupPoster=groupResult.poster||{};
+            if(!groupPrimary.url)throw new Error('Média principal de la photo indisponible');
+            var groupPatch={batch_id:batchId,group_index:i,photo_index:i};
+            var groupSaved=await withTimeout(groupClient.from('happyad_posts').update(groupPatch).eq('id',pid).eq('user_id',groupAuth.user.id).select('*').maybeSingle(),20000,'Finalisation album');
+            if(groupSaved&&groupSaved.error)throw groupSaved.error;
+            groupedPost=Object.assign({},groupedPost,groupSaved&&groupSaved.data||{}, {mediaUrl:groupPrimary.url,media_url:groupPrimary.url,mediaPath:groupPrimary.path||'',media_path:groupPrimary.path||'',thumbnailUrl:groupPoster.url||'',thumbnail_url:groupPoster.url||'',posterUrl:groupPoster.url||'',poster_url:groupPoster.url||'',creatorId:groupAuth.user.id,user_id:groupAuth.user.id,supabase:true});
           }
           catch(remoteErr){ console.error(remoteErr); toast('Photo '+(i+1)+' non enregistrée : '+(remoteErr.message||remoteErr.error_description||'SQL colonnes/RLS')); throw remoteErr; }
           rememberPublishedCrop(groupedPost);
@@ -2230,14 +2228,9 @@ return {source:'story',id:storyId};
       }
       try{
         var uploadFile=state.file;
-        /* V1066 : la Story utilise aussi le compresseur. Elle conserve ensuite
-           sa destination unique happyad_stories; aucun post normal n'est créé. */
-        if(state.mode==='publish'||state.mode==='story'){
-          var publishClient=happySb();
-          if(!publishClient){try{publishClient=await window.happyadEnsureSupabaseV936(15000);}catch(_publishSdk){}}
-          var publishAuth=publishClient?await getFreshAuth(publishClient):null;
-          uploadFile=await compressAfterPublishClickV1047(state.file,state.kind,publishAuth,id);
-        }
+        /* Normal et Story doivent avoir quitté cette fonction via le pipeline
+           direct V1071. Aucun retour silencieux vers l'ancien Base64 n'est permis. */
+        if(state.mode==='publish'||state.mode==='story')throw new Error('Chemin direct V1071 interrompu avant la remise au worker');
         localPost=await savePostToSupabase(localPost,uploadFile);
       }
       catch(remoteErr){ console.error(remoteErr); toast("Publication non enregistrée : "+(remoteErr.message||remoteErr.error_description||"SQL colonnes/RLS")); throw remoteErr; }

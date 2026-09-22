@@ -5,12 +5,13 @@
   var BASE=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app').replace(/\/+$/,'');
   var JOBS_KEY='FYBLIC_PUBLICATION_JOBS_V2';
   var ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
-  var CHUNK_SAFE=512*1024,CHUNK_FAST=1024*1024;
-  var healthCache={at:0,value:false};
+  var REQUIRED_SCHEMA_VERSION=1071;
+  var REQUIRED_PROTOCOL_VERSION=1071;
+  var DIRECT_TUS_CHUNK=6*1024*1024;
+  var healthCache={at:0,value:false,detail:null};
   var watchers={};
 
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
-  function chunkBytes(){var c=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};if(c.saveData||/^(slow-2g|2g|3g)$/i.test(String(c.effectiveType||'')))return CHUNK_SAFE;return CHUNK_FAST;}
   function publicError(value){
     var m=String(value||'').trim();
     if(!m)return 'Publication impossible. Réessaie.';
@@ -53,12 +54,48 @@
   }
   async function available(force){
     if(!force&&Date.now()-healthCache.at<30000)return healthCache.value;
-    try{var r=await request('/health',{},'',10000),v=!!(r.body&&r.body.ok&&r.body.pipelineV2&&r.body.pipelineV2.enabled);healthCache={at:Date.now(),value:v};return v;}catch(_e){healthCache={at:Date.now(),value:false};return false;}
+    try{
+      var r=await request('/health',{},'',10000),p=r.body&&r.body.pipelineV2||{};
+      var v=!!(r.body&&r.body.ok&&p.enabled&&p.ready&&p.schemaReady&&Number(p.schemaVersion||0)>=REQUIRED_SCHEMA_VERSION&&Number(p.protocolVersion||0)>=REQUIRED_PROTOCOL_VERSION&&p.uploadMode==='direct-tus-binary'&&p.capabilities&&p.capabilities.normal===true&&p.capabilities.story===true&&p.capabilities.boutique===true);
+      healthCache={at:Date.now(),value:v,detail:p};return v;
+    }catch(error){healthCache={at:Date.now(),value:false,detail:{schemaError:error&&error.message||'Service média indisponible'}};return false;}
   }
-  async function chunkBase64(blob){
-    var bytes=new Uint8Array(await blob.arrayBuffer()),parts=[],step=32768;
-    for(var i=0;i<bytes.length;i+=step)parts.push(String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+step,bytes.length))));
-    return btoa(parts.join(''));
+  function readinessMessage(){var d=healthCache.detail||{},e=String(d.schemaError||'');if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1071|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1071 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1071 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
+  function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':String(upload&&upload.tusVersion||'1.0.0'),apikey:String(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY||'')},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
+  async function directFetch(url,options,timeoutMs){
+    var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;
+    options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}
+    try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}
+  }
+  async function tusOffset(upload,token){
+    var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000);
+    if(!response.ok){var error=new Error('Reprise directe refusée ('+response.status+')');error.status=response.status;throw error;}
+    var offset=Number(response.headers.get('Upload-Offset'));
+    if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');
+    return offset;
+  }
+  async function uploadDirect(file,created,currentAuth,options){
+    var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(String(upload.url||'')))throw new Error('Session d’envoi direct V1070 absente');
+    var token=currentAuth.token,offset=await tusOffset(upload,token),retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);
+    if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
+    while(offset<file.size){
+      var end=Math.min(offset+chunkBytes,file.size),blob=file.slice(offset,end);
+      try{
+        var response=await directFetch(upload.url,{method:'PATCH',headers:directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'}),body:blob},600000);
+        if(!response.ok){var rejected=new Error('Envoi direct refusé ('+response.status+')');rejected.status=response.status;throw rejected;}
+        var next=Number(response.headers.get('Upload-Offset'));
+        if(!Number.isSafeInteger(next)||next<=offset||next>end)throw new Error('Confirmation directe incohérente');
+        offset=next;retries=0;
+        var uploadState=Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/file.size*44))),stage:'Envoi direct du média'});event(uploadState);if(options.onProgress)options.onProgress(uploadState);
+      }catch(error){
+        retries++;
+        if(retries>12)throw new Error('Envoi direct interrompu après 12 reprises automatiques');
+        if(error&&(error.status===401||error.status===403)){try{currentAuth=await auth();token=currentAuth.token;}catch(_authError){}}
+        try{offset=await tusOffset(upload,token);}catch(_offsetError){}
+        await sleep(Math.min(10000,retries*900));
+      }
+    }
+    return offset;
   }
   function fingerprint(file){return [file.name||'media',file.size||0,file.lastModified||0,file.type||''].join(':');}
   async function status(id,token){return (await request('/api/v2/publications/'+id,{},token,30000)).body;}
@@ -86,21 +123,11 @@
     activate(created,options);remember(created);event(created);
     if(typeof options.onCreated==='function')options.onCreated(created);
     if(created.primary_ready===true||created.status==='published'){return {used:true,job:created,completion:Promise.resolve(created)};}
-    var offset=Number(created.uploaded_bytes||0),retries=0;
-    while(offset<file.size){
-      var end=Math.min(offset+chunkBytes(),file.size),blob=file.slice(offset,end),data=await chunkBase64(blob);
-      try{
-        var sent=await request('/api/v2/publications/'+created.id+'/chunks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({offset:offset,data:data})},a.token,60000);
-        offset=Number(sent.response.headers.get('Upload-Offset')||end);retries=0;
-        var uploadState=Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/file.size*44))),stage:'Envoi sécurisé du média'});event(uploadState);if(options.onProgress)options.onProgress(uploadState);
-      }catch(error){
-        retries++;
-        if(error.status===409&&error.response){offset=Number(error.response.headers.get('Upload-Offset')||offset);continue;}
-        if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
-        try{var fresh=await status(created.id,a.token);offset=Number(fresh.uploaded_bytes||offset);event(fresh);}catch(_statusError){}
-        await sleep(Math.min(8000,retries*800));
-      }
+    if(created.status!=='uploading'){
+      var existingCompletion=watch(created.id,a.token,options.onProgress).catch(function(error){event({id:created.id,post_id:options.postId,status:'failed',progress:Number(created.progress||45),stage:'Échec',error_message:error.message});throw error;});
+      return {used:true,job:created,completion:existingCompletion};
     }
+    await uploadDirect(file,created,a,options);
     var queued=(await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},a.token,45000)).body;
     event(queued);if(options.onProgress)options.onProgress(queued);
     var completion=watch(created.id,a.token,options.onProgress).catch(function(error){event({id:created.id,post_id:options.postId,status:'failed',progress:45,stage:'Échec',error_message:error.message});throw error;});
@@ -128,6 +155,6 @@
   }
   async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+id+'/cancel',{method:'POST'},a.token,30000)).body;event(job);return job;}
 
-  window.FyblicPublicationPipelineV2={version:'1068.0',available:available,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
+  window.FyblicPublicationPipelineV2={version:'1071.0',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();
