@@ -646,23 +646,29 @@ function happyadVideoNormalizeVariantsV1087(value){
   }
   return out;
 }
-function happyadVideoConnectionWants1080V1087(){
+/* V1088 — 1080p est la qualité normale. La baisse est locale à cet utilisateur
+   et n'arrive que lorsque son débit est réellement faible. */
+function happyadVideoDesiredQualityV1088(){
   try{
     const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
     const effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
-    if(connection.saveData||effective==='slow-2g'||effective==='2g'||effective==='3g'||(down>0&&down<3))return false;
-    return effective==='4g'||down>=6;
-  }catch(_e){return false;}
+    if(down>0){
+      if(down<0.45)return '360p';
+      if(down<1.15)return '540p';
+      if(down<2.60)return '720p';
+      return '1080p';
+    }
+    if(effective==='slow-2g')return '360p';
+    if(effective==='2g')return '540p';
+    if(effective==='3g')return '720p';
+    return '1080p';
+  }catch(_e){return '1080p';}
 }
+function happyadVideoConnectionWants1080V1087(){return happyadVideoDesiredQualityV1088()==='1080p';}
 function happyadVideoAdaptiveSrcV1087(variants,fallback){
   variants=happyadVideoNormalizeVariantsV1087(variants);
   if(!Object.keys(variants).length)return fallback;
-  const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
-  const effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
-  let wanted='720p';
-  if(connection.saveData||effective==='2g'||effective==='slow-2g')wanted='360p';
-  else if(effective==='3g'||(down>0&&down<3))wanted='540p';
-  else if(effective==='4g'||down>=6)wanted='1080p';
+  const wanted=happyadVideoDesiredQualityV1088();
   const order=wanted==='1080p'?['1080p','720p','540p','360p']:wanted==='720p'?['720p','540p','360p','1080p']:wanted==='540p'?['540p','360p','720p','1080p']:['360p','540p','720p','1080p'];
   for(const quality of order){if(variants[quality])return happyadVideoNormalizeMediaSrc(variants[quality]);}
   return fallback;
@@ -815,25 +821,54 @@ function happyadVideoApplyPendingUpgradeV1087(reel,v){
     return true;
   }catch(_e){return false;}
 }
+function happyadVideoQualityFromUrlV1088(src){
+  src=String(src||'');
+  if(/(?:^|[-_/])1080p(?:[._/?-]|$)/i.test(src))return '1080p';
+  if(/(?:^|[-_/])720p(?:[._/?-]|$)/i.test(src))return '720p';
+  if(/(?:^|[-_/])540p(?:[._/?-]|$)/i.test(src))return '540p';
+  if(/(?:^|[-_/])360p(?:[._/?-]|$)/i.test(src))return '360p';
+  return '';
+}
 function happyadVideoScheduleAuto1080V1087(reel,p){
   try{
-    if(!reel||!p||!happyadVideoConnectionWants1080V1087())return;
-    const current=happyadVideoPostMediaUrl(p);
-    if(/(?:^|[-_/])1080p(?:[._/?-]|$)/i.test(String(current||'')))return;
+    if(!reel||!p)return;
     if(Array.isArray(reel.__happyad1080Timers))reel.__happyad1080Timers.forEach(clearTimeout);
     reel.__happyad1080Timers=[];
-    [2600,7600,16000].forEach(function(delay){
+    /* V1088 — vérifications courtes puis espacées : le 720p visible monte vite vers
+       1080p dès qu'il devient prêt, sans rechargement du module. */
+    [1800,4500,9000,18000,36000].forEach(function(delay){
       reel.__happyad1080Timers.push(setTimeout(function(){
         try{
-          if(!reel.isConnected||!happyadVideoConnectionWants1080V1087())return;
+          if(!reel.isConnected)return;
+          const wanted=happyadVideoDesiredQualityV1088();
           const v=reel.querySelector('video');
-          if(v&&/(?:^|[-_/])1080p(?:[._/?-]|$)/i.test(String(v.dataset.src||v.src||'')))return;
+          const currentQuality=happyadVideoQualityFromUrlV1088(v&&(v.dataset.src||v.src)||happyadVideoPostMediaUrl(reel.__happyadPost||p));
+          if(currentQuality===wanted)return;
           happyadVideoUpgradeReelMediaAsync(reel,reel.__happyadPost||p);
         }catch(_e){}
       },delay));
     });
   }catch(_e){}
 }
+var happyadVideoAdaptiveNetworkBoundV1088=false;
+function happyadVideoRecheckAdaptiveNetworkV1088(){
+  try{
+    document.querySelectorAll('.reel').forEach(function(reel){
+      var p=reel.__happyadPost;
+      if(p)happyadVideoUpgradeReelMediaAsync(reel,p);
+    });
+  }catch(_e){}
+}
+function happyadVideoBindAdaptiveNetworkV1088(){
+  if(happyadVideoAdaptiveNetworkBoundV1088)return;
+  happyadVideoAdaptiveNetworkBoundV1088=true;
+  try{
+    const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(connection&&typeof connection.addEventListener==='function')connection.addEventListener('change',function(){setTimeout(happyadVideoRecheckAdaptiveNetworkV1088,100);});
+    window.addEventListener('online',function(){setTimeout(happyadVideoRecheckAdaptiveNetworkV1088,80);});
+  }catch(_e){}
+}
+happyadVideoBindAdaptiveNetworkV1088();
 function happyadVideoPatchPostEverywhere(fresh){
   try{
     if(!fresh||!fresh.id)return fresh;

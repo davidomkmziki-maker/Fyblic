@@ -1,0 +1,18 @@
+FYBLIC V1088 — QUALITÉ ADAPTATIVE 1080 PRIORITAIRE
+
+Base V1087 conservée. Aucun changement publication/worker/SQL.
+
+Politique par utilisateur :
+- débit >= 2.60 Mb/s ou réseau moderne sans mesure : 1080p prioritaire s'il existe ;
+- débit 1.15–2.59 Mb/s ou 3G sans mesure : 720p ;
+- débit 0.45–1.14 Mb/s ou 2G sans mesure : 540p ;
+- débit < 0.45 Mb/s ou slow-2g : 360p.
+
+Principes :
+- saveData ne force plus seul une qualité basse ; la connexion effective prime ;
+- changement de connexion => réévaluation locale sans rechargement de la page ;
+- Centrale vidéo recontrôle rapidement la qualité disponible à 1.8s, 4.5s, 9s, 18s, 36s ;
+- une vidéo active n'est pas coupée brutalement : changement mis en attente jusqu'au point sûr déjà prévu ;
+- Accueil réévalue la source via refresh interne lorsque la connexion change.
+
+Normal, Story TUS, Boutique, miniatures, compression et formats 1080/720/540/360 inchangés.

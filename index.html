@@ -1641,14 +1641,14 @@ html.happyadSharedDirectBootV713 body::after{content:"";position:fixed;left:50%;
 <script src="core/comment-mention-master-v994.js?v=996-primary-name-visible"></script>
 <script src="core/follow-master-v855r34.js?v=986-professional-icons-love"></script>
 <script src="core/home-feed-repository-v1.js?v=2-batch-complete"></script>
-<script src="core/home-feed-master-v1.js?v=1087-auto-1080"></script>
+<script src="core/home-feed-master-v1.js?v=1088-adaptive-1080-priority"></script>
 <script src="core/home-media-loader-v1.js?v=982-grouped-photo-badge"></script>
 <script src="core/like-direct-master-v876.js?v=995-like-network-stable"></script>
 <script src="core/home-actions-master-v1.js?v=1002-view-play-professional"></script>
 <script src="core/home-card-renderer-v1.js?v=1002-view-play-professional"></script>
 <script src="core/home-card-story-ring-master-v992.js?v=992-home-story-ring-exact"></script>
 <script src="core/home-feed-view-v1.js?v=929-prepaint-anchor"></script>
-<script src="core/home-feed-boot-v1.js?v=1087-auto-1080"></script>
+<script src="core/home-feed-boot-v1.js?v=1088-adaptive-1080-priority"></script>
 <script>
 let ALL_POSTS=[],HAPPYAD_STORIES_ITEMS=[],currentFilter='all',happyadPostsLoading=true;
 /* HOME FEED V1 — toutes les mutations structurelles passent par le maître unique. */
@@ -8644,7 +8644,7 @@ html body #happyadSmartSearchV427 .haDiscoveryPostTitleV1014.haDiscoveryIdentity
       if(window.__HAPPYAD_PWA_DISABLED__)return;
       if(!('serviceWorker' in navigator))return;
       if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;
-      navigator.serviceWorker.register('./service-worker.js?v=v1087-auto-1080-20260923',{scope:'./',updateViaCache:'none'}).then(function(reg){
+      navigator.serviceWorker.register('./service-worker.js?v=v1088-adaptive-1080-priority-20260923',{scope:'./',updateViaCache:'none'}).then(function(reg){
         try{
           if(reg.active)reg.active.postMessage({type:'HAPPYAD_CLEAR_OLD_CACHES'});
           if(reg.waiting)reg.waiting.postMessage({type:'HAPPYAD_SKIP_WAITING'});

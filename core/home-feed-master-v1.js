@@ -137,16 +137,30 @@
     }
     return out;
   }
+  /* V1088 — qualité adaptative par utilisateur, 1080p prioritaire.
+     On descend uniquement lorsque le débit estimé est réellement faible.
+     L'option saveData ne force plus à elle seule une basse qualité : la connexion réelle prime. */
+  function adaptiveWantedQualityV1088(){
+    try{
+      var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
+      var effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
+      if(down>0){
+        if(down<0.45)return '360p';
+        if(down<1.15)return '540p';
+        if(down<2.60)return '720p';
+        return '1080p';
+      }
+      if(effective==='slow-2g')return '360p';
+      if(effective==='2g')return '540p';
+      if(effective==='3g')return '720p';
+      return '1080p';
+    }catch(_e){return '1080p';}
+  }
   function adaptiveMedia(r,fallback,extraVariants){
     var crop=r&&((r.image_crop&&typeof r.image_crop==='object')?r.image_crop:r.imageCrop)||{};
     var variants=Object.assign({},normalizeAdaptiveVariantsV1087(crop&&crop.adaptive&&crop.adaptive.variants),normalizeAdaptiveVariantsV1087(extraVariants));
     if(!Object.keys(variants).length)return fallback;
-    var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
-    var effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0),wanted='720p';
-    if(connection.saveData||effective==='slow-2g'||effective==='2g')wanted='360p';
-    else if(effective==='3g'||(down>0&&down<3))wanted='540p';
-    else if(effective==='4g'||down>=6)wanted='1080p';
-    else wanted='720p';
+    var wanted=adaptiveWantedQualityV1088();
     var order=wanted==='1080p'?['1080p','720p','540p','360p']:wanted==='720p'?['720p','540p','360p','1080p']:wanted==='540p'?['540p','360p','720p','1080p']:['360p','540p','720p','1080p'];
     for(var i=0;i<order.length;i++)if(variants[order[i]])return publicMediaUrl(variants[order[i]]);
     return fallback;

@@ -320,6 +320,15 @@
       if(d.primaryReady===true&&(status==='optimizing'||status==='published'||progress>=88))scheduleRefresh('quality-upgrade-v1087',650);
     });}catch(_qualityEvent){}
     try{window.addEventListener('happyad:marketplace-quality-upgraded',function(){scheduleRefresh('marketplace-quality-v1087',180);});}catch(_marketQuality){}
+    /* V1088 — chaque appareil réévalue sa propre qualité lorsque sa connexion change.
+       Il s'agit d'un refresh interne du feed, jamais d'un rechargement de la page. */
+    try{
+      var adaptiveConnectionV1088=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+      if(adaptiveConnectionV1088&&typeof adaptiveConnectionV1088.addEventListener==='function'){
+        adaptiveConnectionV1088.addEventListener('change',function(){scheduleRefresh('adaptive-network-v1088',120);});
+      }
+      window.addEventListener('online',function(){scheduleRefresh('adaptive-online-v1088',80);});
+    }catch(_adaptiveNetworkV1088){}
     try{window.addEventListener('happyad:post-deleted',function(e){
       var id=e&&e.detail&&e.detail.id;Promise.resolve(waitIdle()).then(function(){if(id){bcall('removePost',id);saveFastCache(posts());bcall('render');}setTimeout(function(){refresh('post-deleted');},80);});
     });}catch(_e){}

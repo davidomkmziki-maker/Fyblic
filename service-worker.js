@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1087-auto-1080-20260923';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1088-adaptive-1080-priority-20260923';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -42,7 +42,7 @@ var HAPPYAD_APP_SHELL = [
   './core/chat-integration-master-v795.js?v=1085-boutique-validation-visible',
   './core/marketplace-home-master-v828.js?v=991-market-three-line-description',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
-  './core/home-feed-master-v1.js?v=1087-auto-1080',
+  './core/home-feed-master-v1.js?v=1088-adaptive-1080-priority',
   './core/home-media-loader-v1.js?v=982-grouped-photo-badge',
   './core/like-direct-master-v876.js?v=995-like-network-stable',
   './core/home-actions-master-v1.js?v=1002-view-play-professional',
@@ -61,7 +61,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-card-renderer-v1.js?v=1002-view-play-professional',
   './core/home-card-story-ring-master-v992.js?v=992-home-story-ring-exact',
   './core/home-feed-view-v1.js?v=929-prepaint-anchor',
-  './core/home-feed-boot-v1.js?v=1087-auto-1080',
+  './core/home-feed-boot-v1.js?v=1088-adaptive-1080-priority',
   './core/master-registry.js?v=974-p1-module-lifecycle-registry',
   './core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry',
   './modules/happyad-chat.html?v=1085-boutique-validation-visible',
@@ -69,7 +69,7 @@ var HAPPYAD_APP_SHELL = [
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
   './modules/assistance.html?v=974-p1-module-lifecycle-registry',
-  './modules/video.html?v=1087-auto-1080',
+  './modules/video.html?v=1088-adaptive-1080-priority',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
   './modules/publish.html?v=1072-finalisation-reseau',
