@@ -11,7 +11,7 @@
   if(window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__)return;
   window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__=true;
 
-  var VERSION='V1081_FAST_PRIMARY';
+  var VERSION='V1084_BOUTIQUE_PATH_PROGRESS';
   var PUBLIC_BUCKET='happyad-media';
   var PRIVATE_BUCKET='happyad-marketplace-private';
   var RPC='happyad_publish_listing_v1';
@@ -48,7 +48,7 @@
       .replace(/Enregistrement\s+Supabase/gi,'Enregistrement de la publication')
       .replace(/Supabase/gi,'Fyblic');
   }
-  function simpleProgressMessage(message){var raw=clean(message);if(/échec|echec|failed|erreur/i.test(raw))return 'Échec';if(/publiée|publiee|published|terminée|terminee/i.test(raw))return 'Publication terminée';if(/envoi|upload/i.test(raw))return 'Envoi du média';return 'Publication en cours';}
+  function simpleProgressMessage(message){var raw=clean(message),m=raw.match(/(\d{1,3})\s*%/),pct=m?' · '+Math.max(0,Math.min(100,Number(m[1])||0))+'%':'';if(/échec|echec|failed|erreur/i.test(raw))return 'Échec';if(/publiée|publiee|published|terminée|terminee/i.test(raw))return 'Publication terminée';if(/envoi|upload/i.test(raw))return 'Envoi du média'+pct;return 'Publication en cours'+pct;}
   function progress(payload,message){
     message=simpleProgressMessage(publicMessage(message));
     try{if(payload&&typeof payload.onProgress==='function')payload.onProgress(message);}catch(_e){}
@@ -115,6 +115,7 @@
     if(message.indexOf('HAPPYAD_V801_VERIFICATION_REQUIRED')>=0)return 'Le système de vérification vendeur V801 doit être installé.';
     if(message.indexOf('HAPPYAD_POSTS_TABLE_REQUIRED')>=0)return 'La centrale happyad_posts est introuvable.';
     if(message.indexOf('CATEGORY_INVALID')>=0)return 'Choisis une catégorie valide pour l’annonce.';
+    if(message.indexOf('MEDIA_PATH_INVALID')>=0||message.indexOf('MEDIA_ITEM_PATH_INVALID')>=0)return 'Le média Boutique final n’a pas été rangé correctement. Réessaie avec la nouvelle version.';
     if(message.indexOf('MEDIA_UPLOAD_MISSING')>=0)return 'Un média public n’a pas été chargé correctement. Réessaie.';
     if(message.indexOf('PRIVATE_UPLOAD_MISSING')>=0)return 'Un justificatif privé n’a pas été chargé correctement. Réessaie.';
     if(message.indexOf('MEDIA_COUNT_INVALID')>=0)return 'Le nombre d’images ou vidéos ne respecte pas la catégorie.';
@@ -414,8 +415,8 @@
       var mediaBatch=await engine.submitMany(parsed.files,{
         publicationType:'boutique',groupId:listingId,postId:listingId,uploadConcurrency:2,
         postIdForAsset:function(index){return listingId+'_media_'+(index+1);},
-        payloadForAsset:function(index){return {listingId:listingId,mediaIndex:index,source:'boutique-v1081'};},
-        onProgress:function(detail){progress(payload,detail&&detail.primaryReady?'Publication en cours':(detail&&detail.stage||'Publication en cours'));}
+        payloadForAsset:function(index){return {listingId:listingId,mediaIndex:index,source:'boutique-v1084'};},
+        onProgress:function(detail){var pct=Math.max(0,Math.min(100,Number(detail&&detail.progress||0)));var label=detail&&detail.primaryReady?'Publication en cours':(detail&&detail.stage||'Publication en cours');progress(payload,label+(pct?' · '+pct+'%':''));}
       });
       if(!mediaBatch||!mediaBatch.used)throw new Error('Moteur Boutique V1082 indisponible');
       if(mediaBatch.completion&&typeof mediaBatch.completion.catch==='function'){

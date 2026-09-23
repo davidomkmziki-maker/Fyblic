@@ -1,0 +1,8 @@
+FYBLIC V1084 — CORRECTION BOUTIQUE CIBLÉE
+
+Base conservée : Site V1083.
+- Publication normale : logique inchangée.
+- Story TUS Anchor V1083 : logique inchangée.
+- Boutique : le bouton affiche maintenant la progression agrégée réelle en %.
+- Boutique : le moteur commun V1082 reste utilisé ; aucun deuxième système d’upload n’est ajouté.
+- Aucun SQL nouveau.
