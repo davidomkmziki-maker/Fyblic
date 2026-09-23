@@ -134,18 +134,30 @@
     var marketplace=bool(r.happyad_marketplace)||bool(r.is_marketplace)||mode.toLowerCase()==='marketplace';
     var details=(r.marketplace_details&&typeof r.marketplace_details==='object')?r.marketplace_details:{};
     var showMarketplace=bool(r.marketplace_show_on_home)||bool(r.showOnHome)||bool(details.show_on_home);
-    var mediaType=clean(r.marketplace_cover_type||r.media_type||r.home_media_type||r.kind||r.mediaType||'photo').toLowerCase()||'photo';
-    var rawMedia=r.marketplace_cover_url||r.media_url||r.mediaUrl||r.home_media_url||r.homeMediaUrl||r.video_url||r.videoUrl||r.url||r.src||r.thumbnail_url||r.cover_url||r.media_path||r.mediaPath||'';
+    /* V1086 — Boutique possède déjà le poster dans marketplace_media.
+       Le RPC historique ne le recopie pas toujours dans thumbnail_url/poster_url.
+       L'Accueil doit donc lire la couverture choisie directement dans marketplace_media,
+       uniquement pour les annonces Marketplace, sans modifier Normal/Story. */
+    var marketplaceMediaRaw=Array.isArray(r.marketplace_media)?r.marketplace_media:(Array.isArray(r.media)?r.media:[]);
+    var marketplaceCoverIndexRaw=(r.marketplace_cover_index!=null?r.marketplace_cover_index:(r.coverIndex!=null?r.coverIndex:details.cover_index));
+    var marketplaceCoverIndex=Math.max(0,Math.min(Number(marketplaceCoverIndexRaw)||0,Math.max(0,marketplaceMediaRaw.length-1)));
+    var marketplaceCoverItem=marketplaceMediaRaw[marketplaceCoverIndex]||marketplaceMediaRaw[0]||{};
+    var marketplaceNestedSrc=clean(marketplaceCoverItem.src||marketplaceCoverItem.url||marketplaceCoverItem.media_url||marketplaceCoverItem.path||'');
+    var marketplaceNestedPoster=clean(marketplaceCoverItem.poster||marketplaceCoverItem.poster_url||marketplaceCoverItem.thumbnail_url||marketplaceCoverItem.thumb||marketplaceCoverItem.preview||'');
+    var marketplaceNestedType=clean(marketplaceCoverItem.type||marketplaceCoverItem.media_type||'');
+    var marketplaceNestedPath=clean(marketplaceCoverItem.path||marketplaceCoverItem.media_path||'');
+    var mediaType=clean(r.marketplace_cover_type||(marketplace?marketplaceNestedType:'')||r.media_type||r.home_media_type||r.kind||r.mediaType||'photo').toLowerCase()||'photo';
+    var rawMedia=r.marketplace_cover_url||(marketplace?marketplaceNestedSrc:'')||r.media_url||r.mediaUrl||r.home_media_url||r.homeMediaUrl||r.video_url||r.videoUrl||r.url||r.src||r.thumbnail_url||r.cover_url||r.media_path||r.mediaPath||'';
     var media=adaptiveMedia(r,publicMediaUrl(rawMedia));
-    var rawPoster=r.thumbnail_url||r.thumbnailUrl||r.poster_url||r.posterUrl||r.cover_url||r.coverUrl||r.image_url||r.imageUrl||'';
+    var rawPoster=r.thumbnail_url||r.thumbnailUrl||r.poster_url||r.posterUrl||(marketplace?marketplaceNestedPoster:'')||r.cover_url||r.coverUrl||r.image_url||r.imageUrl||'';
     var poster=publicMediaUrl(rawPoster);
     var owner=clean(r.user_id||r.creator_id||r.owner_id||r.author_id||r.profile_id||r.creatorId||r.userId||r.ownerId||r.authorId||r.profileId||'');
     var avatar=clean(r.avatar_url||r.avatar||r.user_avatar||r.creator_avatar||r.author_avatar||r.profile_photo_url||r.profile_photo||r.profile_picture_url||r.profile_picture||r.photo_url||r.image_url||r.picture||'');
     var createdRaw=r.created_at||r.createdAt||'';
     var created=createdRaw?createdMs({created_at:createdRaw}):0;
-    var coverType=clean(r.marketplace_cover_type||r.media_type||mediaType||'image');
-    var coverUrl=publicMediaUrl(r.marketplace_cover_url||media||'');
-    var coverPath=clean(r.marketplace_cover_path||r.media_path||r.mediaPath||'');
+    var coverType=clean(r.marketplace_cover_type||(marketplace?marketplaceNestedType:'')||r.media_type||mediaType||'image');
+    var coverUrl=publicMediaUrl(r.marketplace_cover_url||(marketplace?marketplaceNestedSrc:'')||media||'');
+    var coverPath=clean(r.marketplace_cover_path||(marketplace?marketplaceNestedPath:'')||r.media_path||r.mediaPath||'');
     if(marketplace&&coverUrl){media=coverUrl;mediaType=coverType.toLowerCase().indexOf('video')>=0?'video':'photo';}
     var mapped={
       id:r.id,mode:mode,title:r.title||'Publication Fyblic',desc:r.description||r.desc||'',description:r.description||r.desc||'',category:r.category||'',location:r.location||'',
@@ -155,8 +167,8 @@
       avatar:avatar,avatar_url:avatar,badge:r.badge||r.user_badge||'aucun',user_badge:r.user_badge||r.badge||'aucun',createdAt:created,created_at:r.created_at||r.createdAt||'',supabase:r.supabase!==false,
       likes_count:Number(r.likes_count||0),comments_count:Number(r.comments_count||0),shares_count:Number(r.shares_count||0),saves_count:Number(r.saves_count||0),views_count:Number(r.views_count||r.view_count||r.video_views_count||0),
       happyadMarketplace:marketplace,happyad_marketplace:marketplace,is_marketplace:marketplace,marketplaceShowOnHome:showMarketplace,marketplace_show_on_home:showMarketplace,showOnHome:showMarketplace,
-      marketplaceCategory:r.marketplace_category||r.category||'',marketplace_category:r.marketplace_category||r.category||'',marketplaceCoverIndex:Number(r.marketplace_cover_index||r.coverIndex||0)||0,marketplace_cover_index:Number(r.marketplace_cover_index||r.coverIndex||0)||0,
-      marketplaceMedia:r.marketplace_media||r.media||[],marketplace_media:r.marketplace_media||r.media||[],marketplaceCoverUrl:coverUrl||media,marketplace_cover_url:coverUrl||media,marketplaceCoverPath:coverPath,marketplace_cover_path:coverPath,
+      marketplaceCategory:r.marketplace_category||r.category||'',marketplace_category:r.marketplace_category||r.category||'',marketplaceCoverIndex:marketplace?marketplaceCoverIndex:(Number(r.marketplace_cover_index||r.coverIndex||0)||0),marketplace_cover_index:marketplace?marketplaceCoverIndex:(Number(r.marketplace_cover_index||r.coverIndex||0)||0),
+      marketplaceMedia:marketplaceMediaRaw,marketplace_media:marketplaceMediaRaw,marketplaceCoverUrl:coverUrl||media,marketplace_cover_url:coverUrl||media,marketplaceCoverPath:coverPath,marketplace_cover_path:coverPath,
       marketplaceCoverType:coverType,marketplace_cover_type:coverType,listingViewsCount:Number(r.listing_views_count||r.viewsCount||0)||0,listing_views_count:Number(r.listing_views_count||r.viewsCount||0)||0,sellerBadge:r.seller_badge||r.badge||r.user_badge||'',seller_badge:r.seller_badge||r.badge||r.user_badge||'',
       imageCrop:r.image_crop||r.imageCrop||null,thumbnailUrl:poster,thumbnail_url:poster,posterUrl:poster,poster_url:poster,
       batchId:r.batch_id||r.batchId||'',batch_id:r.batch_id||r.batchId||'',groupIndex:Number(r.group_index||r.groupIndex||0)||0,group_index:Number(r.group_index||r.groupIndex||0)||0,photoIndex:Number(r.photo_index||r.photoIndex||r.group_index||r.groupIndex||0)||0,photo_index:Number(r.photo_index||r.photoIndex||r.group_index||r.groupIndex||0)||0,

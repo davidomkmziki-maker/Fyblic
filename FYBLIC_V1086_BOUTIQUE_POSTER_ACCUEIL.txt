@@ -1,0 +1,6 @@
+FYBLIC V1086 — BOUTIQUE POSTER ACCUEIL
+
+Correction ciblée point 2 uniquement.
+- L’Accueil lit le poster de la couverture Boutique depuis marketplace_media quand thumbnail_url/poster_url sont absents.
+- Respecte marketplace_details.cover_index / marketplace_cover_index.
+- Aucun changement worker, SQL, Normal, Story ou qualité 1080p.
