@@ -1,0 +1,8 @@
+FYBLIC V1085 — BOUTIQUE VALIDATION VISIBLE
+
+Correction ciblée du point 1 Boutique uniquement.
+- Les inputs fichiers privés cachés ne portent plus required HTML natif.
+- Les obligations de justificatif restent strictement appliquées par la validation Fyblic.
+- Un document manquant produit maintenant un message visible au lieu d'un blocage silencieux du bouton Publier.
+- Aucun changement du moteur média Normal, Story, compression, poster ou qualités vidéo.
+- Aucun changement Worker / SQL.

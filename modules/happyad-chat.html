@@ -9454,7 +9454,18 @@ J’affiche déjà les résultats disponibles sans lieu précis. Dans quelle vil
     }
     function togglePublicationField(wrapperId,inputId,show,required=false){
       const wrapper=document.querySelector('#'+wrapperId);if(wrapper)wrapper.classList.toggle('hidden',!show);
-      if(inputId){const input=document.querySelector('#'+inputId);if(input){input.required=!!(show&&required);input.disabled=!show}}
+      if(inputId){
+        const input=document.querySelector('#'+inputId);
+        if(input){
+          const isFile=String(input.type||'').toLowerCase()==='file';
+          /* V1085: un input fichier caché ne doit jamais bloquer le submit via
+             la validation HTML native. Les règles Boutique restent contrôlées
+             juste avant publication par rejectOffer(), avec un message visible. */
+          input.required=isFile?false:!!(show&&required);
+          if(isFile)input.removeAttribute('required');
+          input.disabled=!show;
+        }
+      }
     }
     function updatePublicationFields(){
       const category=document.querySelector('#category').value;
@@ -9517,7 +9528,12 @@ J’affiche déjà les résultats disponibles sans lieu précis. Dans quelle vil
       togglePublicationField('ownerDocumentField','ownerDocumentName',rule.ownership,rule.ownership);
       togglePublicationField('ownershipField','ownershipProof',rule.ownership,rule.ownership);
       document.querySelector('#officialField').classList.toggle('hidden',!rule.official);
-      document.querySelector('#officialProof').required=!!rule.official;
+      const officialProof=document.querySelector('#officialProof');
+      /* V1085: validation explicite Fyblic, jamais validation native silencieuse
+         sur le sélecteur de fichier caché. */
+      officialProof.required=false;
+      officialProof.removeAttribute('required');
+      officialProof.disabled=!rule.official;
       document.querySelector('#ownerDocumentLabel').innerHTML=`${rule.ownerLabel||'Nom sur le justificatif'} <em>*</em>`;
       document.querySelector('#ownershipLabel').innerHTML=`${rule.ownershipLabel||'Justificatif de propriété'} <em>*</em>`;
       document.querySelector('#ownershipActionLabel').textContent=rule.ownershipAction||'Ajouter le justificatif';

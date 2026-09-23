@@ -7,7 +7,7 @@
   window.__HAPPYAD_CHAT_INTEGRATION_MASTER_V795__=true;
 
   var VERSION='V935_MARKET_OWNER_FIRST_PAINT';
-  var CHAT_URL='modules/happyad-chat.html?v=935-owner-first-paint';
+  var CHAT_URL='modules/happyad-chat.html?v=1085-boutique-validation-visible';
   var HOST_ID='happyadChatHostV795';
   var FRAME_ID='happyadChatFrameV795';
   var host=null,frame=null,frameReady=false,pendingMode='ask',pendingContext=null;

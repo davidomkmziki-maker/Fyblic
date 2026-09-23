@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1084-boutique-path-progress-20260923';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1085-boutique-validation-visible-20260923';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -39,7 +39,7 @@ var HAPPYAD_APP_SHELL = [
   './core/system-notification-master-v807.js?v=855r56-notification-preferences',
   './core/seller-verification-supabase-master-v801.js?v=807-team-wording-system-notifications',
   './core/listing-publication-supabase-master-v821.js?v=1081-fast-primary',
-  './core/chat-integration-master-v795.js?v=1031-storage-security',
+  './core/chat-integration-master-v795.js?v=1085-boutique-validation-visible',
   './core/marketplace-home-master-v828.js?v=991-market-three-line-description',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
   './core/home-feed-master-v1.js?v=937r2-multi-mention-fullscreen-blue',
@@ -64,7 +64,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-feed-boot-v1.js?v=937-account-story-cache',
   './core/master-registry.js?v=974-p1-module-lifecycle-registry',
   './core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry',
-  './modules/happyad-chat.html?v=1031-storage-security',
+  './modules/happyad-chat.html?v=1085-boutique-validation-visible',
   './modules/message-center.html?mode=inbox&source=p1-module-lifecycle&v=1031-storage-security',
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
