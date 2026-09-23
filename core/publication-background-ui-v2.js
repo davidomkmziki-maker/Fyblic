@@ -11,7 +11,7 @@
   function active(){return json(ACTIVE_KEY,null);}
   function isCurrent(id){var value=active();return !value||!value.id||String(value.id)===String(id||'');}
   function clearActive(id){var value=active();if(value&&String(value.id)===String(id||'')){try{localStorage.removeItem(ACTIVE_KEY);}catch(_e){}}}
-  function forgetOnly(id){try{var list=JSON.parse(localStorage.getItem('FYBLIC_PUBLICATION_JOBS_V2')||'[]');if(Array.isArray(list))localStorage.setItem('FYBLIC_PUBLICATION_JOBS_V2',JSON.stringify(list.filter(function(x){return x&&String(x.id)!==String(id||'');})));}catch(_e){}}
+  function forgetOnly(id){try{['FYBLIC_PUBLICATION_JOBS_V1080','FYBLIC_PUBLICATION_JOBS_V2'].forEach(function(key){var list=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(list))localStorage.setItem(key,JSON.stringify(list.filter(function(x){return x&&String(x.id)!==String(id||'')&&String(x.groupId||'')!==String(id||'');})));});}catch(_e){}}
   function isMuted(id){return !!(id&&muted()[id]);}
   function writeMuted(map){
     var now=Date.now();Object.keys(map||{}).forEach(function(id){if(!Number(map[id])||now-Number(map[id])>7*24*60*60*1000)delete map[id];});
@@ -66,6 +66,7 @@
       box.classList.remove('show');
       if(detail.status==='published'){addProfileNotice(detail,'Ta Story est entièrement prête.','success');try{localStorage.setItem('HAPPYAD_RADAR_REFRESH_NEEDED','1');}catch(_e){}clearStoryRing();refreshHome();return;}
       if(detail.status==='canceled'){clearStoryRing();refreshHome();return;}
+      if(detail.primaryReady===true){try{localStorage.setItem('HAPPYAD_RADAR_REFRESH_NEEDED','1');}catch(_e){}clearActive(jobId);clearStoryRing();refreshHome();return;}
       paintStoryRing(detail);
       if(detail.status==='failed')return;
       return;
@@ -80,7 +81,7 @@
       addProfileNotice(detail,'Toutes les qualités de ta publication sont prêtes.','success');
       unmute(jobId);clearActive(jobId);forgetOnly(jobId);refreshHome();box.classList.remove('show');return;
     }
-    if(detail.primaryReady===true){mute(jobId);refreshHome();box.classList.remove('show');return;}
+    if(detail.primaryReady===true){mute(jobId);clearActive(jobId);refreshHome();box.classList.remove('show');return;}
     if(detail.status==='canceled'){unmute(jobId);clearActive(jobId);forgetOnly(jobId);box.classList.remove('show');return;}
     if(isMuted(jobId)){
       if(detail.status==='failed'){addProfileNotice(detail,'Publication affichée, mais certaines qualités n’ont pas été terminées.','warning');unmute(jobId);}

@@ -1,0 +1,29 @@
+FYBLIC V1080 — VALIDATION DU MOTEUR DE PUBLICATION UNIFIE
+Date: 2026-09-23
+
+VALIDATIONS EFFECTUEES
+- Worker: npm run check OK.
+- Worker: 16 tests / 16 reussis.
+- Site: 135 scripts inline HTML verifies avec node --check, 0 erreur.
+- Scripts principaux V1080 verifies avec node --check.
+- Navigation Boutique: Je cherche + Boutique uniquement.
+- Aucun bouton visible « Je propose » dans la navigation Boutique.
+- Ancien moteur client publication-pipeline-v2.js retire.
+- Aucun appel actif a FyblicPublicationPipelineV2.
+- Normal, Story, Album et Boutique utilisent FyblicPublicationEngineV1080.
+- Upload original: TUS resumable 6 Mio.
+- Upload des sorties Worker -> Supabase: TUS resumable.
+- Albums: finalisation atomique du groupe avant affichage.
+- Qualite principale visible avant les variantes secondaires.
+- Echec d'une variante secondaire ne met plus en echec une publication principale deja visible.
+- Worker durable: reclamation concurrente avec FOR UPDATE SKIP LOCKED.
+- Copies SQL Site/Worker identiques.
+- Migration V1080 ne contient aucun DROP TABLE.
+
+ORDRE DE DEPLOIEMENT
+1. Executer FYBLIC_PUBLICATION_ENGINE_V1080.sql dans Supabase.
+2. Deployer FYBLIC_MEDIA_WORKER_V1080_MOTEUR_PUBLICATION_UNIFIE.zip sur Railway.
+3. Deployer FYBLIC_SITE_V1080_MOTEUR_PUBLICATION_UNIFIE.zip sur Netlify/GitHub.
+
+IMPORTANT
+Les tests locaux et validations statiques sont verts. La validation finale en production doit encore verifier les appels reels Supabase/Railway, les permissions Storage/RLS, et les performances CPU/reseau de Railway avec de vrais medias longs/lourds.

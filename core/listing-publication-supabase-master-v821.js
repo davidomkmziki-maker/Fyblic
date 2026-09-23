@@ -11,7 +11,7 @@
   if(window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__)return;
   window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__=true;
 
-  var VERSION='V1072_FINALISATION_RESEAU';
+  var VERSION='V1080_MOTEUR_UNIFIE';
   var PUBLIC_BUCKET='happyad-media';
   var PRIVATE_BUCKET='happyad-marketplace-private';
   var RPC='happyad_publish_listing_v1';
@@ -265,45 +265,6 @@
     wrapped.happyadNetwork=isNetworkError(lastError);
     throw wrapped;
   }
-  async function compressPublic(file,user,listingId,index,session,payload){
-    var kind=publicMediaKind(file)||'image';
-    var durable=window.FyblicPublicationPipelineV2;
-    if(!durable||typeof durable.available!=='function')throw new Error('Système durable V1071 indisponible.');
-    if(await durable.available(true)){
-      progress(payload,'Compression durable du média '+(index+1)+'…');
-      var submitted=await durable.submit(file,{
-        kind:kind==='video'?'video':'photo',
-        publicationType:'boutique',
-        postId:listingId+'_media_'+(index+1),
-        payload:{listingId:listingId,mediaIndex:index,source:'boutique-v1071'},
-        onProgress:function(job){progress(payload,'Média '+(index+1)+' — '+String(job&&job.stage||'compression en cours'));}
-      });
-      if(!submitted||!submitted.used)throw new Error('Pipeline durable Boutique indisponible');
-      var finalJob=await submitted.completion;
-      if(!finalJob||finalJob.status!=='published')throw new Error(finalJob&&finalJob.error_message||'Compression durable Boutique incomplète');
-      var ready=finalJob.result||{},outputs=Array.isArray(ready.outputs)?ready.outputs:[];
-      if(!ready.primary||!ready.primary.url||!ready.primary.path)throw new Error('Qualité principale Boutique indisponible');
-      return {prepared:{__fyblicPrepared:true,kind:kind==='video'?'video':'photo',primary:ready.primary,poster:ready.poster||null,variants:outputs.filter(function(x){return x&&x.path&&x.path!==ready.primary.path&&(!ready.poster||x.path!==ready.poster.path);}),job:finalJob},compressed:true,original:file,durable:true};
-    }
-    throw new Error(typeof durable.readinessMessage==='function'?durable.readinessMessage():'Mise à jour SQL V1071 requise avant de publier.');
-  }
-  async function uploadPublic(c,user,listingId,source,index,payload){
-    if(source&&source.prepared){
-      var ready=source.prepared,primary=ready.primary||{},variants=Array.isArray(ready.variants)?ready.variants:[],poster=ready.poster||null;
-      if(!primary.url||!primary.path)throw new Error('La qualité principale compressée est indisponible.');
-      var cleanup=[primary.path].concat(variants.map(function(x){return x&&x.path;})).concat(poster&&poster.path?[poster.path]:[]).filter(Boolean);
-      var mediaKind=String(primary.mime||'').indexOf('video/')===0?'video':'image';
-      return {path:primary.path,src:primary.url,type:mediaKind,mime:primary.mime||(mediaKind==='video'?'video/mp4':'image/webp'),name:source.original&&source.original.name||'',size:Number(primary.bytes||0),poster:poster&&poster.url||'',variants:variants,cleanupPaths:Array.from(new Set(cleanup))};
-    }
-    var file=source&&source.file||source;
-    var kind=publicMediaKind(file)||'image';
-    var path=user.id+'/marketplace/'+listingId+'/public/'+String(index+1).padStart(2,'0')+'-'+uuid()+'.'+extension(file);
-    await uploadWithRetry(c,PUBLIC_BUCKET,path,file,{upsert:false,cacheControl:'31536000',contentType:inferredMime(file)},'Envoi du média '+(index+1),payload);
-    var publicResult=c.storage.from(PUBLIC_BUCKET).getPublicUrl(path);
-    var src=publicResult&&publicResult.data&&publicResult.data.publicUrl||'';
-    if(!src)throw new Error('URL publique du média introuvable.');
-    return {path:path,src:src,type:kind,mime:inferredMime(file),name:file.name||'',size:Number(file.size||0),poster:'',cleanupPaths:[path]};
-  }
   async function uploadPrivate(c,user,listingId,file,kind,index,payload){
     var path=user.id+'/marketplace/'+listingId+'/private/'+kind+'/'+String(index+1).padStart(2,'0')+'-'+uuid()+'.'+extension(file);
     await uploadWithRetry(c,PRIVATE_BUCKET,path,file,{upsert:false,cacheControl:'3600',contentType:inferredMime(file)},'Envoi du justificatif '+(index+1),payload);
@@ -443,12 +404,33 @@
     var listingId='market_'+Date.now().toString(36)+'_'+uuid().replace(/-/g,'').slice(0,12);
     var media=[],publicPaths=[],allPublicPaths=[],ownershipPaths=[],officialPaths=[];
     try{
-      var compressionSession=await freshSession(c);
-      for(var i=0;i<parsed.files.length;i++){
-        var preparedMedia=await compressPublic(parsed.files[i],user,listingId,i,compressionSession,payload);
-        var item=await uploadPublic(c,user,listingId,preparedMedia,i,payload);
-        media.push(item);publicPaths.push(item.path);allPublicPaths=allPublicPaths.concat(item.cleanupPaths||[item.path]);
+      /* V1080 : tous les médias Boutique appartiennent à UNE seule publication logique.
+         Le moteur principal conserve les File et envoie jusqu'à deux médias en parallèle.
+         L'annonce n'est enregistrée qu'une seule fois après disponibilité de toutes les qualités principales. */
+      var engine=window.FyblicPublicationEngineV1080;
+      if(!engine||typeof engine.submitMany!=='function'||typeof engine.available!=='function')throw new Error('Système de publication V1080 indisponible.');
+      if(!(await engine.available(true)))throw new Error(typeof engine.readinessMessage==='function'?engine.readinessMessage():'Mise à jour SQL V1080 requise.');
+      progress(payload,'Envoi du média');
+      var mediaBatch=await engine.submitMany(parsed.files,{
+        publicationType:'boutique',groupId:listingId,postId:listingId,uploadConcurrency:2,
+        postIdForAsset:function(index){return listingId+'_media_'+(index+1);},
+        payloadForAsset:function(index){return {listingId:listingId,mediaIndex:index,source:'boutique-v1080'};},
+        onProgress:function(detail){progress(payload,detail&&detail.primaryReady?'Publication en cours':(detail&&detail.stage||'Publication en cours'));}
+      });
+      if(!mediaBatch||!mediaBatch.used)throw new Error('Moteur Boutique V1080 indisponible');
+      if(mediaBatch.completion&&typeof mediaBatch.completion.catch==='function'){
+        mediaBatch.completion.catch(function(error){console.warn('Fyblic Boutique V1080 — optimisation secondaire:',error&&error.message||error);});
       }
+      var readyJobs=await mediaBatch.visibleCompletion;
+      readyJobs.forEach(function(job,index){
+        var ready=job&&job.result||{},primary=ready.primary||{},poster=ready.poster||null,outputs=Array.isArray(ready.outputs)?ready.outputs:[];
+        if(!primary.url||!primary.path)throw new Error('Qualité principale Boutique indisponible pour le média '+(index+1));
+        var variants=outputs.filter(function(x){return x&&x.path&&x.path!==primary.path&&(!poster||x.path!==poster.path);});
+        var cleanup=[primary.path].concat(variants.map(function(x){return x&&x.path;})).concat(poster&&poster.path?[poster.path]:[]).filter(Boolean);
+        var mediaKind=String(primary.mime||'').indexOf('video/')===0?'video':'image';
+        var item={path:primary.path,src:primary.url,type:mediaKind,mime:primary.mime||(mediaKind==='video'?'video/mp4':'image/webp'),name:parsed.files[index]&&parsed.files[index].name||'',size:Number(primary.bytes||0),poster:poster&&poster.url||'',variants:variants,cleanupPaths:Array.from(new Set(cleanup))};
+        media.push(item);publicPaths.push(item.path);allPublicPaths=allPublicPaths.concat(item.cleanupPaths||[item.path]);
+      });
       for(var j=0;j<parsed.ownership.length;j++)ownershipPaths.push(await uploadPrivate(c,user,listingId,parsed.ownership[j],'ownership',j,payload));
       for(var k=0;k<parsed.official.length;k++)officialPaths.push(await uploadPrivate(c,user,listingId,parsed.official[k],'official',k,payload));
       var offer=parsed.offer;

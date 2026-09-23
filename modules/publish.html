@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-pipeline-v2.js?v=1072-finalisation-reseau"></script>
+<script src="../core/publication-engine-v1080.js?v=1080-unified-engine"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -726,7 +726,7 @@ button:disabled{filter:none;transform:none}
   const ACTIVE_PUBLICATION_KEY_V1067R1='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
   let activePublicationIdV1067R1='';
   function activePublicationV1067R1(){
-    try{var value=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');if(!value||!value.id)return null;var age=Date.now()-Number(value.at||0);if(age>2*60*60*1000){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}if(age>2*60*1000){var jobs=JSON.parse(localStorage.getItem('FYBLIC_PUBLICATION_JOBS_V2')||'[]');var found=Array.isArray(jobs)&&jobs.some(function(job){return job&&String(job.id)===String(value.id)&&['published','failed','canceled'].indexOf(String(job.status||''))<0;});if(!found){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}}return value;}catch(_e){try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_x){}return null;}
+    try{var value=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');if(!value||!value.id)return null;var age=Date.now()-Number(value.at||0);if(age>2*60*60*1000){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}if(age>2*60*1000){var jobs=JSON.parse(localStorage.getItem('FYBLIC_PUBLICATION_JOBS_V1080')||'[]');var found=Array.isArray(jobs)&&jobs.some(function(job){return job&&(String(job.id)===String(value.id)||String(job.groupId||'')===String(value.id))&&['published','failed','canceled'].indexOf(String(job.status||''))<0;});if(!found){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}}return value;}catch(_e){try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_x){}return null;}
   }
   function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');try{localStorage.setItem(ACTIVE_PUBLICATION_KEY_V1067R1,JSON.stringify({id:activePublicationIdV1067R1,mode:String(mode||'publish'),at:Date.now()}));}catch(_e){}}
   function endPublicationV1067R1(){activePublicationIdV1067R1='';try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_e){}}
@@ -769,7 +769,7 @@ button:disabled{filter:none;transform:none}
     if(label) label.textContent="Échec";
     storyProgressV1067R1('failed',text||'Échec Story');
     endPublicationV1067R1();
-    try{clearHeavyPublicationCaches();localStorage.removeItem('FYBLIC_PUBLICATION_JOBS_V2');localStorage.removeItem('FYBLIC_PUBLICATION_MUTED_V1');}catch(_e){}
+    try{clearHeavyPublicationCaches();localStorage.removeItem('FYBLIC_PUBLICATION_MUTED_V1');}catch(_e){}
     setTimeout(()=>{ const box=$("publishProgress"); if(box) box.classList.remove("show"); },1400);
   }
 
@@ -2052,10 +2052,8 @@ return {source:'story',id:storyId};
     try{
       const id="p_"+((window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID().replace(/-/g,''):(Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14)));
       beginPublicationV1067R1(id,state.mode);
-      if(state.mode==='story'){
-        returnedHomeForStoryV1067R1=true;
-        setTimeout(function(){returnHomeAfterPublish('story-background-v1067r1',{preserveMedia:true});},180);
-      }
+      /* V1080 : le retour Accueil est déclenché par le moteur principal après
+         prise en charge du groupe et conservation des File dans la fenêtre mère. */
       // V210 : ne pas attendre IndexedDB avant Supabase.
       // La publication officielle doit passer par Storage + happyad_posts ;
       // le cache média local est écrit plus bas en arrière-plan, sans bloquer l'utilisateur.
@@ -2084,154 +2082,74 @@ return {source:'story',id:storyId};
         createdAt:Date.now()
       };
       localPost.imageCrop=Object.assign({},state.crop||{v:2,scale:1,x:50,y:50}); if(state.kind==='video')localPost.videoFrameTime=Number(state.videoFrame==null?0:state.videoFrame);
-      /* V1071 — chemin durable vérifié pour publication normale ou Story
-         à média unique. La Story reste exclusivement dans happyad_stories. */
-      if((state.mode==='publish'||state.mode==='story') && !(state.mode==='publish'&&state.kind==='photo'&&state.files&&state.files.length>1)){
-        var durable=window.FyblicPublicationPipelineV2;
-        if(!durable||typeof durable.available!=='function')throw new Error('Système durable V1071 indisponible.');
+      /* V1080 — moteur unique Normal + Story + albums.
+         Le moteur est prioritairement pris dans la fenêtre principale afin que
+         l'upload survive à la fermeture/masquage du module Publication. */
+      if(state.mode==='publish'||state.mode==='story'){
+        var durable=null;
+        try{durable=(window.parent&&window.parent!==window&&window.parent.FyblicPublicationEngineV1080)||window.FyblicPublicationEngineV1080;}catch(_master){durable=window.FyblicPublicationEngineV1080;}
+        if(!durable||typeof durable.available!=='function'||typeof durable.submitMany!=='function')throw new Error('Système de publication V1080 indisponible.');
         if(await durable.available(true)){
+          var publishFiles=(state.mode==='publish'&&state.files&&state.files.length)?state.files.slice(0,18):[state.file];
+          if(state.mode==='story')publishFiles=[state.file];
+          var isAlbum=state.mode==='publish'&&publishFiles.length>1;
+          var batchId=isAlbum?('grp_'+Date.now()+'_'+String(id).slice(-10)):'';
           var returnedHome=returnedHomeForStoryV1067R1;
-          var backgroundTask=durable.submit(state.file,{
-            kind:state.kind,
+          var backgroundTask=durable.submitMany(publishFiles,{
             publicationType:state.mode==='story'?'story':'normal',
+            groupId:id,
             postId:id,
-            payload:localPost,
-            onCreated:function(job){
-              window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1=String(job&&job.id||'');
-              if(job&&job.id)beginPublicationV1067R1(job.id,state.mode);
-              state.completed=true;
-              setProgress(Math.max(1,Number(job&&job.progress||1)),'Publication en cours');
-              if(!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('pipeline-v2-background',{preserveMedia:true});},180);}
+            uploadConcurrency:2,
+            postIdForAsset:function(index){return isAlbum?id+'_'+(index+1):id;},
+            payloadForAsset:function(index){
+              var pid=isAlbum?id+'_'+(index+1):id;
+              return Object.assign({},localPost,{
+                id:pid,
+                batchId:isAlbum?batchId:'',batch_id:isAlbum?batchId:'',
+                groupIndex:isAlbum?index:0,group_index:isAlbum?index:0,
+                photoIndex:isAlbum?index:0,photo_index:isAlbum?index:0,
+                created_at:new Date(Date.now()+index).toISOString()
+              });
             },
-            onProgress:function(job){setProgress(Number(job&&job.progress||progressValue),String(job&&job.stage||'Publication en cours'));}
+            onGroupCreated:function(group){
+              window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1=String(group&&group.id||id);
+              beginPublicationV1067R1(group&&group.id||id,state.mode);
+              state.completed=true;
+              setProgress(1,'Envoi du média');
+              if(!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('engine-v1080-background',{preserveMedia:true});},120);}
+            },
+            onProgress:function(detail){setProgress(Number(detail&&detail.progress||progressValue),String(detail&&detail.stage||'Publication en cours'));}
           });
           window.__FYBLIC_ACTIVE_PUBLICATION_V2=backgroundTask;
           backgroundTask.then(function(result){
-            if(!result||!result.used)throw new Error('Pipeline durable indisponible');
-            return result.completion;
-          }).then(function(finalJob){
-            if(finalJob&&finalJob.status==='failed')throw new Error(finalJob.error_message||'Publication échouée');
-            if(finalJob&&finalJob.status==='canceled')throw new Error('Publication annulée');
+            if(!result||!result.used)throw new Error('Moteur V1080 indisponible');
+            return result.visibleCompletion||result.completion;
+          }).then(function(visibleJobs){
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
             if(state.mode==='story')safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');
+            // La qualité principale est réellement visible : libérer immédiatement
+            // le verrou utilisateur. Les variantes continuent sans bloquer un nouveau post.
             endPublicationV1067R1();
-            try{resetPublishComposer('pipeline-v2-completed-v1071');}catch(_reset){}
+            try{resetPublishComposer('engine-v1080-visible');}catch(_reset){}
+            return backgroundTask.then(function(result){return result&&result.completion;});
+          }).then(function(){
+            // Optimisation secondaire terminée en silence.
           }).catch(function(error){
-            console.error('Fyblic pipeline V2',error);
-            try{if(window.FyblicPublicationPipelineV2&&typeof window.FyblicPublicationPipelineV2.forget==='function'&&window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1)window.FyblicPublicationPipelineV2.forget(window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1);}catch(_forget){}
+            console.error('Fyblic engine V1080',error);
             endPublicationV1067R1();
-            try{clearHeavyPublicationCaches();localStorage.removeItem('FYBLIC_PUBLICATION_JOBS_V2');}catch(_clean){}
-            try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:'',postId:id,status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}
-            state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));try{resetPublishComposer('failed-pipeline-v1067r1');}catch(_reset){}updatePublishButtonsState();
+            try{clearHeavyPublicationCaches();}catch(_clean){}
+            try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:id,postId:id,publicationType:state.mode==='story'?'story':'normal',status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}
+            state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));try{resetPublishComposer('failed-engine-v1080');}catch(_reset){}updatePublishButtonsState();
           });
           return;
         }
-        throw new Error(typeof durable.readinessMessage==='function'?durable.readinessMessage():'Mise à jour SQL V1071 requise avant de publier.');
-      }
-      if(state.kind==='photo' && state.mode==='publish' && state.files && state.files.length>1){
-        const groupFiles=state.files.slice(0,18);
-        const batchId='grp_'+Date.now();
-        const savedPosts=[];
-        for(let i=0;i<groupFiles.length;i++){
-          setProgress(12+Math.round((i/groupFiles.length)*70),'Publication photo '+(i+1)+'/'+groupFiles.length);
-          const pid=id+'_'+(i+1);
-          let groupedPost=Object.assign({},localPost,{id:pid,batchId:batchId,batch_id:batchId,groupIndex:i,group_index:i,photoIndex:i,photo_index:i,createdAt:Date.now()+i});
-          try{
-            var groupClient=happySb();
-            if(!groupClient){try{groupClient=await window.happyadEnsureSupabaseV936(15000);}catch(_groupSdk){}}
-            var groupAuth=groupClient?await getFreshAuth(groupClient):null;
-            var groupDurable=window.FyblicPublicationPipelineV2;
-            if(!groupClient||!groupAuth||!groupAuth.user)throw new Error('Session Fyblic indisponible');
-            if(!groupDurable||typeof groupDurable.available!=='function'||!(await groupDurable.available(true)))throw new Error(groupDurable&&typeof groupDurable.readinessMessage==='function'?groupDurable.readinessMessage():'Worker V1071 indisponible');
-            var groupSubmitted=await groupDurable.submit(groupFiles[i],{
-              kind:'photo',publicationType:'normal',postId:pid,payload:groupedPost,
-              onProgress:function(job){var part=Math.max(0,Math.min(100,Number(job&&job.progress||0)));setProgress(10+Math.round(((i+part/100)/groupFiles.length)*78),'Publication photo '+(i+1)+'/'+groupFiles.length+' · '+String(job&&job.stage||'en cours'));}
-            });
-            if(!groupSubmitted||!groupSubmitted.used)throw new Error('Pipeline direct V1071 indisponible');
-            var groupFinal=await groupSubmitted.completion;
-            if(!groupFinal||groupFinal.status!=='published')throw new Error(groupFinal&&groupFinal.error_message||'Publication photo incomplète');
-            var groupResult=groupFinal.result||{},groupPrimary=groupResult.primary||{},groupPoster=groupResult.poster||{};
-            if(!groupPrimary.url)throw new Error('Média principal de la photo indisponible');
-            var groupPatch={batch_id:batchId,group_index:i,photo_index:i};
-            var groupSaved=await withTimeout(groupClient.from('happyad_posts').update(groupPatch).eq('id',pid).eq('user_id',groupAuth.user.id).select('*').maybeSingle(),20000,'Finalisation album');
-            if(groupSaved&&groupSaved.error)throw groupSaved.error;
-            groupedPost=Object.assign({},groupedPost,groupSaved&&groupSaved.data||{}, {mediaUrl:groupPrimary.url,media_url:groupPrimary.url,mediaPath:groupPrimary.path||'',media_path:groupPrimary.path||'',thumbnailUrl:groupPoster.url||'',thumbnail_url:groupPoster.url||'',posterUrl:groupPoster.url||'',poster_url:groupPoster.url||'',creatorId:groupAuth.user.id,user_id:groupAuth.user.id,supabase:true});
-          }
-          catch(remoteErr){ console.error(remoteErr); toast('Photo '+(i+1)+' non enregistrée : '+(remoteErr.message||remoteErr.error_description||'SQL colonnes/RLS')); throw remoteErr; }
-          rememberPublishedCrop(groupedPost);
-          savedPosts.push(groupedPost);
-          saveMediaBestEffort({id:pid,blob:groupFiles[i],type:groupFiles[i].type,kind:'photo',name:groupFiles[i].name||('photo_'+(i+1))});
-        }
-        try{
-  const postsToCache=(savedPosts||[]).map(function(p){
-    return Object.assign({},p,{
-      user_id:p.user_id||p.creatorId||localPost.creatorId||"",
-      media_url:p.media_url||p.mediaUrl||"",
-      avatar_url:canonicalProfileAvatar(p.user_id||p.creatorId||localPost.creatorId,p.avatar_url||p.avatar||localPost.avatar),
-      description:p.description||p.desc||localPost.desc||"",
-      created_at:p.created_at||new Date(p.createdAt||Date.now()).toISOString(),
-      batch_id:p.batch_id||p.batchId||batchId,
-      batchId:p.batchId||p.batch_id||batchId,
-      group_index:p.group_index!=null?p.group_index:(p.groupIndex!=null?p.groupIndex:0),
-      groupIndex:p.groupIndex!=null?p.groupIndex:(p.group_index!=null?p.group_index:0),
-      __fromPublishSuccess:true
-    });
-  }).sort(function(a,b){
-    return (Number(b.createdAt)||0)-(Number(a.createdAt)||0);
-  });
-
-  ['HAPPYAD_PROFILE_OWN_POSTS_STABLE_CACHE_V1','HAPPYAD_PROFILE_POSTS_CACHE_V1','HAPPYAD_USER_POSTS_CACHE_V1','HAPPYAD_GLOBAL_POSTS_CACHE_V1','HAPPYAD_PUBLISH_POSTS_V2','HAPPYAD_ALL_POSTS_V1'].forEach(function(k){
-    let arr=[];
-    try{arr=JSON.parse(localStorage.getItem(k)||'[]')||[];}catch(_e){arr=[];}
-    if(!Array.isArray(arr))arr=[];
-
-    const ids={};
-    postsToCache.forEach(function(p){
-      ids[String(p&&p.id)] = 1;
-    });
-
-    arr=postsToCache.concat(arr.filter(function(p){
-      return !ids[String(p&&p.id)];
-    })).slice(0,120);
-
-    localStorage.setItem(k,JSON.stringify(arr));
-  });
-
-  try{
-    let s=[];
-    try{s=JSON.parse(sessionStorage.getItem('HAPPYAD_SESSION_PROFILE_POSTS_V104')||'[]')||[];}catch(_e){s=[];}
-    if(!Array.isArray(s))s=[];
-
-    const ids={};
-    postsToCache.forEach(function(p){
-      ids[String(p&&p.id)] = 1;
-    });
-
-    s=postsToCache.concat(s.filter(function(p){
-      return !ids[String(p&&p.id)];
-    })).slice(0,120);
-
-    sessionStorage.setItem('HAPPYAD_SESSION_PROFILE_POSTS_V104',JSON.stringify(s));
-  }catch(_e){}
-
-  sessionStorage.removeItem('HAPPYAD_PROFILE_POSTS_LAST_SYNC');
-  sessionStorage.removeItem('HAPPYAD_ALL_POSTS_LAST_SYNC');
-  sessionStorage.removeItem('HAPPYAD_HOME_POSTS_LAST_SYNC');
-
-  localStorage.setItem('HAPPYAD_PROFILE_REFRESH_NEEDED',String(Date.now()));
-}catch(_e){}
-        state.completed=true;
-        finishProgress('Publication groupée publiée');
-        toast('Publication groupée publiée');
-        safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
-        setTimeout(()=>{returnHomeAfterPublish('grouped-photos');},350);
-        return;
+        throw new Error(typeof durable.readinessMessage==='function'?durable.readinessMessage():'Mise à jour SQL V1080 requise avant de publier.');
       }
       try{
         var uploadFile=state.file;
         /* Normal et Story doivent avoir quitté cette fonction via le pipeline
-           direct V1071. Aucun retour silencieux vers l'ancien Base64 n'est permis. */
-        if(state.mode==='publish'||state.mode==='story')throw new Error('Chemin direct V1071 interrompu avant la remise au worker');
+           direct V1080. Aucun retour silencieux vers un ancien chemin n'est permis. */
+        if(state.mode==='publish'||state.mode==='story')throw new Error('Chemin direct V1080 interrompu avant la remise au worker');
         localPost=await savePostToSupabase(localPost,uploadFile);
       }
       catch(remoteErr){ console.error(remoteErr); toast("Publication non enregistrée : "+(remoteErr.message||remoteErr.error_description||"SQL colonnes/RLS")); throw remoteErr; }

@@ -1,0 +1,32 @@
+ORDRE DE DÉPLOIEMENT FYBLIC V1080
+
+1) SUPABASE
+Exécuter : FYBLIC_PUBLICATION_ENGINE_V1080.sql
+Le SQL ne supprime pas les anciennes publications.
+Il nécessite la base V1069/V1071 déjà installée sur Fyblic.
+
+2) RAILWAY
+Déployer le ZIP worker V1080.
+Prévoir FYBLIC_MEDIA_WORKERS=2 pour la configuration V1080 de départ.
+Conserver la clé service_role uniquement dans Railway.
+
+3) SITE
+Déployer le ZIP site V1080.
+Le service worker utilise une nouvelle version de cache afin de ne pas conserver l'ancien moteur V1072.
+
+4) CONTRÔLE
+Sur le worker /health :
+- schemaVersion = 1080
+- protocolVersion = 1080
+- ready = true
+- groupAssets = true
+- groupFinalize = true
+
+5) TESTS MANUELS CONSEILLÉS
+A. Photo normale.
+B. Vidéo normale 1080p d'environ 1 minute.
+C. Story photo puis Story vidéo.
+D. Album normal 3 médias : vérifier qu'il apparaît groupé, jamais partiellement.
+E. Boutique 3 médias : vérifier qu'une seule annonce est créée.
+F. Vidéo plus longue : vérifier que la qualité principale apparaît avant la fin des variantes.
+G. Couper le réseau pendant un transfert puis le rétablir : vérifier la reprise TUS.

@@ -1,0 +1,55 @@
+FYBLIC V1080 — MOTEUR DE PUBLICATION UNIFIÉ
+Date : 23 septembre 2026
+
+BUT
+- Remplacer les chemins séparés Normal / Story / Boutique par un moteur média unique.
+- Garder les anciennes publications et les anciennes tables : aucune suppression destructive.
+
+FLUX UNIQUE
+Sélection média
+→ création d'un groupe de publication
+→ upload original TUS direct vers Supabase
+→ file durable
+→ compression worker
+→ qualité principale prête
+→ publication visible
+→ variantes secondaires en arrière-plan
+
+NORMAL
+- 1 média : publication normale.
+- plusieurs médias : enfants de type album dans un même groupe.
+- l'album n'apparaît jamais partiellement : la base publie le groupe atomiquement quand toutes les qualités principales sont prêtes.
+
+STORY
+- un seul média par Story.
+- le File reste détenu par le moteur chargé dans la fenêtre principale ; le retour Accueil ne détruit plus le contexte d'upload du module Publication.
+- le cercle suit la progression jusqu'à la Story réellement visible, puis disparaît.
+
+BOUTIQUE
+- navigation principale : « Je cherche » + « Boutique » uniquement.
+- « Je propose » est retiré de la navigation.
+- un bouton « Publier » dans Boutique ouvre le formulaire vendeur.
+- plusieurs médias = une seule annonce logique ; chaque média est un enfant du même groupe.
+- l'ancien traitement séquentiel complet média par média n'est plus utilisé par publishListing.
+- l'annonce finale continue d'utiliser happyad_publish_listing_v1 UNE seule fois après que toutes les qualités principales des médias soient prêtes.
+
+PERFORMANCES / FIABILITÉ
+- upload téléphone → Supabase : TUS 6 Mio resumable.
+- upload worker → Supabase : TUS resumable également.
+- qualité vidéo principale : preset veryfast ; variantes : fast.
+- 2 jobs durables concurrents par défaut.
+- aucune progression artificielle forcée à 57 %.
+- qualité principale visible avant la fin de toutes les variantes.
+- échec d'une variante secondaire : la publication principale déjà visible est conservée.
+- l'utilisateur peut lancer une nouvelle publication dès que la qualité principale précédente est visible ; l'optimisation continue silencieusement.
+
+FICHIERS PRINCIPAUX V1080
+- core/publication-engine-v1080.js
+- core/publication-background-ui-v2.js
+- core/listing-publication-supabase-master-v821.js
+- modules/publish.html
+- modules/happyad-chat.html
+- FYBLIC_PUBLICATION_ENGINE_V1080.sql
+
+IMPORTANT
+Le client historique core/publication-pipeline-v2.js a été retiré du site V1080 afin qu'il n'existe pas deux moteurs actifs en concurrence.
