@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1088-adaptive-1080-priority-20260923';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1089-home-chat-source-svg-20260923';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -29,9 +29,6 @@ var HAPPYAD_APP_SHELL = [
   './icons/share-apps/gmail.png',
   './icons/share-apps/copy.png',
   './icons/share-apps/more.png',
-  './icons/happyad-chat-sticker-v797-transparent.png',
-  './core/chat-sticker-living-v791.css?v=799-smaller-mouth-only',
-  './core/chat-sticker-living-v791.js?v=855r89-opening-stable',
   './core/chat-integration-master-v795.css?v=851r2-keyboard-rows',
   './core/keyboard-surface-master-v851r7.css?v=851r7-chat-refinement-seam',
   './core/keyboard-surface-master-v851r7.js?v=855r93-home-silent',
@@ -40,6 +37,7 @@ var HAPPYAD_APP_SHELL = [
   './core/seller-verification-supabase-master-v801.js?v=807-team-wording-system-notifications',
   './core/listing-publication-supabase-master-v821.js?v=1087-auto-1080',
   './core/chat-integration-master-v795.js?v=1085-boutique-validation-visible',
+  './core/home-chat-header-v1089.js?v=1089-source-svg',
   './core/marketplace-home-master-v828.js?v=991-market-three-line-description',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
   './core/home-feed-master-v1.js?v=1088-adaptive-1080-priority',

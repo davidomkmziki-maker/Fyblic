@@ -1,0 +1,9 @@
+FYBLIC V1089 — CHAT HEADER SOURCE SVG
+- Ancien emoji/sticker Chat supprimé définitivement de la ligne Story.
+- Ancien PNG et module sticker retirés du build.
+- Nouveau dessin sac créé en SVG inline dans index.html.
+- Bouton placé à gauche de Recherche dans le header Accueil.
+- Icône 26 px, même taille visuelle que Notification.
+- Aucun texte sous le bouton.
+- Action Chat V795 conservée.
+- Publication, affichage média, adaptation vidéo, Story, Boutique et worker inchangés.
