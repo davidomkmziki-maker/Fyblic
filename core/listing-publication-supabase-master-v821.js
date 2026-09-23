@@ -404,12 +404,12 @@
     var listingId='market_'+Date.now().toString(36)+'_'+uuid().replace(/-/g,'').slice(0,12);
     var media=[],publicPaths=[],allPublicPaths=[],ownershipPaths=[],officialPaths=[];
     try{
-      /* V1081 : tous les médias Boutique appartiennent à UNE seule publication logique.
+      /* V1082 : tous les médias Boutique appartiennent à UNE seule publication logique.
          Le moteur principal conserve les File et envoie jusqu'à deux médias en parallèle.
          L'annonce n'est enregistrée qu'une seule fois après disponibilité de toutes les qualités principales. */
-      var engine=window.FyblicPublicationEngineV1081;
-      if(!engine||typeof engine.submitMany!=='function'||typeof engine.available!=='function')throw new Error('Système de publication V1081 indisponible.');
-      if(!(await engine.available(true)))throw new Error(typeof engine.readinessMessage==='function'?engine.readinessMessage():'Mise à jour SQL V1081 requise.');
+      var engine=window.FyblicPublicationEngineV1082;
+      if(!engine||typeof engine.submitMany!=='function'||typeof engine.available!=='function')throw new Error('Système de publication V1082 indisponible.');
+      if(!(await engine.available(true)))throw new Error(typeof engine.readinessMessage==='function'?engine.readinessMessage():'Mise à jour SQL V1082 requise.');
       progress(payload,'Envoi du média');
       var mediaBatch=await engine.submitMany(parsed.files,{
         publicationType:'boutique',groupId:listingId,postId:listingId,uploadConcurrency:2,
@@ -417,9 +417,9 @@
         payloadForAsset:function(index){return {listingId:listingId,mediaIndex:index,source:'boutique-v1081'};},
         onProgress:function(detail){progress(payload,detail&&detail.primaryReady?'Publication en cours':(detail&&detail.stage||'Publication en cours'));}
       });
-      if(!mediaBatch||!mediaBatch.used)throw new Error('Moteur Boutique V1081 indisponible');
+      if(!mediaBatch||!mediaBatch.used)throw new Error('Moteur Boutique V1082 indisponible');
       if(mediaBatch.completion&&typeof mediaBatch.completion.catch==='function'){
-        mediaBatch.completion.catch(function(error){console.warn('Fyblic Boutique V1081 — optimisation secondaire:',error&&error.message||error);});
+        mediaBatch.completion.catch(function(error){console.warn('Fyblic Boutique V1082 — optimisation secondaire:',error&&error.message||error);});
       }
       var readyJobs=await mediaBatch.visibleCompletion;
       readyJobs.forEach(function(job,index){

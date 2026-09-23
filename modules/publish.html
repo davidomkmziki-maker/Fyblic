@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-engine-v1080.js?v=1080-unified-engine"></script>
+<script src="../core/publication-engine-v1082.js?v=1082-story-poster-queue"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -731,12 +731,7 @@ button:disabled{filter:none;transform:none}
   function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');try{localStorage.setItem(ACTIVE_PUBLICATION_KEY_V1067R1,JSON.stringify({id:activePublicationIdV1067R1,mode:String(mode||'publish'),at:Date.now()}));}catch(_e){}}
   function endPublicationV1067R1(){activePublicationIdV1067R1='';try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_e){}}
   function simpleProgressMessage(text,value){var raw=String(text||'');if(/échec|echec|failed|erreur/i.test(raw))return 'Échec';if(/termin|publiée|publiee|published/i.test(raw))return 'Publication terminée';if(Number(value||0)<=45||/envoi|upload/i.test(raw))return 'Envoi du média';return 'Publication en cours';}
-  function storyProgressV1067R1(status,text){
-    if(state.mode!=='story'||!activePublicationIdV1067R1)return;
-    var detail={jobId:activePublicationIdV1067R1,postId:activePublicationIdV1067R1,publicationType:'story',status:String(status||'processing'),primaryReady:false,progress:progressValue,stage:simpleProgressMessage(text,progressValue)};
-    try{window.dispatchEvent(new CustomEvent('FYBLIC_PUBLICATION_PROGRESS_V2',{detail:detail}));}catch(_e){}
-    try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:detail},'*');}catch(_e2){}
-  }
+  /* V1082 : le moteur unique est la seule source globale de progression Story. */
   function setProgress(value,text){
     const requested=Math.max(0,Math.min(100,Math.round(Number(value)||0)));
     progressValue=requested===0?0:Math.max(progressValue,requested);
@@ -745,7 +740,6 @@ button:disabled{filter:none;transform:none}
     if(fill) fill.style.width=progressValue+"%";
     if(num) num.textContent=progressValue+"%";
     if(label) label.textContent=simpleProgressMessage(text,progressValue);
-    storyProgressV1067R1('processing',text);
   }
   function startProgress(text){
     clearInterval(progressTimer);
@@ -756,7 +750,6 @@ button:disabled{filter:none;transform:none}
   function finishProgress(text){
     clearInterval(progressTimer);
     setProgress(100,text||"Publication terminée");
-    storyProgressV1067R1('published',text||'Story publiée');
     endPublicationV1067R1();
   }
   function stopProgress(){
@@ -767,7 +760,6 @@ button:disabled{filter:none;transform:none}
     clearInterval(progressTimer);
     const label=$("progressText");
     if(label) label.textContent="Échec";
-    storyProgressV1067R1('failed',text||'Échec Story');
     endPublicationV1067R1();
     try{clearHeavyPublicationCaches();localStorage.removeItem('FYBLIC_PUBLICATION_MUTED_V1');}catch(_e){}
     setTimeout(()=>{ const box=$("publishProgress"); if(box) box.classList.remove("show"); },1400);
@@ -2082,13 +2074,13 @@ return {source:'story',id:storyId};
         createdAt:Date.now()
       };
       localPost.imageCrop=Object.assign({},state.crop||{v:2,scale:1,x:50,y:50}); if(state.kind==='video')localPost.videoFrameTime=Number(state.videoFrame==null?0:state.videoFrame);
-      /* V1080 — moteur unique Normal + Story + albums.
+      /* V1082 — moteur unique Normal + Story + albums.
          Le moteur est prioritairement pris dans la fenêtre principale afin que
          l'upload survive à la fermeture/masquage du module Publication. */
       if(state.mode==='publish'||state.mode==='story'){
         var durable=null;
-        try{durable=(window.parent&&window.parent!==window&&window.parent.FyblicPublicationEngineV1080)||window.FyblicPublicationEngineV1080;}catch(_master){durable=window.FyblicPublicationEngineV1080;}
-        if(!durable||typeof durable.available!=='function'||typeof durable.submitMany!=='function')throw new Error('Système de publication V1080 indisponible.');
+        try{durable=(window.parent&&window.parent!==window&&window.parent.FyblicPublicationEngineV1082)||window.FyblicPublicationEngineV1082;}catch(_master){durable=window.FyblicPublicationEngineV1082;}
+        if(!durable||typeof durable.available!=='function'||typeof durable.submitMany!=='function')throw new Error('Système de publication V1082 indisponible.');
         if(await durable.available(true)){
           var publishFiles=(state.mode==='publish'&&state.files&&state.files.length)?state.files.slice(0,18):[state.file];
           if(state.mode==='story')publishFiles=[state.file];
@@ -2116,13 +2108,13 @@ return {source:'story',id:storyId};
               beginPublicationV1067R1(group&&group.id||id,state.mode);
               state.completed=true;
               setProgress(1,'Envoi du média');
-              if(!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('engine-v1080-background',{preserveMedia:true});},120);}
+              if(!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('engine-v1082-background',{preserveMedia:true});},120);}
             },
             onProgress:function(detail){setProgress(Number(detail&&detail.progress||progressValue),String(detail&&detail.stage||'Publication en cours'));}
           });
           window.__FYBLIC_ACTIVE_PUBLICATION_V2=backgroundTask;
           backgroundTask.then(function(result){
-            if(!result||!result.used)throw new Error('Moteur V1080 indisponible');
+            if(!result||!result.used)throw new Error('Moteur V1082 indisponible');
             return result.visibleCompletion||result.completion;
           }).then(function(visibleJobs){
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
@@ -2130,26 +2122,25 @@ return {source:'story',id:storyId};
             // La qualité principale est réellement visible : libérer immédiatement
             // le verrou utilisateur. Les variantes continuent sans bloquer un nouveau post.
             endPublicationV1067R1();
-            try{resetPublishComposer('engine-v1080-visible');}catch(_reset){}
+            try{resetPublishComposer('engine-v1082-visible');}catch(_reset){}
             return backgroundTask.then(function(result){return result&&result.completion;});
           }).then(function(){
             // Optimisation secondaire terminée en silence.
           }).catch(function(error){
-            console.error('Fyblic engine V1080',error);
+            console.error('Fyblic engine V1082',error);
             endPublicationV1067R1();
             try{clearHeavyPublicationCaches();}catch(_clean){}
-            try{window.parent&&window.parent.postMessage({type:'FYBLIC_PUBLICATION_PROGRESS_V2',detail:{jobId:id,postId:id,publicationType:state.mode==='story'?'story':'normal',status:'failed',progress:progressValue,stage:'Échec',error:String(error&&error.message||error)}},'*');}catch(_e){}
-            state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));try{resetPublishComposer('failed-engine-v1080');}catch(_reset){}updatePublishButtonsState();
+            state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));try{resetPublishComposer('failed-engine-v1082');}catch(_reset){}updatePublishButtonsState();
           });
           return;
         }
-        throw new Error(typeof durable.readinessMessage==='function'?durable.readinessMessage():'Mise à jour SQL V1080 requise avant de publier.');
+        throw new Error(typeof durable.readinessMessage==='function'?durable.readinessMessage():'Mise à jour SQL V1082 requise avant de publier.');
       }
       try{
         var uploadFile=state.file;
         /* Normal et Story doivent avoir quitté cette fonction via le pipeline
-           direct V1080. Aucun retour silencieux vers un ancien chemin n'est permis. */
-        if(state.mode==='publish'||state.mode==='story')throw new Error('Chemin direct V1080 interrompu avant la remise au worker');
+           direct V1082. Aucun retour silencieux vers un ancien chemin n'est permis. */
+        if(state.mode==='publish'||state.mode==='story')throw new Error('Chemin direct V1082 interrompu avant la remise au worker');
         localPost=await savePostToSupabase(localPost,uploadFile);
       }
       catch(remoteErr){ console.error(remoteErr); toast("Publication non enregistrée : "+(remoteErr.message||remoteErr.error_description||"SQL colonnes/RLS")); throw remoteErr; }

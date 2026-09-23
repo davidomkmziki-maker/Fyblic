@@ -1,0 +1,8 @@
+FYBLIC SITE V1082 — Story + miniature + chemin unique
+
+- modules/publish.html charge PublicationEngine V1082.
+- Boutique utilise PublicationEngine V1082.
+- L’ancien émetteur parallèle de progression Story a été supprimé : le moteur V1082 est la seule source globale.
+- Le Service Worker utilise un nouveau cache V1082 et précharge publication-engine-v1082.js.
+- Les alias V1081/V1080 présents dans le moteur ne servent qu’à la compatibilité ; les chemins actifs chargent V1082.
+- Aucun changement du feed, des profils, des messages ou des autres interfaces.
