@@ -1,4 +1,4 @@
-/* Fyblic V1082 — moteur unique de publication : Normal + Story + Boutique.
+/* Fyblic V1083 Story TUS Anchor — correctif ciblé sur Story, base moteur V1082 inchangée pour Normal/Boutique.
    - Un seul protocole TUS direct pour tous les médias.
    - Les fichiers restent détenus par la fenêtre principale quand le module Publication se ferme.
    - Les publications multi-médias sont orchestrées comme un groupe unique avec progression agrégée.
@@ -14,6 +14,7 @@
   var REQUIRED_SCHEMA_VERSION=1082;
   var REQUIRED_PROTOCOL_VERSION=1082;
   var DIRECT_TUS_CHUNK=6*1024*1024;
+  var STORY_FIRST_TUS_CHUNK=1*1024*1024;
   var healthCache={at:0,value:false,detail:null};
   var watchers={};
   var terminalJobs={};
@@ -80,22 +81,29 @@
   function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0',apikey:clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY)},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
   async function directFetch(url,options,timeoutMs){var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}}
   async function tusOffset(upload,token){var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000);if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}var offset=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');return offset;}
-  async function uploadDirect(file,created,currentAuth,onProgress){
+  async function uploadDirect(file,created,currentAuth,onProgress,transferOptions){
+    transferOptions=transferOptions&&typeof transferOptions==='object'?transferOptions:{};
     var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct V1082 absente');
     var token=currentAuth.token,offset=await tusOffset(upload,token),retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
+    var firstChunkBytes=Number(transferOptions.firstChunkBytes||0);if(!Number.isSafeInteger(firstChunkBytes)||firstChunkBytes<0)firstChunkBytes=0;if(firstChunkBytes>chunkBytes)firstChunkBytes=chunkBytes;
+    var anchored=offset>0;
+    function reportAnchored(){if(!anchored)return;if(typeof transferOptions.onAnchored==='function'){try{transferOptions.onAnchored(Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/Math.max(1,file.size)*44))),stage:'Envoi du média'}),{offset:offset,fileSize:file.size});}catch(uiError){try{console.warn('Fyblic Story TUS anchor UI ignorée:',uiError&&uiError.message||uiError);}catch(_e){}}transferOptions.onAnchored=null;}}
+    if(anchored)reportAnchored();
     while(offset<file.size){
-      var end=Math.min(offset+chunkBytes,file.size),blob=file.slice(offset,end);
+      var step=(!anchored&&firstChunkBytes>0)?firstChunkBytes:chunkBytes;
+      var end=Math.min(offset+step,file.size),blob=file.slice(offset,end);
       try{
         var response=await directFetch(upload.url,{method:'PATCH',headers:directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'}),body:blob},600000);
         if(!response.ok){var rejected=new Error('Envoi direct refusé ('+response.status+')');rejected.status=response.status;throw rejected;}
         var next=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(next)||next<=offset||next>end)throw new Error('Confirmation directe incohérente');
         offset=next;retries=0;
+        if(!anchored&&offset>0){anchored=true;reportAnchored();}
         var uploadState=Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/file.size*44))),stage:'Envoi du média'});
         if(onProgress)onProgress(uploadState);
       }catch(error){
         retries++;if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
         if(error&&(error.status===401||error.status===403)){try{currentAuth=await auth();token=currentAuth.token;}catch(_authError){}}
-        try{offset=await tusOffset(upload,token);}catch(_offsetError){}
+        try{offset=await tusOffset(upload,token);if(!anchored&&offset>0){anchored=true;reportAnchored();}}catch(_offsetError){}
         await sleep(Math.min(10000,retries*900));
       }
     }
@@ -115,9 +123,9 @@
     })},currentAuth.token,45000)).body);
     rememberJob(created,options.groupId||'');
     if(typeof options.onCreated==='function')options.onCreated(created);
-    if(created.primary_ready===true||created.status==='published')return created;
+    if(created.primary_ready===true||created.status==='published'){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(created,{offset:file.size,fileSize:file.size,reused:true});}catch(_anchorUi){}}return created;}
     if(created.status==='uploading'){
-      await uploadDirect(file,created,currentAuth,function(job){rememberJob(job,options.groupId||'');if(onProgress)onProgress(job);});
+      await uploadDirect(file,created,currentAuth,function(job){rememberJob(job,options.groupId||'');if(onProgress)onProgress(job);},{firstChunkBytes:options.publicationType==='story'?STORY_FIRST_TUS_CHUNK:0,onAnchored:options.publicationType==='story'?options.onUploadAnchored:null});
       created=visibleJob((await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},currentAuth.token,45000)).body);
       rememberJob(created,options.groupId||'');if(onProgress)onProgress(created);
     }
@@ -139,9 +147,9 @@
     rememberGroup(group);activateGroup(group);
     var states=new Array(files.length).fill(null).map(function(){return {status:'uploading',progress:0,primary_ready:false};});
     var queuedJobs=new Array(files.length);
-    function emit(index,job){states[index]=mergeJobState(states[index],job||{});var d=aggregate(group,states);dispatch(d);if(typeof options.onProgress==='function')options.onProgress(d,states.slice());}
+    function emit(index,job){states[index]=mergeJobState(states[index],job||{});var d=aggregate(group,states);dispatch(d);if(typeof options.onProgress==='function'){if(group.publicationType==='story'){try{options.onProgress(d,states.slice());}catch(uiError){try{console.warn('Fyblic Story progression UI ignorée:',uiError&&uiError.message||uiError);}catch(_e){}}}else options.onProgress(d,states.slice());}}
     dispatch(aggregate(group,states));
-    if(typeof options.onGroupCreated==='function')options.onGroupCreated(group);
+    if(typeof options.onGroupCreated==='function'){if(group.publicationType==='story'){try{options.onGroupCreated(group);}catch(uiError){try{console.warn('Fyblic Story création UI ignorée:',uiError&&uiError.message||uiError);}catch(_e){}}}else options.onGroupCreated(group);}
 
     var cursor=0,concurrency=Math.max(1,Math.min(Number(options.uploadConcurrency||2)||2,3));
     async function runner(){
@@ -150,7 +158,7 @@
         var file=files[index],postId=typeof options.postIdForAsset==='function'?options.postIdForAsset(index,file):((files.length===1)?group.postId:(group.postId+'_'+(index+1)));
         var payload=typeof options.payloadForAsset==='function'?options.payloadForAsset(index,file):(options.payload||{});
         try{
-          var queued=await createAndUpload(file,{kind:kindOf(file),publicationType:group.publicationType==='normal'&&files.length>1?'album':group.publicationType,postId:postId,payload:payload,groupId:group.id,assetIndex:index,assetCount:files.length,onCreated:function(job){if(job&&job.id&&group.children.indexOf(job.id)<0){group.children.push(job.id);rememberGroup(group);updateActiveChildren(group);}emit(index,job);}},a,function(job){emit(index,job);});
+          var queued=await createAndUpload(file,{kind:kindOf(file),publicationType:group.publicationType==='normal'&&files.length>1?'album':group.publicationType,postId:postId,payload:payload,groupId:group.id,assetIndex:index,assetCount:files.length,onCreated:function(job){if(job&&job.id&&group.children.indexOf(job.id)<0){group.children.push(job.id);rememberGroup(group);updateActiveChildren(group);}emit(index,job);},onUploadAnchored:group.publicationType==='story'?function(job,info){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(group,job,info||{});}catch(uiError){try{console.warn('Fyblic Story ancrage UI ignoré:',uiError&&uiError.message||uiError);}catch(_e){}}}}:null},a,function(job){emit(index,job);});
           queuedJobs[index]=queued;emit(index,queued);
         }catch(error){states[index]=Object.assign({},states[index],{status:'failed',error_message:error&&error.message||String(error)});emit(index,states[index]);throw error;}
       }
@@ -179,6 +187,6 @@
     group.children.forEach(function(id,index){watch(id,session.token,function(job){states[index]=mergeJobState(states[index],job);dispatch(aggregate(group,states));},false).catch(function(error){states[index]={status:'failed',progress:Number(states[index]&&states[index].progress||45),error_message:error.message};dispatch(aggregate(group,states));});});
   }
 
-  var api={version:'1082.0',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
+  var api={version:'1082.1-story-tus-anchor',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

@@ -1,0 +1,10 @@
+FYBLIC V1083 — CORRECTIF STORY TUS ANCHOR
+
+Portée volontairement limitée à Story.
+- Publication normale V1082 conservée : aucun changement de son retour Accueil, de son 720p/1080p, du poster ou du worker.
+- Boutique conservée.
+- Story : premier PATCH TUS limité à 1 MiB pour confirmer rapidement la prise en charge du fichier Android.
+- Story : retour Accueil seulement après confirmation Upload-Offset > 0 par Supabase.
+- Story : si une reprise TUS possède déjà un offset > 0, le média est considéré ancré immédiatement.
+- Story : les erreurs des callbacks UI/progression ne peuvent plus interrompre le transfert TUS.
+- Aucun changement SQL. Aucun changement worker.
