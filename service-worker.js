@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1091-chat-clean-radar-air-20260923';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1092-radar-title-removed-20260923';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -98,7 +98,7 @@ var HAPPYAD_APP_SHELL = [
   './core/interaction-privacy-master-v855r52.js?v=972-p1-single-client',
   './core/post-options-master-v693.js?v=1031-storage-security',
   './core/share-button-bridge.js?v=938-guest-share-gate',
-  './core/story-master-v699.js?v=1031-storage-security',
+  './core/story-master-v699.js?v=1092-radar-title-removed',
   './core/notification-master-v700.js?v=1031-storage-security',
   './core/auth-session-master-v598.js?v=1031-storage-security',
   './core/profile-identity-stable-master-v741.js?v=1031-storage-security',

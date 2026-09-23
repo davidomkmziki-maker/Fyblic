@@ -1879,10 +1879,10 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
     var block=old,row=oldRow;
     if(!block){
       block=document.createElement('section');block.id='homeRadarStoryMasterV629';block.className='radarBlock';
-      block.innerHTML='<div class="radarHead"><div class="radarTitle">◎ RADAR <b>pour toi</b></div><a class="mapLite" role="button" tabindex="0" aria-label="Annonces" data-happyad-annonces-placeholder-v790="1">📍 Annonces</a></div><div class="radarRow"></div>';
+      block.innerHTML='<div class="radarHead"><a class="mapLite" role="button" tabindex="0" aria-label="Annonces" data-happyad-annonces-placeholder-v790="1">📍 Annonces</a></div><div class="radarRow"></div>';
       row=block.querySelector('.radarRow');chips.insertAdjacentElement('afterend',block);
     }else if(!row){
-      block.innerHTML='<div class="radarHead"><div class="radarTitle">◎ RADAR <b>pour toi</b></div><a class="mapLite" role="button" tabindex="0" aria-label="Annonces" data-happyad-annonces-placeholder-v790="1">📍 Annonces</a></div><div class="radarRow"></div>';
+      block.innerHTML='<div class="radarHead"><a class="mapLite" role="button" tabindex="0" aria-label="Annonces" data-happyad-annonces-placeholder-v790="1">📍 Annonces</a></div><div class="radarRow"></div>';
       row=block.querySelector('.radarRow');
     }
     block.setAttribute('data-happyad-story-master','v791');
