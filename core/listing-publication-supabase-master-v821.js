@@ -11,7 +11,7 @@
   if(window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__)return;
   window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__=true;
 
-  var VERSION='V1080_MOTEUR_UNIFIE';
+  var VERSION='V1081_FAST_PRIMARY';
   var PUBLIC_BUCKET='happyad-media';
   var PRIVATE_BUCKET='happyad-marketplace-private';
   var RPC='happyad_publish_listing_v1';
@@ -404,22 +404,22 @@
     var listingId='market_'+Date.now().toString(36)+'_'+uuid().replace(/-/g,'').slice(0,12);
     var media=[],publicPaths=[],allPublicPaths=[],ownershipPaths=[],officialPaths=[];
     try{
-      /* V1080 : tous les médias Boutique appartiennent à UNE seule publication logique.
+      /* V1081 : tous les médias Boutique appartiennent à UNE seule publication logique.
          Le moteur principal conserve les File et envoie jusqu'à deux médias en parallèle.
          L'annonce n'est enregistrée qu'une seule fois après disponibilité de toutes les qualités principales. */
-      var engine=window.FyblicPublicationEngineV1080;
-      if(!engine||typeof engine.submitMany!=='function'||typeof engine.available!=='function')throw new Error('Système de publication V1080 indisponible.');
-      if(!(await engine.available(true)))throw new Error(typeof engine.readinessMessage==='function'?engine.readinessMessage():'Mise à jour SQL V1080 requise.');
+      var engine=window.FyblicPublicationEngineV1081;
+      if(!engine||typeof engine.submitMany!=='function'||typeof engine.available!=='function')throw new Error('Système de publication V1081 indisponible.');
+      if(!(await engine.available(true)))throw new Error(typeof engine.readinessMessage==='function'?engine.readinessMessage():'Mise à jour SQL V1081 requise.');
       progress(payload,'Envoi du média');
       var mediaBatch=await engine.submitMany(parsed.files,{
         publicationType:'boutique',groupId:listingId,postId:listingId,uploadConcurrency:2,
         postIdForAsset:function(index){return listingId+'_media_'+(index+1);},
-        payloadForAsset:function(index){return {listingId:listingId,mediaIndex:index,source:'boutique-v1080'};},
+        payloadForAsset:function(index){return {listingId:listingId,mediaIndex:index,source:'boutique-v1081'};},
         onProgress:function(detail){progress(payload,detail&&detail.primaryReady?'Publication en cours':(detail&&detail.stage||'Publication en cours'));}
       });
-      if(!mediaBatch||!mediaBatch.used)throw new Error('Moteur Boutique V1080 indisponible');
+      if(!mediaBatch||!mediaBatch.used)throw new Error('Moteur Boutique V1081 indisponible');
       if(mediaBatch.completion&&typeof mediaBatch.completion.catch==='function'){
-        mediaBatch.completion.catch(function(error){console.warn('Fyblic Boutique V1080 — optimisation secondaire:',error&&error.message||error);});
+        mediaBatch.completion.catch(function(error){console.warn('Fyblic Boutique V1081 — optimisation secondaire:',error&&error.message||error);});
       }
       var readyJobs=await mediaBatch.visibleCompletion;
       readyJobs.forEach(function(job,index){

@@ -1,0 +1,59 @@
+FYBLIC V1081 — CORRECTIONS PUBLICATION / PERFORMANCE
+Date: 2026-09-23
+Base: V1080
+
+OBJECTIFS
+- Corriger le blocage Normal autour de 81 %.
+- Empêcher Échec -> retour vers une ancienne progression.
+- Réduire fortement le temps avant affichage de la première qualité.
+- Conserver Story, Boutique et Album sur le moteur unifié.
+
+CORRECTIONS
+1. SQL Normal robuste
+- Nouvelle insertion fyblic_insert_post_json_v1081.
+- L'UPSERT ne référence plus des colonnes optionnelles absentes.
+- Nouvelle mise à jour dynamique fyblic_update_post_media_v1081.
+- La vérification du schéma exige post_media_safe=true.
+
+2. Chemin vidéo rapide
+- H.264 + AAC, <=1080p, conteneur MP4/MOV compatible et débit <=8.5 Mbit/s:
+  remux/copie rapide au lieu d'un réencodage x264 complet.
+- Vidéo trop lourde/non compatible:
+  720p haute qualité visible en premier si la source est >=720p.
+  1080p final puis 540p/360p sont produits après l'affichage.
+- Pour les sources <720p, la meilleure qualité disponible reste primaire.
+
+3. Progression réelle après l'encodage
+- 46-48 %: récupération/analyse.
+- compression principale jusqu'à ~81 %.
+- 82-85 %: upload réel de la qualité principale.
+- 85-86 %: insertion/finalisation SQL.
+- Dès primary_ready, publication visible; variantes continuent en arrière-plan.
+
+4. Verrou terminal côté site
+- failed/canceled/published deviennent des états terminaux.
+- Un ancien événement processing ne peut plus remplacer Échec ou Published.
+- Progression non terminale monotone.
+
+5. Charge CPU
+- FYBLIC_MEDIA_WORKERS par défaut = 1.
+- Évite deux x264 concurrents sur un Railway CPU limité.
+- Peut être augmenté explicitement plus tard si le plan Railway fournit plusieurs vCPU dédiés.
+
+6. Instrumentation
+- Le worker journalise downloadMs, probeMs, mediaProcessingMs, primaryUploadMs,
+  publishPrimaryMs, totalToPrimaryMs, totalMs et fastPath.
+
+VALIDATION
+- npm test: 17/17 tests réussis.
+- npm run check: réussi.
+- Test local 1080p H264/AAC ~4.4 Mbit/s: fastPath=true, qualité 1080p sortie avant poster.
+- Test local 1080p ~34 Mbit/s: fastPath=false, ordre observé 720p primaire -> 1080p final -> 540p -> 360p -> poster.
+- Migration V1081: aucun DROP TABLE.
+
+ORDRE DE DEPLOIEMENT
+1. Exécuter FYBLIC_PUBLICATION_ENGINE_V1081.sql dans Supabase SQL Editor.
+2. Déployer le worker V1081 sur Railway.
+3. Vérifier /health : schemaVersion >=1081, protocolVersion=1081, ready=true.
+4. Déployer le site V1081.
+5. Tester d'abord une vidéo normale 30-60 s puis Story, puis une vidéo lourde/longue.

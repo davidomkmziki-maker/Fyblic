@@ -1,0 +1,26 @@
+ORDRE FYBLIC V1081
+
+1) SUPABASE
+Exécuter entièrement FYBLIC_PUBLICATION_ENGINE_V1081.sql.
+Le résultat final doit retourner fyblic_v1081_status avec version 1081 et post_media_safe=true.
+
+2) RAILWAY
+Déployer le ZIP worker V1081.
+Variable recommandée au départ: FYBLIC_MEDIA_WORKERS=1
+Ne changez pas les clés Supabase existantes.
+
+3) HEALTH
+Le endpoint /health doit indiquer:
+- pipelineV2.ready: true
+- schemaVersion: 1081 ou plus
+- protocolVersion: 1081
+- capabilities.postMediaSafe: true
+
+4) SITE
+Déployer le ZIP site V1081.
+
+5) TEST
+A. publication normale vidéo 30-60 s
+B. Story vidéo 30-60 s
+C. vidéo normale lourde
+D. Story lourde/longue
