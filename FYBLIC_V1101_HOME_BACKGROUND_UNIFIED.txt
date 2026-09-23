@@ -1,0 +1,13 @@
+FYBLIC V1101 — HOME BACKGROUND UNIFIED
+Date: 2026-09-24
+
+Objectif
+- Utiliser la couleur de fond exacte de l'Accueil (#080b10) comme fond maître des pages Fyblic.
+
+Correction
+- Profil propriétaire et profil visiteur: suppression de l'ancien fond #0d1117 sur les grandes surfaces.
+- Paramètres, modification profil, notifications, messages, chat, assistance, statistiques, partage et publication: grandes surfaces verrouillées sur #080b10.
+- Les cartes, panneaux et champs gardent leurs surfaces secondaires pour préserver la lisibilité et la profondeur.
+- Les zones média photo/vidéo/live restent noires lorsque le noir sert au contenu.
+- Aucun changement Supabase, publication, compression, qualité média, navigation ou données.
+- Cache PWA incrémenté pour éviter l'ancien fond après déploiement.

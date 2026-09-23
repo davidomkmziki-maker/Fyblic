@@ -1,0 +1,7 @@
+FYBLIC V1100 — QUALITY TAP FIX
+
+Correction minimale basée sur V1099.
+- Un tap simple sur « Qualité vidéo » ouvre maintenant le sélecteur de qualité.
+- Correctif Android/Chrome : ouverture du second bottom-sheet différée de 120 ms afin d'éviter le ghost-click du premier sheet.
+- Aucun changement du moteur de qualité V1099, de la compression, de Supabase, des publications, des Stories ou des photos.
+- Cache PWA et query string du module post-options incrémentés.

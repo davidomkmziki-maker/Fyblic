@@ -3,7 +3,7 @@
   if(window.__HAPPYAD_POST_OPTIONS_MASTER_V693__)return;
   window.__HAPPYAD_POST_OPTIONS_MASTER_V693__=true;
 
-  var VERSION='V1099_VIDEO_QUALITY_HOOK';
+  var VERSION='V1100_VIDEO_QUALITY_TAP_FIX';
   var SHEET_ID='happyadPostOptionsSheetV613F';
   var TOAST_ID='happyadPostOptionsToastV613F';
   var OUTBOX_KEY='HAPPYAD_POST_MUTATION_OUTBOX_V613E';
@@ -165,7 +165,7 @@
   async function open(options){
     options=options||{};var p=options.post||{},id=postId(p);if(!id){toast('Publication introuvable.');return false;}applyRememberedOptionState(p);
     var uid=localUid();if(!uid)uid=await resolveUid();var mine=!!uid&&!!ownerId(p)&&uid===ownerId(p),ui=makeSheet('Options de publication');
-    if(options.context==='video'&&typeof options.onQuality==='function'){var qLabel=clean(options.qualityLabel||'Auto');addButton(ui.box,'Qualité vidéo · '+qLabel,'quality','',function(){closeSheet();return options.onQuality(p);});}
+    if(options.context==='video'&&typeof options.onQuality==='function'){var qLabel=clean(options.qualityLabel||'Auto');addButton(ui.box,'Qualité vidéo · '+qLabel,'quality','',function(){/* V1100 Android/Chrome: laisser finir le tap courant avant de monter le second bottom-sheet. Sans ce délai, le click synthétique du premier tap peut retomber sur le nouveau calque et le refermer aussitôt. */closeSheet();setTimeout(function(){try{options.onQuality(p);}catch(_e){}},120);return false;});}
     if(mine){
       if(window.HappyVideoCoverEditorV693&&window.HappyVideoCoverEditorV693.canEdit(p))addButton(ui.box,'Modifier la miniature vidéo','cover','',function(){window.HappyVideoCoverEditorV693.open({post:p,context:options.context||'publication'});});
       var privacyBtn=addButton(ui.box,isPrivate(p)?'Rendre la publication publique':'Mettre la publication en privé',isPrivate(p)?'public':'private','',function(){return performOwnerAction(isPrivate(p)?'public':'private',p,options);});privacyBtn.dataset.optionKind='privacy';

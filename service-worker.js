@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1099-user-quality-master-20260924';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1101-home-background-unified-20260924';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -48,7 +48,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-card-layout-master-v982.css?v=986-professional-icons-love',
   './core/home-visual-maturity-master-v988.css?v=1097-boutique-card-maturity',
   './core/action-counters-global-v1006.css?v=1006-counts-15-video-home-size',
-  './core/happyad-global-coherence-v997.css?v=1025-search-suggestion-story',
+  './core/happyad-global-coherence-v997.css?v=1101-home-background-unified',
   './core/happyad-global-coherence-v997.js?v=1025-search-suggestion-story',
   './core/happyad-search-nav-v998.css?v=1005r4-search-primary-name-white-locked',
   './core/story-name-presence-master-v999.css?v=999-story-name-presence-off',
@@ -97,7 +97,7 @@ var HAPPYAD_APP_SHELL = [
   './core/filtering-privacy-master-v855r55.js?v=855r55-filtering',
   './core/message-presence-app-master-v855r51.js?v=869-connection-phase2',
   './core/interaction-privacy-master-v855r52.js?v=972-p1-single-client',
-  './core/post-options-master-v693.js?v=1099-video-quality-hook',
+  './core/post-options-master-v693.js?v=1100-quality-tap-fix',
   './core/share-button-bridge.js?v=938-guest-share-gate',
   './core/story-master-v699.js?v=1092-radar-title-removed',
   './core/notification-master-v700.js?v=1031-storage-security',

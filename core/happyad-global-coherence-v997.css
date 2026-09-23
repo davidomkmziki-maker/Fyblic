@@ -289,3 +289,46 @@ html[data-happyad-page="home"] #happyadAppShell{
   #happyadSmartSearchV427 .haSearchResults{padding-left:12px!important;padding-right:12px!important}
   #happyadSmartSearchV427 .haSearchAvatar{width:48px!important;height:48px!important;min-width:48px!important;flex-basis:48px!important}
 }
+
+/* Fyblic V1101 — fond maître identique à l'Accueil.
+   Cette couche ne touche qu'aux grandes surfaces de page. Elle ne modifie ni
+   médias, cartes, popups, logique métier, navigation, Supabase ou publication. */
+:root{
+  --ha-bg:var(--ha997-bg)!important;
+  --fyblic-page-bg:var(--ha997-bg)!important;
+}
+
+/* Profils propriétaire + visiteur : l'ancien --ha-bg (#0d1117) rendait le profil
+   visiblement plus clair que l'Accueil (#080b10). */
+html[data-happyad-page="my-profile"] .haProfileApp,
+html[data-happyad-page="my-profile"] .haProfileHero,
+html[data-happyad-page="my-profile"] .haProfileBoot,
+html[data-happyad-page="my-profile"] .haProfileTabs,
+html[data-happyad-page="visitor-profile"] .haProfileApp,
+html[data-happyad-page="visitor-profile"] .haProfileHero,
+html[data-happyad-page="visitor-profile"] .haProfileBoot,
+html[data-happyad-page="visitor-profile"] .haProfileTabs{
+  background:var(--ha997-bg)!important;
+  background-color:var(--ha997-bg)!important;
+  background-image:none!important;
+}
+
+/* Grandes surfaces des pages utilitaires. Les panneaux/cartes internes gardent
+   leurs reliefs afin de conserver la hiérarchie visuelle. */
+html[data-happyad-page="settings"] .page,
+html[data-happyad-page="profile-edit"] .page,
+html[data-happyad-page="notifications"] .notification-shell,
+html[data-happyad-page="messages"] body>.app,
+html[data-happyad-page="chat"] body>.app,
+html[data-happyad-page="assistance"] #chatPage.app,
+html[data-happyad-page="assistance"] #requestsPage.requests-page,
+html[data-happyad-page="assistance"] #assistanceExitPage.assistance-exit-page,
+html[data-happyad-page="profile-stats"] body>.app,
+html[data-happyad-page="share"] body>.app,
+html[data-happyad-page="publish"] body>.app{
+  background:var(--ha997-bg)!important;
+  background-color:var(--ha997-bg)!important;
+  background-image:none!important;
+}
+
+/* Le noir fonctionnel des viewers photo/vidéo/live reste volontairement intact. */
