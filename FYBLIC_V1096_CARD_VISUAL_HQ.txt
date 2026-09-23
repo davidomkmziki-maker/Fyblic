@@ -1,0 +1,5 @@
+Fyblic V1096
+- Les cartes Accueil gardent les images/photos en meilleure qualité disponible.
+- Les posters vidéo officiels sont prioritaires sur les miniatures de cache.
+- Les anciennes miniatures locales V1 ne priment plus sur le poster officiel.
+- Le cache SW est renouvelé pour éviter une baisse visuelle après mise à jour.

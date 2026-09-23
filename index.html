@@ -1662,7 +1662,7 @@ html body #homeRadarStoryMasterV629 .radarTitle,html body #homeRadarBlock .radar
 <script src="core/comment-mention-master-v994.js?v=996-primary-name-visible"></script>
 <script src="core/follow-master-v855r34.js?v=986-professional-icons-love"></script>
 <script src="core/home-feed-repository-v1.js?v=2-batch-complete"></script>
-<script src="core/home-feed-master-v1.js?v=1088-adaptive-1080-priority"></script>
+<script src="core/home-feed-master-v1.js?v=1096-card-visual-hq"></script>
 <script src="core/home-media-loader-v1.js?v=982-grouped-photo-badge"></script>
 <script src="core/like-direct-master-v876.js?v=995-like-network-stable"></script>
 <script src="core/home-actions-master-v1.js?v=1002-view-play-professional"></script>
@@ -3390,7 +3390,7 @@ function happyadCropStyle(p){
   if(!c||String(p&&p.kind||'').toLowerCase().indexOf('video')>=0)return '';
   return ' class="happyadCropImg" style="--ha-crop-focus-x:'+c.x+'%;--ha-crop-focus-y:'+c.y+'%;--ha-crop-scale:'+c.scale+'"';
 }
-function happyadVideoThumbCacheKey(p,url){return 'HAPPYAD_VIDEO_THUMB_V1_'+String((p&&p.id)||url||'').replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,120)}
+function happyadVideoThumbCacheKey(p,url){return 'HAPPYAD_VIDEO_THUMB_V2_'+String((p&&p.id)||url||'').replace(/[^a-zA-Z0-9_-]/g,'_').slice(0,120)}
 function happyadGetCachedVideoThumb(p,url){try{return localStorage.getItem(happyadVideoThumbCacheKey(p,url))||''}catch(_e){return ''}}
 function happyadSaveCachedVideoThumb(p,url,data){try{if(data&&String(data).indexOf('data:image/')===0)localStorage.setItem(happyadVideoThumbCacheKey(p,url),data)}catch(_e){}}
 function happyadCaptureVideoThumb(v,p,url){
@@ -3398,14 +3398,14 @@ function happyadCaptureVideoThumb(v,p,url){
     if(!v||!v.videoWidth||!v.videoHeight)return;
     if(happyadGetCachedVideoThumb(p,url))return;
     const c=document.createElement('canvas');
-    const size=520;
+    const size=720;
     c.width=size; c.height=size;
     const ctx=c.getContext('2d'); if(!ctx)return;
     const sw=v.videoWidth, sh=v.videoHeight;
     const side=Math.min(sw,sh);
     const sx=Math.max(0,(sw-side)/2), sy=Math.max(0,(sh-side)/2);
     ctx.drawImage(v,sx,sy,side,side,0,0,size,size);
-    happyadSaveCachedVideoThumb(p,url,c.toDataURL('image/jpeg',0.76));
+    happyadSaveCachedVideoThumb(p,url,c.toDataURL('image/jpeg',0.86));
   }catch(_e){}
 }
 function happyadVideoOfficialOverrideV693(p){
@@ -3414,7 +3414,7 @@ function happyadVideoOfficialOverrideV693(p){
 }
 function happyadVideoPosterUrl(p,url){
   p=p||{};
-  return happyadVideoOfficialOverrideV693(p)||p.posterUrl||p.poster_url||p.thumbnailUrl||p.thumbnail_url||p.thumbUrl||p.thumb_url||p.coverUrl||p.cover_url||p.previewUrl||p.preview_url||p.imageUrl||p.image_url||happyadGetCachedVideoThumb(p,url)||'';
+  return p.posterUrl||p.poster_url||p.thumbnailUrl||p.thumbnail_url||p.thumbUrl||p.thumb_url||p.coverUrl||p.cover_url||p.previewUrl||p.preview_url||p.imageUrl||p.image_url||happyadVideoOfficialOverrideV693(p)||happyadGetCachedVideoThumb(p,url)||'';
 }
 /* Fyblic V984 — les anciennes miniatures vidéo ont souvent été enregistrées en
    carré. Leur ratio ne permet donc pas de savoir si la vidéo source était verticale.

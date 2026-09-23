@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1095-boutique-single-1080-central-20260923';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1096-card-visual-hq-20260923';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -40,7 +40,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-chat-header-v1089.js?v=1089-source-svg',
   './core/marketplace-home-master-v828.js?v=991-market-three-line-description',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
-  './core/home-feed-master-v1.js?v=1088-adaptive-1080-priority',
+  './core/home-feed-master-v1.js?v=1096-card-visual-hq',
   './core/home-media-loader-v1.js?v=982-grouped-photo-badge',
   './core/like-direct-master-v876.js?v=995-like-network-stable',
   './core/home-actions-master-v1.js?v=1002-view-play-professional',
