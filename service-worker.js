@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1092-radar-title-removed-20260923';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1095-boutique-single-1080-central-20260923';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -62,12 +62,12 @@ var HAPPYAD_APP_SHELL = [
   './core/home-feed-boot-v1.js?v=1088-adaptive-1080-priority',
   './core/master-registry.js?v=974-p1-module-lifecycle-registry',
   './core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry',
-  './modules/happyad-chat.html?v=1085-boutique-validation-visible',
+  './modules/happyad-chat.html?v=1095-boutique-single-media',
   './modules/message-center.html?mode=inbox&source=p1-module-lifecycle&v=1031-storage-security',
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
   './modules/assistance.html?v=974-p1-module-lifecycle-registry',
-  './modules/video.html?v=1088-adaptive-1080-priority',
+  './modules/video.html?v=1095-marketplace-1080-central',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
   './modules/publish.html?v=1072-finalisation-reseau',

@@ -665,10 +665,31 @@ function happyadVideoDesiredQualityV1088(){
   }catch(_e){return '1080p';}
 }
 function happyadVideoConnectionWants1080V1087(){return happyadVideoDesiredQualityV1088()==='1080p';}
-function happyadVideoAdaptiveSrcV1087(variants,fallback){
+/* V1095 — les annonces vidéo privilégient réellement 1080p sur une connexion 4G
+   utilisable. Le débit API Android peut être conservateur; 720p reste le repli si
+   le réseau est vraiment faible. */
+function happyadVideoDesiredQualityForPostV1095(p){
+  try{
+    const marketplace=!!(p&&(p.happyadMarketplace===true||p.happyad_marketplace===true||p.is_marketplace===true||String(p.mode||'').toLowerCase()==='marketplace'));
+    if(!marketplace)return happyadVideoDesiredQualityV1088();
+    const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
+    const effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
+    if(effective==='slow-2g')return '360p';
+    if(effective==='2g')return down>0&&down<0.45?'360p':'540p';
+    if(effective==='3g')return down>0&&down<1.15?'540p':'720p';
+    if(effective==='4g'){
+      if(down>0&&down<0.45)return '360p';
+      if(down>0&&down<1.15)return '540p';
+      if(down>0&&down<1.80)return '720p';
+      return '1080p';
+    }
+    return happyadVideoDesiredQualityV1088();
+  }catch(_e){return happyadVideoDesiredQualityV1088();}
+}
+function happyadVideoAdaptiveSrcV1087(variants,fallback,post){
   variants=happyadVideoNormalizeVariantsV1087(variants);
   if(!Object.keys(variants).length)return fallback;
-  const wanted=happyadVideoDesiredQualityV1088();
+  const wanted=happyadVideoDesiredQualityForPostV1095(post);
   const order=wanted==='1080p'?['1080p','720p','540p','360p']:wanted==='720p'?['720p','540p','360p','1080p']:wanted==='540p'?['540p','360p','720p','1080p']:['360p','540p','720p','1080p'];
   for(const quality of order){if(variants[quality])return happyadVideoNormalizeMediaSrc(variants[quality]);}
   return fallback;
@@ -689,7 +710,7 @@ function mapHappyPost(r){
   let url=happyadVideoNormalizeMediaSrc(directUrl||mediaPath,{mediaPath:mediaPath,media_path:mediaPath});
   const crop=(r.image_crop&&typeof r.image_crop==='object')?r.image_crop:((r.imageCrop&&typeof r.imageCrop==='object')?r.imageCrop:{});
   const variants=Object.assign({},happyadVideoNormalizeVariantsV1087(crop&&crop.adaptive&&crop.adaptive.variants),marketplace?happyadVideoNormalizeVariantsV1087(coverItem.variants):{});
-  url=happyadVideoAdaptiveSrcV1087(variants,url);
+  url=happyadVideoAdaptiveSrcV1087(variants,url,r);
   const rawKind=happyadVideoNormalizeKind(r.marketplace_cover_type,(marketplace?(coverItem.type||coverItem.media_type):''),r.media_type,r.kind,r.mediaType,r.type,r.mime_type,r.mime,r.home_media_type,r.homeMediaType,(happyadVideoUrlLooksVideo(url)?'video':''));
   const kind=rawKind||'photo';
   const poster=String(r.thumbnail_url||r.thumbnailUrl||r.poster_url||r.posterUrl||(marketplace?nestedPoster:'')||r.cover_url||r.coverUrl||'').trim();
@@ -840,7 +861,7 @@ function happyadVideoScheduleAuto1080V1087(reel,p){
       reel.__happyad1080Timers.push(setTimeout(function(){
         try{
           if(!reel.isConnected)return;
-          const wanted=happyadVideoDesiredQualityV1088();
+          const wanted=happyadVideoDesiredQualityForPostV1095(reel.__happyadPost||p);
           const v=reel.querySelector('video');
           const currentQuality=happyadVideoQualityFromUrlV1088(v&&(v.dataset.src||v.src)||happyadVideoPostMediaUrl(reel.__happyadPost||p));
           if(currentQuality===wanted)return;
@@ -1623,6 +1644,35 @@ function happyadVideoPaintCanonicalAvatar(detail){
 }
 window.addEventListener('HAPPYAD_PROFILE_AVATAR_UPDATED_V855R32',function(event){happyadVideoPaintCanonicalAvatar(event&&event.detail);},true);
 window.addEventListener('HAPPYAD_POST_MUTATED_V613E',function(ev){try{var d=ev&&ev.detail||{},ids=(d.postIds||[d.postId]||[]).map(String),patch=d.patch||{};document.querySelectorAll('.reel[data-id]').forEach(function(reel){if(ids.indexOf(String(reel.dataset.id||''))<0)return;var rp=reel.__happyadPostV613E||reel.__happyadPost;if(rp)Object.assign(rp,patch);happyadVideoPaintPublicationTextV986Base(reel,rp||patch);refreshActionUI(reel);});if(activeCommentPost&&ids.indexOf(String(activeCommentPost.id||''))>=0)Object.assign(activeCommentPost,patch);}catch(_e){}},true);
+/* V1095 — si une annonce arrive de cache en 720p alors que 1080p est déjà prêt,
+   rafraîchir la ligne avant le premier play. Cela évite de démarrer inutilement en 720p. */
+async function happyadVideoFreshMarketplace1080BeforeAttachV1095(p){
+  try{
+    if(!p)return p;
+    const marketplace=!!(p.happyadMarketplace===true||p.happyad_marketplace===true||p.is_marketplace===true||String(p.mode||'').toLowerCase()==='marketplace');
+    if(!marketplace||happyadVideoDesiredQualityForPostV1095(p)!=='1080p')return p;
+    const current=happyadVideoPostMediaUrl(p);
+    if(happyadVideoQualityFromUrlV1088(current)==='1080p')return p;
+    const id=String(p.id||p.post_id||'').trim();if(!id)return p;
+    const fresh=await happyadVideoTimeout(happyadVideoFetchFreshPostById(id),1700,'Qualité annonce 1080p');
+    return fresh?happyadVideoMergePostKeepRich(p,fresh):p;
+  }catch(_e){return p;}
+}
+function happyadVideoApplyPendingUpgradeAtBoundaryV1095(reel,v){
+  try{
+    if(!reel||!v||v.paused||!reel.__happyadPendingSrc||!Number.isFinite(v.duration)||v.duration<=0)return false;
+    if(v.currentTime<Math.max(0,v.duration-.40))return false;
+    const src=String(reel.__happyadPendingSrc||'').trim();
+    if(!src||src===String(v.dataset.src||v.src||''))return false;
+    reel.__happyadPendingSrc='';
+    const muted=v.muted;
+    v.pause();v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';v.muted=muted;
+    const resume=()=>{try{v.currentTime=0;happyadVideoSetActivePreload(v,true);happyadPlayVideo(v,false);}catch(_e){}};
+    v.addEventListener('canplay',resume,{once:true});
+    try{v.load();}catch(_e){}
+    return true;
+  }catch(_e){return false;}
+}
 async function attachVideo(reel,p){
   try{
     if(!reel)return null;
@@ -1630,6 +1680,8 @@ async function attachVideo(reel,p){
     reel.dataset.videoAttached='1';
     try{reel.classList.remove('videoReady');reel.classList.add('videoLoading');}catch(_e){}
     p=p||{};
+    p=await happyadVideoFreshMarketplace1080BeforeAttachV1095(p);
+    try{reel.__happyadPost=p;reel.__happyadPostV613E=p;}catch(_e){}
     let src=happyadVideoNormalizeMediaSrc(happyadVideoFastMediaUrl(p),p);
     if(!src){
       try{
@@ -1691,7 +1743,7 @@ async function attachVideo(reel,p){
     const hot=reel.querySelector('.timeHot'), controls=reel.querySelector('.timeControls');
     const happyadSetVideoProgress=()=>{const d=v.duration||0;const pct=d?Math.max(0,Math.min(100,(v.currentTime/d)*100)):0;if(controls)controls.style.setProperty('--haVideoProgress',String(pct));if(seek&&!seek.dragging)seek.value=Math.round(pct*10)};
     v.addEventListener('loadedmetadata',()=>{if(dur)dur.textContent=fmt(v.duration);happyadSetVideoProgress();});
-    v.addEventListener('timeupdate',()=>{const d=v.duration||0;if(cur)cur.textContent=fmt(v.currentTime);if(dur)dur.textContent=fmt(d);happyadSetVideoProgress();});
+    v.addEventListener('timeupdate',()=>{const d=v.duration||0;if(cur)cur.textContent=fmt(v.currentTime);if(dur)dur.textContent=fmt(d);happyadSetVideoProgress();happyadVideoApplyPendingUpgradeAtBoundaryV1095(reel,v);});
     if(seek){seek.addEventListener('input',e=>{e.stopPropagation();seek.dragging=true;const d=v.duration||0;const pct=Math.max(0,Math.min(100,Number(seek.value||0)/10));if(controls)controls.style.setProperty('--haVideoProgress',String(pct));if(d)v.currentTime=(seek.value/1000)*d});seek.addEventListener('change',()=>{seek.dragging=false;happyadSetVideoProgress();});}
     if(hot)hot.onclick=e=>{e.stopPropagation();reel.classList.add('showTime');clearTimeout(reel.timer);reel.timer=setTimeout(()=>reel.classList.remove('showTime'),4200)};
     if(controls)controls.onclick=e=>e.stopPropagation();

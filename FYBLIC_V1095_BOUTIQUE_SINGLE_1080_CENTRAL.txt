@@ -1,0 +1,6 @@
+FYBLIC V1095 — base utilisateur Fyblic.zip
+
+1. Boutique: marketplace_media devient la galerie canonique. Les variantes 720p/1080p restent imbriquées dans un seul média logique; 1080p est choisi comme source principale quand disponible.
+2. Centrale vidéo: pour une annonce Marketplace, rafraîchissement court avant premier play si 1080p est attendu; 4G privilégie 1080p sauf réseau réellement faible.
+3. Si 1080p devient prêt pendant une lecture 720p, la bascule se fait au prochain bord de boucle sans actualiser la page.
+4. Aucun changement publication, worker, SQL, Story ou compression.

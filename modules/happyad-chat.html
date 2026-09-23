@@ -3034,6 +3034,32 @@
       const normalized=String(value||'').replace(/\s/g,'').replace(/,/g,'.').replace(/[^0-9.]/g,'');
       return Number.parseFloat(normalized)||0;
     }
+    /* V1095 — Boutique : une vidéo logique ne doit jamais devenir plusieurs médias
+       simplement parce que 720p/1080p ont des URL différentes. marketplace_media
+       est la source canonique; les qualités restent imbriquées dans variants. */
+    function marketplaceQualityRankV1095(src=''){
+      src=String(src||'');
+      if(/(?:^|[-_/])1080p(?:[._/?-]|$)/i.test(src))return 4;
+      if(/(?:^|[-_/])720p(?:[._/?-]|$)/i.test(src))return 3;
+      if(/(?:^|[-_/])540p(?:[._/?-]|$)/i.test(src))return 2;
+      if(/(?:^|[-_/])360p(?:[._/?-]|$)/i.test(src))return 1;
+      return 0;
+    }
+    function marketplaceBestVideoSourceV1095(item,fallback=''){
+      item=item&&typeof item==='object'?item:{};
+      const candidates=[];
+      const push=v=>{v=String(v||'').trim();if(v&&!candidates.includes(v))candidates.push(v)};
+      const variants=item.variants;
+      if(Array.isArray(variants)){
+        variants.forEach(v=>{if(v&&typeof v==='object')push(firstDefined(v,['url','src','media_url','path']))});
+      }else if(variants&&typeof variants==='object'){
+        ['1080p','720p','540p','360p'].forEach(k=>{const v=variants[k];push(typeof v==='string'?v:firstDefined(v||{},['url','src','media_url','path']))});
+      }
+      push(firstDefined(item,['src','url','media_url','video_url','path']));
+      push(fallback);
+      candidates.sort((a,b)=>marketplaceQualityRankV1095(b)-marketplaceQualityRankV1095(a));
+      return candidates[0]||'';
+    }
     function extractMediaList(row){
       const result=[];
       const add=(source,type='',poster='')=>{
@@ -3049,24 +3075,43 @@
         }
         result.push({type:video?'video':'image',src,poster:String(poster||'').trim(),alt:firstDefined(row,['title','name','caption'],'Annonce Fyblic')});
       };
-      const collections=[row?.marketplace_media,row?.media,row?.medias,row?.media_urls,row?.images,row?.photos,row?.gallery];
-      collections.forEach(collection=>{
-        let value=collection;
-        if(typeof value==='string'){
-          try{value=JSON.parse(value)}catch(_){value=value.split(',').map(item=>item.trim())}
-        }
-        if(!Array.isArray(value))return;
+      const parseCollection=value=>{
+        if(typeof value==='string'){try{value=JSON.parse(value)}catch(_){value=value.split(',').map(item=>item.trim())}}
+        return Array.isArray(value)?value:[];
+      };
+      /* La liste Marketplace est autoritaire. On n'empile plus ses alias media/cover
+         qui peuvent représenter la même vidéo sous deux qualités différentes. */
+      const canonical=parseCollection(row?.marketplace_media);
+      const collections=canonical.length?[canonical]:[row?.media,row?.medias,row?.media_urls,row?.images,row?.photos,row?.gallery].map(parseCollection);
+      collections.forEach(value=>{
         value.forEach(item=>{
           if(typeof item==='string')add(item);
-          else if(item&&typeof item==='object')add(firstDefined(item,['src','url','media_url','image_url','video_url']),firstDefined(item,['type','media_type','kind']),firstDefined(item,['poster','poster_url','thumbnail_url']));
+          else if(item&&typeof item==='object'){
+            const type=firstDefined(item,['type','media_type','kind']);
+            const raw=firstDefined(item,['src','url','media_url','image_url','video_url','path']);
+            const isVideo=String(type||'').toLowerCase().includes('video')||/\.(mp4|mov|m4v|webm|3gp|3g2|mkv|avi|mpeg|mpg|ogv|ts|mts|m2ts)(\?|#|$)/i.test(String(raw||''));
+            add(isVideo?marketplaceBestVideoSourceV1095(item,raw):raw,type,firstDefined(item,['poster','poster_url','thumbnail_url']));
+          }
         });
       });
       const rowPoster=String(firstDefined(row,['thumbnail_url','thumbnailUrl','poster_url','posterUrl','cover_url','coverUrl'],'')||'').trim();
       const coverIndex=Math.max(0,Number(firstDefined(row,['marketplace_cover_index','coverIndex'],0))||0);
       const coverType=String(firstDefined(row,['marketplace_cover_type','media_type','mediaType','kind'],'')||'').toLowerCase();
-      add(firstDefined(row,['marketplace_cover_url','media_url','image_url','photo_url','cover_url','file_url','url']),firstDefined(row,['marketplace_cover_type','media_type','content_type','kind']),rowPoster);
-      add(firstDefined(row,['video_url']), 'video', rowPoster);
-      /* V828 : une miniature créée depuis Mon profil est le poster de la vidéo,
+      const topCover=String(firstDefined(row,['marketplace_cover_url','media_url','image_url','photo_url','cover_url','file_url','url'])||'').trim();
+      if(canonical.length&&result.length){
+        /* Le top-level est une mise à niveau du média de couverture, pas un média de plus. */
+        const target=Math.min(coverIndex,result.length-1);
+        if(result[target]&&result[target].type==='video'){
+          const best=marketplaceBestVideoSourceV1095(canonical[Math.min(coverIndex,canonical.length-1)]||{},topCover);
+          if(best&&marketplaceQualityRankV1095(best)>=marketplaceQualityRankV1095(result[target].src))result[target].src=best;
+        }else if(topCover&&result[target]&&marketplaceQualityRankV1095(topCover)>marketplaceQualityRankV1095(result[target].src)){
+          result[target].src=topCover;
+        }
+      }else{
+        add(topCover,firstDefined(row,['marketplace_cover_type','media_type','content_type','kind']),rowPoster);
+        add(firstDefined(row,['video_url']),'video',rowPoster);
+      }
+      /* Une miniature créée depuis Mon profil est le poster de la vidéo,
          pas un média supplémentaire dans la galerie. */
       if(rowPoster){
         let target=-1;
