@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1096-card-visual-hq-20260923';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1098-video-1080-first-20260923';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -38,7 +38,7 @@ var HAPPYAD_APP_SHELL = [
   './core/listing-publication-supabase-master-v821.js?v=1087-auto-1080',
   './core/chat-integration-master-v795.js?v=1085-boutique-validation-visible',
   './core/home-chat-header-v1089.js?v=1089-source-svg',
-  './core/marketplace-home-master-v828.js?v=991-market-three-line-description',
+  './core/marketplace-home-master-v828.js?v=1097-boutique-card-maturity',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
   './core/home-feed-master-v1.js?v=1096-card-visual-hq',
   './core/home-media-loader-v1.js?v=982-grouped-photo-badge',
@@ -46,7 +46,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-actions-master-v1.js?v=1002-view-play-professional',
   './core/actions-layout-master-v982.css?v=1006-action-count-15',
   './core/home-card-layout-master-v982.css?v=986-professional-icons-love',
-  './core/home-visual-maturity-master-v988.css?v=1006-action-count-15',
+  './core/home-visual-maturity-master-v988.css?v=1097-boutique-card-maturity',
   './core/action-counters-global-v1006.css?v=1006-counts-15-video-home-size',
   './core/happyad-global-coherence-v997.css?v=1025-search-suggestion-story',
   './core/happyad-global-coherence-v997.js?v=1025-search-suggestion-story',
@@ -56,7 +56,7 @@ var HAPPYAD_APP_SHELL = [
   './core/mention-render-master-v943.js?v=944-photo-profile-handoff',
   './core/profile-link-master-v992.js?v=996-primary-name-badge',
   './core/comment-mention-master-v994.js?v=996-primary-name-visible',
-  './core/home-card-renderer-v1.js?v=1002-view-play-professional',
+  './core/home-card-renderer-v1.js?v=1097-boutique-card-maturity',
   './core/home-card-story-ring-master-v992.js?v=992-home-story-ring-exact',
   './core/home-feed-view-v1.js?v=929-prepaint-anchor',
   './core/home-feed-boot-v1.js?v=1088-adaptive-1080-priority',
@@ -67,7 +67,7 @@ var HAPPYAD_APP_SHELL = [
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
   './modules/assistance.html?v=974-p1-module-lifecycle-registry',
-  './modules/video.html?v=1095-marketplace-1080-central',
+  './modules/video.html?v=1098-1080-first-card',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
   './modules/publish.html?v=1072-finalisation-reseau',

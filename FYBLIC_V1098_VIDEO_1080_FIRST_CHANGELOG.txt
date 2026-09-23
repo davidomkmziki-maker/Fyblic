@@ -1,0 +1,10 @@
+FYBLIC V1098 — VIDEO 1080 FIRST
+
+- Une vidéo ouverte depuis une carte Accueil/Cherche via openLongVideo démarre avec la variante 1080p lorsqu’elle existe.
+- Le payload d’ouverture rapide conserve désormais les variantes adaptatives, image_crop et les champs Boutique/marketplace.
+- La vidéo cible est marquée uniquement comme ouverture initiale 1080p.
+- Les vidéos suivantes lors du scroll restent adaptatives.
+- L’adaptation est moins agressive : 1080p reste prioritaire, repli seulement sur débit franchement faible.
+- Cache PWA incrémenté en V1098.
+- Aucun changement dans le worker de compression, Supabase, publication, Story ou carte Boutique V1097.
+- Le futur sélecteur manuel de qualité n’est PAS ajouté dans cette version.

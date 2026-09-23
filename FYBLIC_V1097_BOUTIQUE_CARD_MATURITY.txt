@@ -1,0 +1,12 @@
+FYBLIC V1097 — Carte Boutique plus mature
+Date : 2026-09-23
+
+Corrections ciblées Accueil / carte Boutique :
+- Le bouton « Voir l’annonce » est maintenant une barre pleine largeur, directement collée sous le média, avant le titre.
+- Style orange premium, sans encadré flottant, avec flèche à droite.
+- Le bouton Partager est placé juste sous cette barre, à droite, sur la même ligne que le titre.
+- Partager n’a plus de carré, de bordure ni de fond : icône libre avec une zone tactile de 40 px.
+- Le titre reste dans une zone flex indépendante : aucun chevauchement possible avec Partager, même sur petit écran ou titre long.
+- Les anciennes cartes Marketplace déjà présentes dans le DOM sont normalisées vers la même structure.
+- Aucune modification du pipeline publication/compression, Supabase, qualité média, Stories ou Centrale vidéo.
+- Cache PWA incrémenté pour forcer le chargement du nouveau rendu.

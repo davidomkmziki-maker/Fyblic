@@ -46,8 +46,8 @@ html body #happyadSmartSearchV427 .haDiscoverySpinnerV1017{
 <link id="happyad-actions-layout-master-v982-prepaint" rel="stylesheet" href="core/actions-layout-master-v982.css?v=1006-action-count-15">
 <link rel="preload" as="style" href="core/home-card-layout-master-v982.css?v=986-professional-icons-love">
 <link id="happyad-home-card-layout-master-v982-prepaint" rel="stylesheet" href="core/home-card-layout-master-v982.css?v=986-professional-icons-love">
-<link rel="preload" as="style" href="core/home-visual-maturity-master-v988.css?v=1006-action-count-15">
-<link id="happyad-home-visual-maturity-master-v988-prepaint" rel="stylesheet" href="core/home-visual-maturity-master-v988.css?v=1006-action-count-15">
+<link rel="preload" as="style" href="core/home-visual-maturity-master-v988.css?v=1097-boutique-card-maturity">
+<link id="happyad-home-visual-maturity-master-v988-prepaint" rel="stylesheet" href="core/home-visual-maturity-master-v988.css?v=1097-boutique-card-maturity">
 <style id="happyad-v631-story-radar-first-paint">
 /* V631 — taille ronde finale dès le premier rendu et clic réarmé après fermeture. */
 #homeRadarStoryMasterV629 .haStoryRadarUnitV629{
@@ -1666,7 +1666,7 @@ html body #homeRadarStoryMasterV629 .radarTitle,html body #homeRadarBlock .radar
 <script src="core/home-media-loader-v1.js?v=982-grouped-photo-badge"></script>
 <script src="core/like-direct-master-v876.js?v=995-like-network-stable"></script>
 <script src="core/home-actions-master-v1.js?v=1002-view-play-professional"></script>
-<script src="core/home-card-renderer-v1.js?v=1002-view-play-professional"></script>
+<script src="core/home-card-renderer-v1.js?v=1097-boutique-card-maturity"></script>
 <script src="core/home-card-story-ring-master-v992.js?v=992-home-story-ring-exact"></script>
 <script src="core/home-feed-view-v1.js?v=929-prepaint-anchor"></script>
 <script src="core/home-feed-boot-v1.js?v=1088-adaptive-1080-priority"></script>
@@ -3328,27 +3328,58 @@ function happyadVideoFastOpenPayload(postId){
     function looksVideo(p){try{return typeof isVideo==='function'?isVideo(p):String(p&&((p.kind||p.type||p.mediaType||p.media_type||''))).toLowerCase().indexOf('video')>=0}catch(_e){return false}}
     var source=raw.filter(function(p){var id=String(p&&p.id||p&&p.post_id||'');if(!p||!id||seen[id]||!looksVideo(p)||p.deleted_at||p.deletedAt)return false;seen[id]=1;return true;});
     var target=source.find(function(p){return String(p&&p.id||p&&p.post_id||'')===String(postId);})||null;
-    function slim(p){
-      var media=happyadPublicMediaUrlV34(p.mediaUrl||p.media_url||p.homeMediaUrl||p.home_media_url||p.videoUrl||p.video_url||p.url||p.src||p.mediaPath||p.media_path||'');
+    function mergeVariants(out,value){
+      if(!value)return out;
+      if(Array.isArray(value)){value.forEach(function(item){if(!item||typeof item!=='object')return;var name=String(item.name||item.quality||item.label||'').trim(),url=String(item.url||item.src||item.media_url||item.path||'').trim();if(name&&url)out[name]=url;});return out;}
+      if(typeof value==='object')Object.keys(value).forEach(function(key){var raw=value[key],url=typeof raw==='string'?raw:(raw&&typeof raw==='object'?(raw.url||raw.src||raw.media_url||raw.path||''):'');if(String(url||'').trim())out[String(key||'').trim()]=String(url).trim();});
+      return out;
+    }
+    function variantsFor(p){
+      var out={},crop=(p&&((p.imageCrop&&typeof p.imageCrop==='object')?p.imageCrop:p.image_crop))||{};
+      mergeVariants(out,crop&&crop.adaptive&&crop.adaptive.variants);
+      var media=Array.isArray(p&&p.marketplaceMedia)?p.marketplaceMedia:(Array.isArray(p&&p.marketplace_media)?p.marketplace_media:[]);
+      var idx=Math.max(0,Math.min(Number(p&&((p.marketplaceCoverIndex!=null?p.marketplaceCoverIndex:p.marketplace_cover_index)))||0,Math.max(0,media.length-1)));
+      var cover=media[idx]||media[0]||{};mergeVariants(out,cover&&cover.variants);
+      return out;
+    }
+    function preferred1080(p,fallback){
+      var v=variantsFor(p),u=v['1080p']||v['1080']||v['fullhd']||v['fhd']||'';
+      return u?happyadPublicMediaUrlV34(u):fallback;
+    }
+    function slim(p,forceInitial1080){
+      var baseMedia=happyadPublicMediaUrlV34(p.mediaUrl||p.media_url||p.homeMediaUrl||p.home_media_url||p.videoUrl||p.video_url||p.url||p.src||p.mediaPath||p.media_path||'');
+      var media=forceInitial1080?preferred1080(p,baseMedia):baseMedia;
       var poster=happyadPublicMediaUrlV34(p.posterUrl||p.poster_url||p.thumbnailUrl||p.thumbnail_url||p.coverUrl||p.cover_url||p.imageUrl||p.image_url||p.photoUrl||p.photo_url||'');
       try{if(!poster&&typeof happyadGetCachedVideoThumb==='function')poster=happyadGetCachedVideoThumb(p,media)||'';}catch(_thumb){}
+      var marketMedia=Array.isArray(p.marketplaceMedia)?p.marketplaceMedia:(Array.isArray(p.marketplace_media)?p.marketplace_media:[]);
+      var crop=(p.imageCrop&&typeof p.imageCrop==='object')?p.imageCrop:((p.image_crop&&typeof p.image_crop==='object')?p.image_crop:null);
       return {
-      id:p.id||p.post_id, post_id:p.post_id||p.id, title:p.title||'Vidéo Fyblic', desc:p.desc||p.description||'', description:p.description||p.desc||'',
+      id:p.id||p.post_id, post_id:p.post_id||p.id, mode:p.mode||'publish', title:p.title||'Vidéo Fyblic', desc:p.desc||p.description||'', description:p.description||p.desc||'',
       kind:p.kind||p.type||p.mediaType||p.media_type||'video', type:p.type||p.kind||p.media_type||'video', mediaType:p.mediaType||p.media_type||p.kind||p.type||'video', media_type:p.media_type||p.mediaType||'video',
       mediaUrl:media, media_url:media,
       mediaPath:p.mediaPath||p.media_path||'', media_path:p.media_path||p.mediaPath||'',
       homeMediaUrl:media, home_media_url:media,
       videoUrl:media, video_url:media,
+      imageCrop:crop, image_crop:crop,
+      adaptiveVariantsV1087:variantsFor(p),
+      happyadMarketplace:p.happyadMarketplace===true||p.happyad_marketplace===true||p.is_marketplace===true||String(p.mode||'').toLowerCase()==='marketplace',
+      happyad_marketplace:p.happyad_marketplace===true||p.happyadMarketplace===true||p.is_marketplace===true||String(p.mode||'').toLowerCase()==='marketplace',
+      is_marketplace:p.is_marketplace===true||p.happyad_marketplace===true||p.happyadMarketplace===true||String(p.mode||'').toLowerCase()==='marketplace',
+      marketplaceMedia:marketMedia, marketplace_media:marketMedia,
+      marketplaceCoverIndex:Number(p.marketplaceCoverIndex!=null?p.marketplaceCoverIndex:p.marketplace_cover_index)||0, marketplace_cover_index:Number(p.marketplace_cover_index!=null?p.marketplace_cover_index:p.marketplaceCoverIndex)||0,
+      marketplaceCoverUrl:p.marketplaceCoverUrl||p.marketplace_cover_url||'', marketplace_cover_url:p.marketplace_cover_url||p.marketplaceCoverUrl||'',
+      marketplaceCoverType:p.marketplaceCoverType||p.marketplace_cover_type||'', marketplace_cover_type:p.marketplace_cover_type||p.marketplaceCoverType||'',
       posterUrl:poster, poster_url:poster||p.poster_url||p.posterUrl||'', thumbnailUrl:poster||p.thumbnailUrl||p.thumbnail_url||p.posterUrl||p.poster_url||'', thumbnail_url:poster||p.thumbnail_url||p.thumbnailUrl||p.poster_url||p.posterUrl||'', cachedThumb:poster, cached_thumb:poster,
       creatorId:p.creatorId||p.user_id||p.userId||'', user_id:p.user_id||p.creatorId||'', creatorName:p.creatorName||p.display_name||p.userName||p.author||p.name||'', display_name:p.display_name||p.creatorName||'',
       avatar:p.avatar||p.avatar_url||'', avatar_url:p.avatar_url||p.avatar||'', handle:p.handle||p.username||'', username:p.username||p.handle||'', badge:p.badge||p.userBadge||p.user_badge||'aucun',
       createdAt:p.createdAt||p.created_at||Date.now(), created_at:p.created_at||p.createdAt||Date.now(), views_count:p.views_count||p.video_views_count||0, video_views_count:p.video_views_count||p.views_count||0,
-      __from_video:'1'
+      __from_video:'1', __happyadInitial1080V1098:forceInitial1080===true
     };}
-    var minimal=source.slice(0,120).map(slim);
-    if(target && !minimal.some(function(p){return String(p.id)===String(target.id||target.post_id)})) minimal.unshift(slim(target));
-    else if(target){minimal=minimal.filter(function(p){return String(p.id)!==String(target.id||target.post_id)});minimal.unshift(slim(target));}
-    var fastPayload=JSON.stringify({ts:Date.now(), postId:String(postId||''), list:minimal, target:target?slim(target):null});
+    function isTarget(p){return String(p&&p.id||p&&p.post_id||'')===String(postId||'');}
+    var minimal=source.slice(0,120).map(function(p){return slim(p,isTarget(p));});
+    if(target && !minimal.some(function(p){return String(p.id)===String(target.id||target.post_id)})) minimal.unshift(slim(target,true));
+    else if(target){minimal=minimal.filter(function(p){return String(p.id)!==String(target.id||target.post_id)});minimal.unshift(slim(target,true));}
+    var fastPayload=JSON.stringify({ts:Date.now(), postId:String(postId||''), list:minimal, target:target?slim(target,true):null, initialQuality:'1080p'});
     sessionStorage.setItem('HAPPYAD_FAST_OPEN_VIDEO_V1', fastPayload);
     localStorage.setItem('HAPPYAD_FAST_OPEN_VIDEO_V1', fastPayload);
     try{localStorage.setItem('HAPPYAD_VIDEO_CACHE_STABLE_V1',JSON.stringify(minimal));}catch(_stableVideoCache){}
@@ -8665,7 +8696,7 @@ html body #happyadSmartSearchV427 .haDiscoveryPostTitleV1014.haDiscoveryIdentity
       if(window.__HAPPYAD_PWA_DISABLED__)return;
       if(!('serviceWorker' in navigator))return;
       if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;
-      navigator.serviceWorker.register('./service-worker.js?v=v1095-boutique-single-1080-central-20260923',{scope:'./',updateViaCache:'none'}).then(function(reg){
+      navigator.serviceWorker.register('./service-worker.js?v=v1097-boutique-card-maturity-20260923',{scope:'./',updateViaCache:'none'}).then(function(reg){
         try{
           if(reg.active)reg.active.postMessage({type:'HAPPYAD_CLEAR_OLD_CACHES'});
           if(reg.waiting)reg.waiting.postMessage({type:'HAPPYAD_SKIP_WAITING'});
@@ -12003,7 +12034,7 @@ window.__HAPPYAD_V35_ACCOUNT_RECONNECT_ROUTE_FIX__=true;
 <script id="happyad-listing-publication-supabase-v821-js" src="core/listing-publication-supabase-master-v821.js?v=1087-auto-1080"></script>
 <script id="happyad-chat-integration-master-v795-js" src="core/chat-integration-master-v795.js?v=1085-boutique-validation-visible"></script>
 <script id="fyblic-home-chat-header-v1089-js" src="core/home-chat-header-v1089.js?v=1089-source-svg"></script>
-<script id="happyad-marketplace-home-master-v828-js" src="core/marketplace-home-master-v828.js?v=991-market-three-line-description"></script>
+<script id="happyad-marketplace-home-master-v828-js" src="core/marketplace-home-master-v828.js?v=1097-boutique-card-maturity"></script>
 <script id="happyad-keyboard-surface-master-v851r7-js" src="core/keyboard-surface-master-v851r7.js?v=855r93-home-silent"></script>
 <script id="happyad-language-preference-master-v855r59-js" src="core/language-preference-master-v855r59.js?v=855r59-language-storage-real"></script>
 <style id="happyadCommentFluidV901">
@@ -12349,7 +12380,7 @@ window.__HAPPYAD_V35_ACCOUNT_RECONNECT_ROUTE_FIX__=true;
 <!-- Fyblic V983 : MASTER FINAL — sept corrections médias/actions -->
 <link id="happyad-actions-layout-master-v982" rel="stylesheet" href="core/actions-layout-master-v982.css?v=1006-action-count-15">
 <link id="happyad-home-card-layout-master-v982" rel="stylesheet" href="core/home-card-layout-master-v982.css?v=986-professional-icons-love">
-<link id="happyad-home-visual-maturity-master-v988" rel="stylesheet" href="core/home-visual-maturity-master-v988.css?v=1006-action-count-15">
+<link id="happyad-home-visual-maturity-master-v988" rel="stylesheet" href="core/home-visual-maturity-master-v988.css?v=1097-boutique-card-maturity">
 <style id="happyad-v983-photo-comments-front-layer">
 /* Le panneau Commentaires doit rester au-dessus du fullscreen Accueil (1000200)
    et du fullscreen lancé depuis un profil (2147483000). */

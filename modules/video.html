@@ -652,10 +652,12 @@ function happyadVideoDesiredQualityV1088(){
   try{
     const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
     const effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
+    /* V1098 — dans la Centrale, 1080p reste réellement prioritaire. Le scroll peut
+       s'adapter, mais uniquement lorsque le débit mesuré devient franchement faible. */
     if(down>0){
-      if(down<0.45)return '360p';
-      if(down<1.15)return '540p';
-      if(down<2.60)return '720p';
+      if(down<0.35)return '360p';
+      if(down<0.75)return '540p';
+      if(down<1.40)return '720p';
       return '1080p';
     }
     if(effective==='slow-2g')return '360p';
@@ -668,8 +670,19 @@ function happyadVideoConnectionWants1080V1087(){return happyadVideoDesiredQualit
 /* V1095 — les annonces vidéo privilégient réellement 1080p sur une connexion 4G
    utilisable. Le débit API Android peut être conservateur; 720p reste le repli si
    le réseau est vraiment faible. */
+function happyadVideoIsInitialCardTargetV1098(p){
+  try{
+    const q=new URLSearchParams(location.search||'');
+    const target=String(q.get('post')||'').trim(),from=String(q.get('from')||'').toLowerCase();
+    const id=String(p&&(p.id||p.post_id)||'').trim();
+    return !!(target&&id&&target===id&&(from==='home'||p.__happyadInitial1080V1098===true||String(p.__happyadInitial1080V1098||'')==='1'));
+  }catch(_e){return !!(p&&p.__happyadInitial1080V1098===true);}
+}
 function happyadVideoDesiredQualityForPostV1095(p){
   try{
+    /* V1098 — la vidéo explicitement ouverte depuis une carte démarre en 1080p si
+       cette rendition existe. Les vidéos suivantes du scroll restent adaptatives. */
+    if(happyadVideoIsInitialCardTargetV1098(p))return '1080p';
     const marketplace=!!(p&&(p.happyadMarketplace===true||p.happyad_marketplace===true||p.is_marketplace===true||String(p.mode||'').toLowerCase()==='marketplace'));
     if(!marketplace)return happyadVideoDesiredQualityV1088();
     const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
@@ -678,9 +691,9 @@ function happyadVideoDesiredQualityForPostV1095(p){
     if(effective==='2g')return down>0&&down<0.45?'360p':'540p';
     if(effective==='3g')return down>0&&down<1.15?'540p':'720p';
     if(effective==='4g'){
-      if(down>0&&down<0.45)return '360p';
-      if(down>0&&down<1.15)return '540p';
-      if(down>0&&down<1.80)return '720p';
+      if(down>0&&down<0.35)return '360p';
+      if(down>0&&down<0.75)return '540p';
+      if(down>0&&down<1.40)return '720p';
       return '1080p';
     }
     return happyadVideoDesiredQualityV1088();
