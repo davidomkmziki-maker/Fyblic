@@ -275,13 +275,14 @@
 <script src="../core/like-direct-master-v876.js?v=995-like-network-stable"></script>
 <script id="happyad-auth-storage-quota-master-v752" src="../core/auth-storage-quota-master-v752.js?v=757-quota-audit-stable"></script>
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
+<script src="../core/video-quality-master-v1099.js?v=1099-user-global-quality"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script src="../core/interaction-privacy-master-v855r52.js?v=972-p1-single-client"></script>
 <script src="../core/filtering-privacy-master-v855r55.js?v=855r55-filtering"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <script src="../core/follow-master-v855r34.js?v=986-professional-icons-love"></script>
 <script src="../core/video-cover-editor-master-v693.js?v=972-p1-single-client"></script>
-<script src="../core/post-options-master-v693.js?v=1030-profiles-privacy"></script>
+<script src="../core/post-options-master-v693.js?v=1099-video-quality-hook"></script>
 
 
 <style id="happyad-v5-avatar-circle-display-fix">
@@ -535,7 +536,7 @@ function happyadVideoMergePostKeepRich(a,b){
     if(['visibility','privacy','audience','status','is_private','private','private_at','privated_at','deleted_at','comments_disabled','hide_like_count','mentioned_user_ids','mention_handles','title','desc','description'].indexOf(k)>=0){out[k]=nv;return;}
     if(!happyadVideoValueFilled(nv))return;
     if(!happyadVideoValueFilled(ov)){out[k]=nv;return;}
-    if(/^(mediaUrl|media_url|homeMediaUrl|home_media_url|videoUrl|video_url|mediaPath|media_path|thumbnailUrl|thumbnail_url|posterUrl|poster_url|coverUrl|cover_url|avatar|avatar_url|author_avatar|creatorName|display_name|creator_name|full_name|handle|username|badge|title|desc|description|created_at|createdAt)$/i.test(k)){out[k]=nv;}
+    if(/^(mediaUrl|media_url|homeMediaUrl|home_media_url|videoUrl|video_url|mediaPath|media_path|thumbnailUrl|thumbnail_url|posterUrl|poster_url|coverUrl|cover_url|avatar|avatar_url|author_avatar|creatorName|display_name|creator_name|full_name|handle|username|badge|title|desc|description|created_at|createdAt|adaptiveVariantsV1087|adaptive_variants|video_variants|imageCrop|image_crop|marketplaceMedia|marketplace_media|marketplaceCoverIndex|marketplace_cover_index)$/i.test(k)){out[k]=nv;}
     if(/_(count)$/.test(k) || /^(likes_count|comments_count|shares_count|saves_count|views_count|view_count|video_views_count)$/.test(k)){out[k]=Math.max(Number(ov||0),Number(nv||0));}
   });
   return out;
@@ -626,44 +627,23 @@ function happyadVideoNormalizeMediaSrc(src,p){
   return happyadVideoStoragePublicUrl(src);
 }
 function happyadVideoNormalizeVariantsV1087(value){
+  try{if(window.HappyVideoQualityMasterV1099&&typeof window.HappyVideoQualityMasterV1099.normalizeVariants==='function')return window.HappyVideoQualityMasterV1099.normalizeVariants(value);}catch(_e){}
   const out={};
-  if(!value)return out;
-  if(Array.isArray(value)){
-    value.forEach(function(item){
-      if(!item||typeof item!=='object')return;
-      const name=String(item.name||item.quality||item.label||'').trim();
-      const url=String(item.url||item.src||item.media_url||item.path||'').trim();
-      if(name&&url)out[name]=url;
-    });
-    return out;
-  }
-  if(typeof value==='object'){
-    Object.keys(value).forEach(function(key){
-      const raw=value[key];
-      const url=typeof raw==='string'?raw:(raw&&typeof raw==='object'?(raw.url||raw.src||raw.media_url||raw.path||''):'');
-      if(String(url||'').trim())out[String(key||'').trim()]=String(url).trim();
-    });
-  }
+  function canonical(name){name=String(name||'').trim().toLowerCase().replace(/\s+/g,'');if(name==='1080'||name==='1080p'||name==='fullhd'||name==='fhd')return '1080p';if(name==='720'||name==='720p'||name==='hd')return '720p';if(name==='540'||name==='540p'||name==='qhd')return '540p';if(name==='360'||name==='360p'||name==='sd')return '360p';return name;}
+  function put(name,raw){const url=typeof raw==='string'?raw:(raw&&typeof raw==='object'?(raw.url||raw.src||raw.media_url||raw.mediaUrl||raw.path||''):'');name=canonical(name);if(name&&String(url||'').trim())out[name]=String(url).trim();}
+  if(Array.isArray(value)){value.forEach(function(item){if(item&&typeof item==='object')put(item.name||item.quality||item.label||'',item);});return out;}
+  if(value&&typeof value==='object')Object.keys(value).forEach(function(key){put(key,value[key]);});
   return out;
 }
 /* V1088 — 1080p est la qualité normale. La baisse est locale à cet utilisateur
    et n'arrive que lorsque son débit est réellement faible. */
 function happyadVideoDesiredQualityV1088(){
+  try{const q=window.HappyVideoQualityMasterV1099;if(q&&typeof q.desired==='function')return q.desired({initialCard:false});}catch(_q){}
   try{
     const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
     const effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
-    /* V1098 — dans la Centrale, 1080p reste réellement prioritaire. Le scroll peut
-       s'adapter, mais uniquement lorsque le débit mesuré devient franchement faible. */
-    if(down>0){
-      if(down<0.35)return '360p';
-      if(down<0.75)return '540p';
-      if(down<1.40)return '720p';
-      return '1080p';
-    }
-    if(effective==='slow-2g')return '360p';
-    if(effective==='2g')return '540p';
-    if(effective==='3g')return '720p';
-    return '1080p';
+    if(down>0){if(down<0.30)return '360p';if(down<0.55)return '540p';if(down<0.95)return '720p';return '1080p';}
+    if(effective==='slow-2g')return '360p';if(effective==='2g')return '540p';if(effective==='3g')return '720p';return '1080p';
   }catch(_e){return '1080p';}
 }
 function happyadVideoConnectionWants1080V1087(){return happyadVideoDesiredQualityV1088()==='1080p';}
@@ -680,28 +660,28 @@ function happyadVideoIsInitialCardTargetV1098(p){
 }
 function happyadVideoDesiredQualityForPostV1095(p){
   try{
-    /* V1098 — la vidéo explicitement ouverte depuis une carte démarre en 1080p si
-       cette rendition existe. Les vidéos suivantes du scroll restent adaptatives. */
-    if(happyadVideoIsInitialCardTargetV1098(p))return '1080p';
-    const marketplace=!!(p&&(p.happyadMarketplace===true||p.happyad_marketplace===true||p.is_marketplace===true||String(p.mode||'').toLowerCase()==='marketplace'));
-    if(!marketplace)return happyadVideoDesiredQualityV1088();
-    const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
-    const effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
-    if(effective==='slow-2g')return '360p';
-    if(effective==='2g')return down>0&&down<0.45?'360p':'540p';
-    if(effective==='3g')return down>0&&down<1.15?'540p':'720p';
-    if(effective==='4g'){
-      if(down>0&&down<0.35)return '360p';
-      if(down>0&&down<0.75)return '540p';
-      if(down>0&&down<1.40)return '720p';
-      return '1080p';
+    /* V1099 — la préférence manuelle de CET utilisateur est l'autorité absolue. */
+    const master=window.HappyVideoQualityMasterV1099;
+    if(master&&typeof master.get==='function'){
+      const pref=master.get();
+      if(pref&&pref!=='auto')return pref;
+      if(happyadVideoIsInitialCardTargetV1098(p))return '1080p';
+      if(typeof master.desired==='function')return master.desired({initialCard:false});
     }
+    if(happyadVideoIsInitialCardTargetV1098(p))return '1080p';
     return happyadVideoDesiredQualityV1088();
   }catch(_e){return happyadVideoDesiredQualityV1088();}
 }
 function happyadVideoAdaptiveSrcV1087(variants,fallback,post){
   variants=happyadVideoNormalizeVariantsV1087(variants);
   if(!Object.keys(variants).length)return fallback;
+  try{
+    const master=window.HappyVideoQualityMasterV1099;
+    if(master&&typeof master.pick==='function'){
+      const picked=master.pick(variants,fallback,{initialCard:master.get()==='auto'&&happyadVideoIsInitialCardTargetV1098(post)});
+      if(picked&&picked.url)return happyadVideoNormalizeMediaSrc(picked.url);
+    }
+  }catch(_q){}
   const wanted=happyadVideoDesiredQualityForPostV1095(post);
   const order=wanted==='1080p'?['1080p','720p','540p','360p']:wanted==='720p'?['720p','540p','360p','1080p']:wanted==='540p'?['540p','360p','720p','1080p']:['360p','540p','720p','1080p'];
   for(const quality of order){if(variants[quality])return happyadVideoNormalizeMediaSrc(variants[quality]);}
@@ -722,7 +702,7 @@ function mapHappyPost(r){
   const directUrl=String(r.marketplace_cover_url||(marketplace?nestedUrl:'')||r.media_url||r.mediaUrl||r.home_media_url||r.homeMediaUrl||r.video_url||r.videoUrl||r.url||r.src||'').trim();
   let url=happyadVideoNormalizeMediaSrc(directUrl||mediaPath,{mediaPath:mediaPath,media_path:mediaPath});
   const crop=(r.image_crop&&typeof r.image_crop==='object')?r.image_crop:((r.imageCrop&&typeof r.imageCrop==='object')?r.imageCrop:{});
-  const variants=Object.assign({},happyadVideoNormalizeVariantsV1087(crop&&crop.adaptive&&crop.adaptive.variants),marketplace?happyadVideoNormalizeVariantsV1087(coverItem.variants):{});
+  const variants=Object.assign({},happyadVideoNormalizeVariantsV1087(r.adaptiveVariantsV1087||r.adaptive_variants||r.video_variants),happyadVideoNormalizeVariantsV1087(crop&&crop.adaptive&&crop.adaptive.variants),marketplace?happyadVideoNormalizeVariantsV1087(coverItem.variants):{});
   url=happyadVideoAdaptiveSrcV1087(variants,url,r);
   const rawKind=happyadVideoNormalizeKind(r.marketplace_cover_type,(marketplace?(coverItem.type||coverItem.media_type):''),r.media_type,r.kind,r.mediaType,r.type,r.mime_type,r.mime,r.home_media_type,r.homeMediaType,(happyadVideoUrlLooksVideo(url)?'video':''));
   const kind=rawKind||'photo';
@@ -1657,17 +1637,28 @@ function happyadVideoPaintCanonicalAvatar(detail){
 }
 window.addEventListener('HAPPYAD_PROFILE_AVATAR_UPDATED_V855R32',function(event){happyadVideoPaintCanonicalAvatar(event&&event.detail);},true);
 window.addEventListener('HAPPYAD_POST_MUTATED_V613E',function(ev){try{var d=ev&&ev.detail||{},ids=(d.postIds||[d.postId]||[]).map(String),patch=d.patch||{};document.querySelectorAll('.reel[data-id]').forEach(function(reel){if(ids.indexOf(String(reel.dataset.id||''))<0)return;var rp=reel.__happyadPostV613E||reel.__happyadPost;if(rp)Object.assign(rp,patch);happyadVideoPaintPublicationTextV986Base(reel,rp||patch);refreshActionUI(reel);});if(activeCommentPost&&ids.indexOf(String(activeCommentPost.id||''))>=0)Object.assign(activeCommentPost,patch);}catch(_e){}},true);
-/* V1095 — si une annonce arrive de cache en 720p alors que 1080p est déjà prêt,
-   rafraîchir la ligne avant le premier play. Cela évite de démarrer inutilement en 720p. */
+/* V1099 — avant le PREMIER attach, respecter la qualité voulue sans laisser une source
+   de cache 720p gagner. En Auto, la cible ouverte depuis une carte Accueil attend la
+   rendition 1080p. En manuel, la qualité choisie par cet utilisateur domine partout. */
 async function happyadVideoFreshMarketplace1080BeforeAttachV1095(p){
   try{
     if(!p)return p;
+    const desired=happyadVideoDesiredQualityForPostV1095(p);
+    const master=window.HappyVideoQualityMasterV1099;
+    const pref=master&&typeof master.get==='function'?master.get():'auto';
+    const crop=(p.imageCrop&&typeof p.imageCrop==='object')?p.imageCrop:((p.image_crop&&typeof p.image_crop==='object')?p.image_crop:{});
+    const media=Array.isArray(p.marketplaceMedia)?p.marketplaceMedia:(Array.isArray(p.marketplace_media)?p.marketplace_media:[]);
+    const idx=Math.max(0,Math.min(Number(p.marketplaceCoverIndex!=null?p.marketplaceCoverIndex:p.marketplace_cover_index)||0,Math.max(0,media.length-1))),cover=media[idx]||media[0]||{};
+    const variants=Object.assign({},happyadVideoNormalizeVariantsV1087(p.adaptiveVariantsV1087||p.adaptive_variants||p.video_variants),happyadVideoNormalizeVariantsV1087(crop&&crop.adaptive&&crop.adaptive.variants),happyadVideoNormalizeVariantsV1087(cover&&cover.variants));
+    if(variants[desired]){
+      const exact=happyadVideoNormalizeMediaSrc(variants[desired],p);
+      if(exact){p.mediaUrl=exact;p.media_url=exact;p.adaptiveVariantsV1087=variants;return p;}
+    }
+    const initial=happyadVideoIsInitialCardTargetV1098(p),manual=pref!=='auto';
     const marketplace=!!(p.happyadMarketplace===true||p.happyad_marketplace===true||p.is_marketplace===true||String(p.mode||'').toLowerCase()==='marketplace');
-    if(!marketplace||happyadVideoDesiredQualityForPostV1095(p)!=='1080p')return p;
-    const current=happyadVideoPostMediaUrl(p);
-    if(happyadVideoQualityFromUrlV1088(current)==='1080p')return p;
+    if(!initial&&!manual&&!marketplace)return p;
     const id=String(p.id||p.post_id||'').trim();if(!id)return p;
-    const fresh=await happyadVideoTimeout(happyadVideoFetchFreshPostById(id),1700,'Qualité annonce 1080p');
+    const fresh=await happyadVideoTimeout(happyadVideoFetchFreshPostById(id),1700,'Qualité vidéo exacte');
     return fresh?happyadVideoMergePostKeepRich(p,fresh):p;
   }catch(_e){return p;}
 }
@@ -2228,11 +2219,63 @@ async function loadVideos(){
       else if(typeof renderVideoFeed==='function')renderVideoFeed(source,false);
     }catch(_e){try{if(reel)reel.remove();}catch(_r){}}
   }
+  function happyadVideoQualityMasterV1099(){try{return window.HappyVideoQualityMasterV1099||null;}catch(_e){return null;}}
+  function happyadVideoQualityLabelV1099(){var m=happyadVideoQualityMasterV1099(),q=m&&m.get?m.get():'auto';return q==='auto'?'Auto':q;}
+  function happyadVideoVariantsForPostV1099(p){
+    p=p||{};var out={};
+    function merge(v){var n=happyadVideoNormalizeVariantsV1087(v);Object.keys(n||{}).forEach(function(k){out[k]=n[k];});}
+    try{merge(p.adaptiveVariantsV1087||p.adaptive_variants||p.video_variants);}catch(_e){}
+    try{var crop=(p.imageCrop&&typeof p.imageCrop==='object')?p.imageCrop:((p.image_crop&&typeof p.image_crop==='object')?p.image_crop:{});merge(crop&&crop.adaptive&&crop.adaptive.variants);}catch(_e){}
+    try{var media=Array.isArray(p.marketplaceMedia)?p.marketplaceMedia:(Array.isArray(p.marketplace_media)?p.marketplace_media:[]),idx=Math.max(0,Math.min(Number(p.marketplaceCoverIndex!=null?p.marketplaceCoverIndex:p.marketplace_cover_index)||0,Math.max(0,media.length-1))),cover=media[idx]||media[0]||{};merge(cover&&cover.variants);}catch(_e){}
+    return out;
+  }
+  function happyadVideoSwitchSourceV1099(reel,p,src){
+    try{
+      src=happyadVideoNormalizeMediaSrc(src,p);if(!reel||!src)return false;
+      var v=reel.querySelector('video');
+      if(!v){p.mediaUrl=src;p.media_url=src;reel.__happyadPost=p;reel.__happyadPostV613E=p;reel.dataset.videoAttached='';attachVideo(reel,p).catch(function(){});return true;}
+      var current=String(v.dataset.src||v.currentSrc||v.src||'');if(current===src)return true;
+      var keep=Number(v.currentTime||0),wasPlaying=!v.paused,muted=v.muted,manualPause=String(v.dataset.happyadManualPause||'0');
+      reel.__happyadPendingSrc='';
+      p.mediaUrl=src;p.media_url=src;reel.__happyadPost=p;reel.__happyadPostV613E=p;
+      try{v.pause();}catch(_p){}
+      v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';v.muted=muted;
+      var seek=function(){try{if(keep>0&&Number.isFinite(v.duration)&&v.duration>0)v.currentTime=Math.min(keep,Math.max(0,v.duration-.15));}catch(_e){}};
+      v.addEventListener('loadedmetadata',seek,{once:true});
+      if(wasPlaying&&manualPause!=='1')v.addEventListener('canplay',function(){try{happyadVideoSetActivePreload(v,true);happyadPlayVideo(v,false);}catch(_e){}},{once:true});
+      try{v.load();}catch(_l){}
+      return true;
+    }catch(_e){return false;}
+  }
+  function happyadVideoApplyQualityToReelV1099(reel){
+    try{
+      if(!reel)return false;var p=reel.__happyadPost||reel.__happyadPostV613E;if(!p)return false;
+      var variants=happyadVideoVariantsForPostV1099(p),fallback=happyadVideoPostMediaUrl(p),src=happyadVideoAdaptiveSrcV1087(variants,fallback,p);
+      if(src&&Object.keys(variants).length)return happyadVideoSwitchSourceV1099(reel,p,src);
+      happyadVideoUpgradeReelMediaAsync(reel,p);return false;
+    }catch(_e){return false;}
+  }
+  function happyadVideoApplyQualityEverywhereV1099(){
+    try{document.querySelectorAll('.reel').forEach(function(reel){happyadVideoApplyQualityToReelV1099(reel);});}catch(_e){}
+  }
+  function happyadVideoEnsureQualitySheetV1099(){
+    var old=document.getElementById('happyadVideoQualitySheetV1099');if(old)return old;
+    var style=document.getElementById('happyadVideoQualityStyleV1099');if(!style){style=document.createElement('style');style.id='happyadVideoQualityStyleV1099';style.textContent='#happyadVideoQualitySheetV1099{position:fixed;inset:0;z-index:2147483601;background:rgba(0,0,0,.62);display:none;align-items:flex-end;justify-content:center;font-family:system-ui,-apple-system,Segoe UI,sans-serif}#happyadVideoQualitySheetV1099.show{display:flex}#happyadVideoQualitySheetV1099 .haVqBox{width:min(560px,100%);background:#181d20;border-radius:28px 28px 0 0;padding:10px 0 calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -20px 65px rgba(0,0,0,.52)}#happyadVideoQualitySheetV1099 .haVqHandle{width:56px;height:4px;border-radius:99px;background:#8b939d;margin:2px auto 12px}#happyadVideoQualitySheetV1099 .haVqTitle{padding:4px 22px 2px;font-size:19px;font-weight:900;color:#fff}#happyadVideoQualitySheetV1099 .haVqSub{padding:3px 22px 11px;color:#9ea6b1;font-size:12px;line-height:1.35}#happyadVideoQualitySheetV1099 .haVqRow{appearance:none;width:100%;min-height:58px;border:0;border-top:1px solid rgba(255,255,255,.055);background:transparent;color:#fff;padding:7px 22px;display:grid;grid-template-columns:1fr 32px;align-items:center;text-align:left;font-size:16px;font-weight:750}#happyadVideoQualitySheetV1099 .haVqRow small{display:block;color:#9ea6b1;font-size:11px;font-weight:600;margin-top:3px}#happyadVideoQualitySheetV1099 .haVqRow .haVqCheck{font-size:20px;color:#ff8a00;text-align:right}#happyadVideoQualitySheetV1099 .haVqCancel{width:calc(100% - 32px);height:50px;margin:10px 16px 0;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:transparent;color:#fff;font-size:15px;font-weight:800}';document.head.appendChild(style);}
+    var layer=document.createElement('div');layer.id='happyadVideoQualitySheetV1099';layer.innerHTML='<div class="haVqBox"><div class="haVqHandle"></div><div class="haVqTitle">Qualité vidéo</div><div class="haVqSub">Ce choix est privé à cet utilisateur sur cet appareil et s’applique à toutes les vidéos Fyblic.</div><div class="haVqRows"></div><button type="button" class="haVqCancel">Annuler</button></div>';document.body.appendChild(layer);
+    layer.addEventListener('click',function(e){if(e.target===layer||e.target.closest('.haVqCancel'))layer.classList.remove('show');});return layer;
+  }
+  function happyadVideoOpenQualitySheetV1099(){
+    var master=happyadVideoQualityMasterV1099();if(!master)return false;var layer=happyadVideoEnsureQualitySheetV1099(),rows=layer.querySelector('.haVqRows'),current=master.get();
+    var choices=[['auto','Auto','1080p prioritaire · baisse seulement si le réseau est vraiment faible'],['1080p','1080p','Qualité fixe'],['720p','720p','Qualité fixe'],['540p','540p','Qualité fixe'],['360p','360p','Qualité fixe']];
+    rows.innerHTML='';choices.forEach(function(c){var b=document.createElement('button');b.type='button';b.className='haVqRow';b.innerHTML='<span>'+c[1]+'<small>'+c[2]+'</small></span><span class="haVqCheck">'+(current===c[0]?'✓':'')+'</span>';b.onclick=function(){master.set(c[0]);layer.classList.remove('show');try{happyadVideoNoticeV1009(c[0]==='auto'?'Qualité Auto · 1080p prioritaire':'Qualité '+c[1]+' appliquée partout');}catch(_e){}};rows.appendChild(b);});
+    layer.classList.add('show');return false;
+  }
+  window.addEventListener('HAPPYAD_VIDEO_QUALITY_CHANGED_V1099',function(){setTimeout(happyadVideoApplyQualityEverywhereV1099,0);});
   function happyadVideoOpenPostOptionsV613E(reel){
     if(!reel||!window.HappyPostOptionsV613E)return;
     var id=String(reel.dataset.id||'');
     var p=reel.__happyadPostV613E||(allVideos||[]).find(function(x){return String(x&&x.id)===id;})||(currentVideos||[]).find(function(x){return String(x&&x.id)===id;})||{id:id};
-    window.HappyPostOptionsV613E.open({post:p,context:'video',onDeleted:function(){happyadVideoRemovePostV613E(reel,p);}});
+    window.HappyPostOptionsV613E.open({post:p,context:'video',qualityLabel:happyadVideoQualityLabelV1099(),onQuality:function(){return happyadVideoOpenQualitySheetV1099();},onDeleted:function(){happyadVideoRemovePostV613E(reel,p);}});
   }
 
   if(!feed.dataset.happyadVideoBound){

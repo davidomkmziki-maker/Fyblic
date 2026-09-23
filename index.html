@@ -533,6 +533,7 @@ html body #list.homeTimeline .miniMedia:not(.haPhotoUserCropV613D)>img{transform
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
+<script src="core/video-quality-master-v1099.js?v=1099-user-global-quality"></script>
 <script id="happyad-auth-storage-quota-master-v752" src="core/auth-storage-quota-master-v752.js?v=937-idb-auth-purge"></script>
 <script src="core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script src="core/account-isolation-master-v937.js?v=938-action-memory-reset"></script>
@@ -544,7 +545,7 @@ html body #list.homeTimeline .miniMedia:not(.haPhotoUserCropV613D)>img{transform
 <script src="core/interaction-privacy-master-v855r52.js?v=972-p1-single-client"></script>
 <script src="core/message-presence-app-master-v855r51.js?v=869-connection-phase2"></script>
 <script src="core/mention-render-master-v943.js?v=944-photo-profile-handoff"></script>
-<script src="core/post-options-master-v693.js?v=1031-storage-security"></script>
+<script src="core/post-options-master-v693.js?v=1099-video-quality-hook"></script>
 <style id="happyad-v107-hide-home-count">#postCount{display:none!important}
 /* V114 — Home officiel: rectangle dynamique, Radar Pour Toi, lives, recherche simple */
 .topRow{grid-template-columns:44px 1fr 44px!important}.searchRound{background:#11151d!important;border-color:rgba(255,255,255,.14)!important}.searchIcon{width:21px;height:21px;display:block}.searchIcon svg{width:100%;height:100%;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}.bellLineIcon,.messageLineIcon{width:22px;height:22px;margin:0 auto 2px;display:block}.bellLineIcon svg,.messageLineIcon svg{width:100%;height:100%;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -1663,7 +1664,7 @@ html body #homeRadarStoryMasterV629 .radarTitle,html body #homeRadarBlock .radar
 <script src="core/follow-master-v855r34.js?v=986-professional-icons-love"></script>
 <script src="core/home-feed-repository-v1.js?v=2-batch-complete"></script>
 <script src="core/home-feed-master-v1.js?v=1096-card-visual-hq"></script>
-<script src="core/home-media-loader-v1.js?v=982-grouped-photo-badge"></script>
+<script src="core/home-media-loader-v1.js?v=1099-photo-max-quality"></script>
 <script src="core/like-direct-master-v876.js?v=995-like-network-stable"></script>
 <script src="core/home-actions-master-v1.js?v=1002-view-play-professional"></script>
 <script src="core/home-card-renderer-v1.js?v=1097-boutique-card-maturity"></script>
@@ -3342,13 +3343,22 @@ function happyadVideoFastOpenPayload(postId){
       var cover=media[idx]||media[0]||{};mergeVariants(out,cover&&cover.variants);
       return out;
     }
-    function preferred1080(p,fallback){
-      var v=variantsFor(p),u=v['1080p']||v['1080']||v['fullhd']||v['fhd']||'';
-      return u?happyadPublicMediaUrlV34(u):fallback;
+    function preferredQualityV1099(p,fallback,forceInitial1080){
+      try{
+        var master=window.HappyVideoQualityMasterV1099,variants=variantsFor(p);
+        if(master&&typeof master.pick==='function'){
+          var pref=typeof master.get==='function'?master.get():'auto';
+          var picked=master.pick(variants,fallback,{initialCard:forceInitial1080===true&&pref==='auto'});
+          if(picked&&picked.url)return happyadPublicMediaUrlV34(picked.url);
+        }
+      }catch(_e){}
+      if(forceInitial1080){var v=variantsFor(p),u=v['1080p']||v['1080']||v['fullhd']||v['fhd']||'';if(u)return happyadPublicMediaUrlV34(u);}
+      return fallback;
     }
     function slim(p,forceInitial1080){
       var baseMedia=happyadPublicMediaUrlV34(p.mediaUrl||p.media_url||p.homeMediaUrl||p.home_media_url||p.videoUrl||p.video_url||p.url||p.src||p.mediaPath||p.media_path||'');
-      var media=forceInitial1080?preferred1080(p,baseMedia):baseMedia;
+      var media=preferredQualityV1099(p,baseMedia,forceInitial1080);
+      var userQualityV1099='auto';try{if(window.HappyVideoQualityMasterV1099&&window.HappyVideoQualityMasterV1099.get)userQualityV1099=window.HappyVideoQualityMasterV1099.get();}catch(_q){}
       var poster=happyadPublicMediaUrlV34(p.posterUrl||p.poster_url||p.thumbnailUrl||p.thumbnail_url||p.coverUrl||p.cover_url||p.imageUrl||p.image_url||p.photoUrl||p.photo_url||'');
       try{if(!poster&&typeof happyadGetCachedVideoThumb==='function')poster=happyadGetCachedVideoThumb(p,media)||'';}catch(_thumb){}
       var marketMedia=Array.isArray(p.marketplaceMedia)?p.marketplaceMedia:(Array.isArray(p.marketplace_media)?p.marketplace_media:[]);
@@ -3373,13 +3383,14 @@ function happyadVideoFastOpenPayload(postId){
       creatorId:p.creatorId||p.user_id||p.userId||'', user_id:p.user_id||p.creatorId||'', creatorName:p.creatorName||p.display_name||p.userName||p.author||p.name||'', display_name:p.display_name||p.creatorName||'',
       avatar:p.avatar||p.avatar_url||'', avatar_url:p.avatar_url||p.avatar||'', handle:p.handle||p.username||'', username:p.username||p.handle||'', badge:p.badge||p.userBadge||p.user_badge||'aucun',
       createdAt:p.createdAt||p.created_at||Date.now(), created_at:p.created_at||p.createdAt||Date.now(), views_count:p.views_count||p.video_views_count||0, video_views_count:p.video_views_count||p.views_count||0,
-      __from_video:'1', __happyadInitial1080V1098:forceInitial1080===true
+      __from_video:'1', __happyadInitial1080V1098:(forceInitial1080===true&&userQualityV1099==='auto'), __happyadVideoQualityPrefV1099:userQualityV1099
     };}
     function isTarget(p){return String(p&&p.id||p&&p.post_id||'')===String(postId||'');}
     var minimal=source.slice(0,120).map(function(p){return slim(p,isTarget(p));});
     if(target && !minimal.some(function(p){return String(p.id)===String(target.id||target.post_id)})) minimal.unshift(slim(target,true));
     else if(target){minimal=minimal.filter(function(p){return String(p.id)!==String(target.id||target.post_id)});minimal.unshift(slim(target,true));}
-    var fastPayload=JSON.stringify({ts:Date.now(), postId:String(postId||''), list:minimal, target:target?slim(target,true):null, initialQuality:'1080p'});
+    var qualityPrefV1099='auto';try{if(window.HappyVideoQualityMasterV1099&&window.HappyVideoQualityMasterV1099.get)qualityPrefV1099=window.HappyVideoQualityMasterV1099.get();}catch(_qp){}
+    var fastPayload=JSON.stringify({ts:Date.now(), postId:String(postId||''), list:minimal, target:target?slim(target,true):null, initialQuality:(qualityPrefV1099==='auto'?'1080p':qualityPrefV1099), qualityPreference:qualityPrefV1099});
     sessionStorage.setItem('HAPPYAD_FAST_OPEN_VIDEO_V1', fastPayload);
     localStorage.setItem('HAPPYAD_FAST_OPEN_VIDEO_V1', fastPayload);
     try{localStorage.setItem('HAPPYAD_VIDEO_CACHE_STABLE_V1',JSON.stringify(minimal));}catch(_stableVideoCache){}

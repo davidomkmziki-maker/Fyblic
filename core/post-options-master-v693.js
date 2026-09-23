@@ -3,7 +3,7 @@
   if(window.__HAPPYAD_POST_OPTIONS_MASTER_V693__)return;
   window.__HAPPYAD_POST_OPTIONS_MASTER_V693__=true;
 
-  var VERSION='V971_POST_DELETE_STRICT_SERVER_CONFIRMED';
+  var VERSION='V1099_VIDEO_QUALITY_HOOK';
   var SHEET_ID='happyadPostOptionsSheetV613F';
   var TOAST_ID='happyadPostOptionsToastV613F';
   var OUTBOX_KEY='HAPPYAD_POST_MUTATION_OUTBOX_V613E';
@@ -71,6 +71,7 @@
     edit:'<svg viewBox="0 0 24 24"><path d="M4 20h4l11-11-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
     mention:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.7-4 3-6 5.5-6s4.8 2 5.5 6"/><path d="M14.5 7.5a4.5 4.5 0 1 1 0 9H13"/></svg>',
     cover:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 15l3-3 3 3 2-2 3 3"/><circle cx="8" cy="9" r="1"/></svg>',
+    quality:'<svg viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M10 17h4"/><circle cx="6" cy="7" r="1.3"/><circle cx="18" cy="12" r="1.3"/><circle cx="12" cy="17" r="1.3"/></svg>',
     trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/></svg>',
     report:'<svg viewBox="0 0 24 24"><path d="M5 21V4m0 1h12l-2 4 2 4H5"/></svg>',
     chevron:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
@@ -164,6 +165,7 @@
   async function open(options){
     options=options||{};var p=options.post||{},id=postId(p);if(!id){toast('Publication introuvable.');return false;}applyRememberedOptionState(p);
     var uid=localUid();if(!uid)uid=await resolveUid();var mine=!!uid&&!!ownerId(p)&&uid===ownerId(p),ui=makeSheet('Options de publication');
+    if(options.context==='video'&&typeof options.onQuality==='function'){var qLabel=clean(options.qualityLabel||'Auto');addButton(ui.box,'Qualité vidéo · '+qLabel,'quality','',function(){closeSheet();return options.onQuality(p);});}
     if(mine){
       if(window.HappyVideoCoverEditorV693&&window.HappyVideoCoverEditorV693.canEdit(p))addButton(ui.box,'Modifier la miniature vidéo','cover','',function(){window.HappyVideoCoverEditorV693.open({post:p,context:options.context||'publication'});});
       var privacyBtn=addButton(ui.box,isPrivate(p)?'Rendre la publication publique':'Mettre la publication en privé',isPrivate(p)?'public':'private','',function(){return performOwnerAction(isPrivate(p)?'public':'private',p,options);});privacyBtn.dataset.optionKind='privacy';

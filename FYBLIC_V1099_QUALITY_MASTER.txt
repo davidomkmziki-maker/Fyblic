@@ -1,0 +1,23 @@
+FYBLIC V1099 — QUALITY MASTER UTILISATEUR
+
+VIDEO
+- Ajout d'un choix global par utilisateur : Auto / 1080p / 720p / 540p / 360p.
+- Le choix est stocke localement avec une cle separee par UID utilisateur. Aucun SQL et aucune preference globale serveur.
+- Le choix manuel domine toutes les decisions reseau et s'applique aux videos suivantes de la Centrale, Boutique, Recherche, profil et ouvertures vers la Centrale.
+- Auto reste 1080p prioritaire.
+- En Auto, une video cible ouverte depuis une carte Accueil demande 1080p avant le premier attach si la rendition existe.
+- Si les variantes du cache sont incompletes, la cible initiale peut rafraichir la publication avant lecture pour retrouver la rendition exacte.
+- Les variantes 1080/720/540/360 sont normalisees et conservees pendant les merges cache/serveur.
+- Le menu ... d'une video contient maintenant "Qualite video".
+
+PHOTO
+- Les cartes photo Accueil demandent l'original / meilleure source connue en premier.
+- Aucune retrogradation vers thumbnail basse qualite en cas de reseau lent.
+
+CACHE
+- Cache PWA passe en V1099 et references versionnees mises a jour.
+
+NON MODIFIE
+- Aucun changement Worker de compression.
+- Aucun changement SQL/Supabase schema.
+- Aucun changement pipeline de publication / Story.

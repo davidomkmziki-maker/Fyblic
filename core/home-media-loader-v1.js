@@ -3,14 +3,14 @@
    l'ordre, à la pagination ni à la géométrie structurelle du fil.
    - un seul IntersectionObserver pour les médias du feed
    - album : diapositive active + une voisine de chaque côté uniquement
-   - photo : miniature -> original en secours, sans reconstruire la carte
+   - photo : original/meilleure qualité uniquement ; aucune rétrogradation vers miniature
    - vidéo : poster seulement dans le feed ; la lecture reste dans Centrale vidéo
    - nettoyage centralisé des ObjectURL et des vidéos lors du retrait d'une carte */
 (function(){
   'use strict';
   if(window.HappyHomeMediaLoaderV1)return;
 
-  var VERSION='V929_STABLE_MEDIA_GEOMETRY';
+  var VERSION='V1099_PHOTO_MAX_QUALITY';
   var bridge=null;
   var io=null;
   var ROOT_MARGIN='320px 0px 460px 0px';
@@ -230,8 +230,11 @@
       if(direct){
         if(video){call('renderVideoPreview',box,p,direct);card.dataset.mediaReady='1';card.classList.remove('happyadMediaLoadingV764');}
         else{
-          var primary=p.thumbnailUrl||p.thumbnail_url||direct;
-          renderPhoto(card,box,p,primary,direct||primary);
+          /* V1099 — photo : ne jamais rétrograder vers la miniature pour des raisons réseau.
+             L'original / meilleure source connue est toujours demandé en premier. */
+          var primary=direct;
+          /* Aucun fallback basse qualité : si l'original tarde, on attend/reessaie au lieu de régresser. */
+          renderPhoto(card,box,p,primary,primary);
         }
         return;
       }
