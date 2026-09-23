@@ -625,22 +625,68 @@ function happyadVideoNormalizeMediaSrc(src,p){
   if(/^https?:\/\//i.test(src)||/^blob:/i.test(src)||/^data:/i.test(src))return src;
   return happyadVideoStoragePublicUrl(src);
 }
-function mapHappyPost(r){
-  r=r||{};
-  const mediaPath=String(r.marketplace_cover_path||r.media_path||r.mediaPath||'').trim();
-  const directUrl=String(r.marketplace_cover_url||r.media_url||r.mediaUrl||r.home_media_url||r.homeMediaUrl||r.video_url||r.videoUrl||r.url||r.src||'').trim();
-  let url=happyadVideoNormalizeMediaSrc(directUrl||mediaPath,{mediaPath:mediaPath,media_path:mediaPath});
-  const crop=(r.image_crop&&typeof r.image_crop==='object')?r.image_crop:((r.imageCrop&&typeof r.imageCrop==='object')?r.imageCrop:{});
-  const variants=crop&&crop.adaptive&&crop.adaptive.variants;
-  if(variants&&typeof variants==='object'){
+function happyadVideoNormalizeVariantsV1087(value){
+  const out={};
+  if(!value)return out;
+  if(Array.isArray(value)){
+    value.forEach(function(item){
+      if(!item||typeof item!=='object')return;
+      const name=String(item.name||item.quality||item.label||'').trim();
+      const url=String(item.url||item.src||item.media_url||item.path||'').trim();
+      if(name&&url)out[name]=url;
+    });
+    return out;
+  }
+  if(typeof value==='object'){
+    Object.keys(value).forEach(function(key){
+      const raw=value[key];
+      const url=typeof raw==='string'?raw:(raw&&typeof raw==='object'?(raw.url||raw.src||raw.media_url||raw.path||''):'');
+      if(String(url||'').trim())out[String(key||'').trim()]=String(url).trim();
+    });
+  }
+  return out;
+}
+function happyadVideoConnectionWants1080V1087(){
+  try{
     const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
     const effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
-    const wanted=(connection.saveData||effective==='2g'||effective==='slow-2g')?'360p':((effective==='3g'||(down>0&&down<3))?'540p':(down>=8?'1080p':'720p'));
-    const order=wanted==='1080p'?['1080p','720p','540p','360p']:wanted==='720p'?['720p','540p','360p','1080p']:wanted==='540p'?['540p','360p','720p','1080p']:['360p','540p','720p','1080p'];
-    for(const quality of order){if(variants[quality]){url=happyadVideoNormalizeMediaSrc(variants[quality]);break;}}
-  }
-  const rawKind=happyadVideoNormalizeKind(r.marketplace_cover_type,r.media_type,r.kind,r.mediaType,r.type,r.mime_type,r.mime,r.home_media_type,r.homeMediaType,(happyadVideoUrlLooksVideo(url)?'video':''));
+    if(connection.saveData||effective==='slow-2g'||effective==='2g'||effective==='3g'||(down>0&&down<3))return false;
+    return effective==='4g'||down>=6;
+  }catch(_e){return false;}
+}
+function happyadVideoAdaptiveSrcV1087(variants,fallback){
+  variants=happyadVideoNormalizeVariantsV1087(variants);
+  if(!Object.keys(variants).length)return fallback;
+  const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
+  const effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
+  let wanted='720p';
+  if(connection.saveData||effective==='2g'||effective==='slow-2g')wanted='360p';
+  else if(effective==='3g'||(down>0&&down<3))wanted='540p';
+  else if(effective==='4g'||down>=6)wanted='1080p';
+  const order=wanted==='1080p'?['1080p','720p','540p','360p']:wanted==='720p'?['720p','540p','360p','1080p']:wanted==='540p'?['540p','360p','720p','1080p']:['360p','540p','720p','1080p'];
+  for(const quality of order){if(variants[quality])return happyadVideoNormalizeMediaSrc(variants[quality]);}
+  return fallback;
+}
+function mapHappyPost(r){
+  r=r||{};
+  const marketplace=(r.happyad_marketplace===true||r.is_marketplace===true||String(r.mode||'').toLowerCase()==='marketplace');
+  const details=(r.marketplace_details&&typeof r.marketplace_details==='object')?r.marketplace_details:{};
+  const marketplaceMedia=Array.isArray(r.marketplace_media)?r.marketplace_media:(Array.isArray(r.media)?r.media:[]);
+  const rawCoverIndex=(r.marketplace_cover_index!=null?r.marketplace_cover_index:(r.coverIndex!=null?r.coverIndex:details.cover_index));
+  const coverIndex=Math.max(0,Math.min(Number(rawCoverIndex)||0,Math.max(0,marketplaceMedia.length-1)));
+  const coverItem=marketplaceMedia[coverIndex]||marketplaceMedia[0]||{};
+  const nestedPath=String(coverItem.path||coverItem.media_path||'').trim();
+  const nestedUrl=String(coverItem.src||coverItem.url||coverItem.media_url||nestedPath||'').trim();
+  const nestedPoster=String(coverItem.poster||coverItem.poster_url||coverItem.thumbnail_url||coverItem.thumb||'').trim();
+  const mediaPath=String(r.marketplace_cover_path||(marketplace?nestedPath:'')||r.media_path||r.mediaPath||'').trim();
+  const directUrl=String(r.marketplace_cover_url||(marketplace?nestedUrl:'')||r.media_url||r.mediaUrl||r.home_media_url||r.homeMediaUrl||r.video_url||r.videoUrl||r.url||r.src||'').trim();
+  let url=happyadVideoNormalizeMediaSrc(directUrl||mediaPath,{mediaPath:mediaPath,media_path:mediaPath});
+  const crop=(r.image_crop&&typeof r.image_crop==='object')?r.image_crop:((r.imageCrop&&typeof r.imageCrop==='object')?r.imageCrop:{});
+  const variants=Object.assign({},happyadVideoNormalizeVariantsV1087(crop&&crop.adaptive&&crop.adaptive.variants),marketplace?happyadVideoNormalizeVariantsV1087(coverItem.variants):{});
+  url=happyadVideoAdaptiveSrcV1087(variants,url);
+  const rawKind=happyadVideoNormalizeKind(r.marketplace_cover_type,(marketplace?(coverItem.type||coverItem.media_type):''),r.media_type,r.kind,r.mediaType,r.type,r.mime_type,r.mime,r.home_media_type,r.homeMediaType,(happyadVideoUrlLooksVideo(url)?'video':''));
   const kind=rawKind||'photo';
+  const poster=String(r.thumbnail_url||r.thumbnailUrl||r.poster_url||r.posterUrl||(marketplace?nestedPoster:'')||r.cover_url||r.coverUrl||'').trim();
   return {
     id:r.id||r.post_id,
     mode:r.mode||'publish',
@@ -661,10 +707,11 @@ function mapHappyPost(r){
     media_url:url,
     mediaPath:mediaPath,
     imageCrop:crop,image_crop:crop,
-    thumbnailUrl:r.thumbnail_url||r.thumbnailUrl||r.poster_url||r.posterUrl||r.cover_url||r.coverUrl||'',
-    thumbnail_url:r.thumbnail_url||r.thumbnailUrl||'',
-    posterUrl:r.poster_url||r.posterUrl||r.thumbnail_url||r.thumbnailUrl||r.cover_url||r.coverUrl||'',
-    poster_url:r.poster_url||r.posterUrl||'',
+    adaptiveVariantsV1087:variants,
+    thumbnailUrl:poster,
+    thumbnail_url:poster,
+    posterUrl:poster,
+    poster_url:poster,
     creatorId:r.user_id||r.creatorId||r.userId||'',
     user_id:r.user_id||r.creatorId||'',
     creatorName:r.display_name||r.creator_name||r.creatorName||r.full_name||'Utilisateur Fyblic',
@@ -681,10 +728,11 @@ function mapHappyPost(r){
     views_count:Number(r.views_count||r.view_count||r.video_views_count||0),
     comments_disabled:(r.comments_disabled===true),hide_like_count:(r.hide_like_count===true),mentioned_user_ids:(r.mentioned_user_ids!=null?r.mentioned_user_ids:(r.mentionedUserIds||[])),mention_handles:(r.mention_handles!=null?r.mention_handles:(r.mentionHandles||[])),mentions:r.mentions||r.mention_text||r.mentionText||'',mentionedUsers:Array.isArray(r.mentionedUsers)?r.mentionedUsers:[],
     visibility:r.visibility||r.privacy||r.audience||r.status||'',privacy:r.privacy||'',audience:r.audience||'',status:r.status||'',is_private:(r.is_private===true||r.private===true||String(r.visibility||r.privacy||r.audience||r.status||'').toLowerCase()==='private'),private_at:r.private_at||r.privated_at||'',deleted_at:r.deleted_at||'',
-    happyadMarketplace:(r.happyad_marketplace===true||r.is_marketplace===true||String(r.mode||'').toLowerCase()==='marketplace'),
-    happyad_marketplace:(r.happyad_marketplace===true||r.is_marketplace===true||String(r.mode||'').toLowerCase()==='marketplace'),
-    marketplaceShowOnHome:(r.marketplace_show_on_home===true||r.showOnHome===true),marketplace_show_on_home:(r.marketplace_show_on_home===true||r.showOnHome===true),
+    happyadMarketplace:marketplace,
+    happyad_marketplace:marketplace,
+    marketplaceShowOnHome:(r.marketplace_show_on_home===true||r.showOnHome===true||details.show_on_home===true),marketplace_show_on_home:(r.marketplace_show_on_home===true||r.showOnHome===true||details.show_on_home===true),
     marketplaceCategory:r.marketplace_category||r.category||'',marketplace_category:r.marketplace_category||r.category||'',
+    marketplaceMedia:marketplaceMedia,marketplace_media:marketplaceMedia,marketplaceCoverIndex:coverIndex,marketplace_cover_index:coverIndex,
     listingViewsCount:Number(r.listing_views_count||r.viewsCount||0),listing_views_count:Number(r.listing_views_count||r.viewsCount||0),
     supabase:!!(r.supabase||r.created_at||r.media_url)
   };
@@ -750,6 +798,40 @@ function happyadVideoUpgradeReelMediaAsync(reel,p){
         attachVideo(reel,merged).then(function(nv){try{if(nv&&currentVideos.indexOf(nv)<0)currentVideos.push(nv);}catch(_e){}}).catch(function(){});
       }catch(_e){reel.dataset.happyadMediaUpgrade='';}
     }).catch(function(){try{reel.dataset.happyadMediaUpgrade='';}catch(_e){}});
+  }catch(_e){}
+}
+function happyadVideoApplyPendingUpgradeV1087(reel,v){
+  try{
+    if(!reel||!v||!v.paused)return false;
+    const src=String(reel.__happyadPendingSrc||'').trim();
+    if(!src||v.dataset.src===src)return false;
+    const keepTime=Number(v.currentTime||0);
+    reel.__happyadPendingSrc='';
+    v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';
+    happyadVideoSetActivePreload(v,false);
+    if(keepTime>0){
+      v.addEventListener('loadedmetadata',function(){try{if(Number.isFinite(v.duration)&&v.duration>0)v.currentTime=Math.min(keepTime,Math.max(0,v.duration-.15));}catch(_e){}},{once:true});
+    }
+    return true;
+  }catch(_e){return false;}
+}
+function happyadVideoScheduleAuto1080V1087(reel,p){
+  try{
+    if(!reel||!p||!happyadVideoConnectionWants1080V1087())return;
+    const current=happyadVideoPostMediaUrl(p);
+    if(/(?:^|[-_/])1080p(?:[._/?-]|$)/i.test(String(current||'')))return;
+    if(Array.isArray(reel.__happyad1080Timers))reel.__happyad1080Timers.forEach(clearTimeout);
+    reel.__happyad1080Timers=[];
+    [2600,7600,16000].forEach(function(delay){
+      reel.__happyad1080Timers.push(setTimeout(function(){
+        try{
+          if(!reel.isConnected||!happyadVideoConnectionWants1080V1087())return;
+          const v=reel.querySelector('video');
+          if(v&&/(?:^|[-_/])1080p(?:[._/?-]|$)/i.test(String(v.dataset.src||v.src||'')))return;
+          happyadVideoUpgradeReelMediaAsync(reel,reel.__happyadPost||p);
+        }catch(_e){}
+      },delay));
+    });
   }catch(_e){}
 }
 function happyadVideoPatchPostEverywhere(fresh){
@@ -1580,7 +1662,8 @@ async function attachVideo(reel,p){
     if(controls)controls.onclick=e=>e.stopPropagation();
     v.addEventListener('play',()=>{revealVideo();setPausedUI(v);try{happyadMarkVideoViewSupabase(p.id).then(()=>refreshVideoLikeFromSupabase(p.id))}catch(e){}try{happyadRecordListingVideoViewV820(p)}catch(e){}});
 v.addEventListener('ended',()=>{try{v.currentTime=0;happyadPlayVideo(v,true);}catch(e){}});
-v.addEventListener('pause',()=>setPausedUI(v));
+v.addEventListener('pause',()=>{setPausedUI(v);happyadVideoApplyPendingUpgradeV1087(reel,v)});
+    happyadVideoScheduleAuto1080V1087(reel,p);
     return v;
   }catch(err){
     if(reel){reel.dataset.videoAttached='';reel.querySelector('.loader')?.remove();if(!reel.querySelector('.errorBox'))reel.insertAdjacentHTML('afterbegin','<div class="errorBox"><div><b>Erreur vidéo</b><br>Impossible d’ouvrir la vidéo.</div></div>');}
@@ -1619,6 +1702,7 @@ function videoListKey(posts){
 function happyadVideoDestroyReelV621(reel){
   try{
     if(!reel)return;
+    try{if(Array.isArray(reel.__happyad1080Timers))reel.__happyad1080Timers.forEach(clearTimeout);reel.__happyad1080Timers=[];}catch(_qt){}
     const v=reel.querySelector&&reel.querySelector('video');
     if(v){
       try{v.pause();}catch(_p){}

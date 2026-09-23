@@ -115,14 +115,37 @@
   }
   function normalizeHandle(v){v=clean(v).replace(/^@+/,'');return v?('@'+v):'';}
   function bool(v){return v===true||v===1||String(v).toLowerCase()==='true';}
-  function adaptiveMedia(r,fallback){
+  function normalizeAdaptiveVariantsV1087(value){
+    var out={};
+    if(!value)return out;
+    if(Array.isArray(value)){
+      value.forEach(function(item){
+        if(!item||typeof item!=='object')return;
+        var name=clean(item.name||item.quality||item.label||'');
+        var url=clean(item.url||item.src||item.media_url||item.path||'');
+        if(name&&url)out[name]=url;
+      });
+      return out;
+    }
+    if(typeof value==='object'){
+      Object.keys(value).forEach(function(key){
+        var raw=value[key],url='';
+        if(typeof raw==='string')url=raw;
+        else if(raw&&typeof raw==='object')url=raw.url||raw.src||raw.media_url||raw.path||'';
+        if(clean(url))out[clean(key)]=clean(url);
+      });
+    }
+    return out;
+  }
+  function adaptiveMedia(r,fallback,extraVariants){
     var crop=r&&((r.image_crop&&typeof r.image_crop==='object')?r.image_crop:r.imageCrop)||{};
-    var variants=crop&&crop.adaptive&&crop.adaptive.variants;if(!variants||typeof variants!=='object')return fallback;
+    var variants=Object.assign({},normalizeAdaptiveVariantsV1087(crop&&crop.adaptive&&crop.adaptive.variants),normalizeAdaptiveVariantsV1087(extraVariants));
+    if(!Object.keys(variants).length)return fallback;
     var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
     var effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0),wanted='720p';
     if(connection.saveData||effective==='slow-2g'||effective==='2g')wanted='360p';
     else if(effective==='3g'||(down>0&&down<3))wanted='540p';
-    else if(down>=8)wanted='1080p';
+    else if(effective==='4g'||down>=6)wanted='1080p';
     else wanted='720p';
     var order=wanted==='1080p'?['1080p','720p','540p','360p']:wanted==='720p'?['720p','540p','360p','1080p']:wanted==='540p'?['540p','360p','720p','1080p']:['360p','540p','720p','1080p'];
     for(var i=0;i<order.length;i++)if(variants[order[i]])return publicMediaUrl(variants[order[i]]);
@@ -148,7 +171,7 @@
     var marketplaceNestedPath=clean(marketplaceCoverItem.path||marketplaceCoverItem.media_path||'');
     var mediaType=clean(r.marketplace_cover_type||(marketplace?marketplaceNestedType:'')||r.media_type||r.home_media_type||r.kind||r.mediaType||'photo').toLowerCase()||'photo';
     var rawMedia=r.marketplace_cover_url||(marketplace?marketplaceNestedSrc:'')||r.media_url||r.mediaUrl||r.home_media_url||r.homeMediaUrl||r.video_url||r.videoUrl||r.url||r.src||r.thumbnail_url||r.cover_url||r.media_path||r.mediaPath||'';
-    var media=adaptiveMedia(r,publicMediaUrl(rawMedia));
+    var media=adaptiveMedia(r,publicMediaUrl(rawMedia),marketplace?marketplaceCoverItem.variants:null);
     var rawPoster=r.thumbnail_url||r.thumbnailUrl||r.poster_url||r.posterUrl||(marketplace?marketplaceNestedPoster:'')||r.cover_url||r.coverUrl||r.image_url||r.imageUrl||'';
     var poster=publicMediaUrl(rawPoster);
     var owner=clean(r.user_id||r.creator_id||r.owner_id||r.author_id||r.profile_id||r.creatorId||r.userId||r.ownerId||r.authorId||r.profileId||'');
@@ -158,7 +181,7 @@
     var coverType=clean(r.marketplace_cover_type||(marketplace?marketplaceNestedType:'')||r.media_type||mediaType||'image');
     var coverUrl=publicMediaUrl(r.marketplace_cover_url||(marketplace?marketplaceNestedSrc:'')||media||'');
     var coverPath=clean(r.marketplace_cover_path||(marketplace?marketplaceNestedPath:'')||r.media_path||r.mediaPath||'');
-    if(marketplace&&coverUrl){media=coverUrl;mediaType=coverType.toLowerCase().indexOf('video')>=0?'video':'photo';}
+    if(marketplace&&coverUrl){mediaType=coverType.toLowerCase().indexOf('video')>=0?'video':'photo';media=mediaType==='video'?adaptiveMedia(r,publicMediaUrl(coverUrl),marketplaceCoverItem.variants):coverUrl;}
     var mapped={
       id:r.id,mode:mode,title:r.title||'Publication Fyblic',desc:r.description||r.desc||'',description:r.description||r.desc||'',category:r.category||'',location:r.location||'',
       kind:mediaType,mediaType:mediaType,media_type:mediaType,mediaUrl:media,media_url:media,homeMediaUrl:media,home_media_url:media,mediaPath:coverPath||clean(r.media_path||r.mediaPath||''),media_path:coverPath||clean(r.media_path||r.mediaPath||''),

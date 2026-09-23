@@ -11,7 +11,7 @@
   if(window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__)return;
   window.__HAPPYAD_LISTING_PUBLICATION_SUPABASE_V821__=true;
 
-  var VERSION='V1084_BOUTIQUE_PATH_PROGRESS';
+  var VERSION='V1087_AUTO_1080';
   var PUBLIC_BUCKET='happyad-media';
   var PRIVATE_BUCKET='happyad-marketplace-private';
   var RPC='happyad_publish_listing_v1';
@@ -304,8 +304,9 @@
   }
   function normalizedListing(row,offer,category,media,user,verification){
     row=row&&typeof row==='object'?row:{};
-    var coverIndex=Math.max(0,Math.min(int(offer&&offer.coverIndex)||0,Math.max(0,media.length-1)));
-    var first=media[coverIndex]||media[0]||{};
+    var persistedMedia=Array.isArray(row.marketplace_media)&&row.marketplace_media.length?row.marketplace_media:media;
+    var coverIndex=Math.max(0,Math.min(int(offer&&offer.coverIndex)||0,Math.max(0,persistedMedia.length-1)));
+    var first=persistedMedia[coverIndex]||persistedMedia[0]||{};
     var id=clean(row.id||row.listing_id||row.post_id);
     var d=details(offer);
     return Object.assign({},row,d,{
@@ -315,7 +316,7 @@
       title:clean(offer.title),description:clean(offer.description),country:clean(offer.country),city:clean(offer.city),location:clean(offer.location||[offer.city,offer.country].filter(Boolean).join(' · ')),
       marketplace_price:num(offer.price),price:num(offer.price),price_label:clean(offer.priceLabel||(num(offer.price)>0?offer.price+' '+offer.currency:'Salaire non précisé')),currency:clean(offer.currency),availability:clean(offer.availability),
       product_condition:clean(offer.condition),condition:clean(offer.condition),quantity:int(offer.quantity)||null,product_brand:clean(offer.productBrand),product_model:clean(offer.productModel),
-      marketplace_details:d,marketplace_media:media,media:media,media_url:first.src||'',media_path:first.path||'',media_type:first.type||'image',
+      marketplace_details:d,marketplace_media:persistedMedia,media:persistedMedia,media_url:first.src||row.media_url||'',media_path:first.path||row.media_path||'',media_type:first.type||row.media_type||'image',
       marketplace_show_on_home:offer&&offer.showOnHome===true,showOnHome:offer&&offer.showOnHome===true,
       marketplace_cover_index:coverIndex,coverIndex:coverIndex,marketplace_cover_url:first.src||'',marketplace_cover_path:first.path||'',marketplace_cover_type:first.type||'image',
       listing_views_count:Number(row.listing_views_count||0),viewsCount:Number(row.listing_views_count||0),
@@ -445,13 +446,39 @@
       var data=result&&result.data||{};
       var listing=normalizedListing(data.listing||{},offer,parsed.category,media,user,verification);
       if(!clean(listing&&listing.id))throw new Error('PUBLICATION_RETURN_INVALID');
+
+      /* V1087 — le worker peut avoir terminé le 1080p pendant que le RPC Marketplace
+         enregistrait l'annonce. Ce rafraîchissement best-effort rattache immédiatement
+         les variantes déjà prêtes sans jamais transformer une publication réussie en échec. */
+      try{
+        var syncNow=await c.rpc('fyblic_boutique_refresh_media_v1087',{p_listing_id:listingId});
+        if(syncNow&&!syncNow.error&&syncNow.data&&syncNow.data.listing){
+          listing=normalizedListing(syncNow.data.listing,offer,parsed.category,media,user,verification);
+        }
+      }catch(_adaptiveNow){}
+
       progress(payload,'Annonce publiée.');
       patchCaches(listing);
       queueProfileNotice(listing);
+
+      /* Quand les variantes secondaires finissent après l'affichage, resynchroniser
+         la ligne Boutique puis les caches. Normal/Story ne passent pas par ce bloc. */
+      if(mediaBatch.completion&&typeof mediaBatch.completion.then==='function'){
+        mediaBatch.completion.then(async function(){
+          try{
+            var syncFinal=await c.rpc('fyblic_boutique_refresh_media_v1087',{p_listing_id:listingId});
+            if(syncFinal&&!syncFinal.error&&syncFinal.data&&syncFinal.data.listing){
+              var finalListing=normalizedListing(syncFinal.data.listing,offer,parsed.category,media,user,verification);
+              patchCaches(finalListing);
+              try{document.dispatchEvent(new CustomEvent('happyad:marketplace-quality-upgraded',{detail:{listing:finalListing,source:VERSION}}));}catch(_evt){}
+            }
+          }catch(_adaptiveFinal){}
+        }).catch(function(){});
+      }
       try{document.dispatchEvent(new CustomEvent('happyad:marketplace-listing-published',{detail:{listing:listing,source:VERSION}}));}catch(_e){}
       try{document.dispatchEvent(new CustomEvent('HAPPYAD_REAL_OFFERS_READY',{detail:{count:1,listing:listing,source:VERSION}}));}catch(_e){}
       try{if(window.HappyadChatIntegrationV795&&typeof window.HappyadChatIntegrationV795.reloadListings==='function')setTimeout(function(){window.HappyadChatIntegrationV795.reloadListings();},80);}catch(_e){}
-      return {ok:true,listing:listing,source:'supabase-v820'};
+      return {ok:true,listing:listing,source:'supabase-v1087'};
     }catch(error){
       /* En cas d’échec réseau ambigu, ne pas supprimer automatiquement les fichiers :
          la requête serveur peut avoir abouti sans que le téléphone reçoive la réponse. */

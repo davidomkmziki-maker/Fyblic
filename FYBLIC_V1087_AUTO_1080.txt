@@ -1,0 +1,9 @@
+FYBLIC V1087 — AUTO 1080
+
+Correction ciblée, base V1086 conservée.
+- Normal : pipeline V1082/V1083 inchangé; les variantes 1080 existantes sont préférées en bonne connexion.
+- Story : upload stable V1083 inchangé; le backend continue à remplacer media_url par la qualité finale. Une Story déjà en lecture n'est pas redémarrée.
+- Boutique : synchronisation des variantes du job vers marketplace_media + couverture happyad_posts.
+- Accueil : 4G (hors économie de données) ou downlink >= 6 Mb/s préfère 1080p dès qu'elle existe.
+- Centrale vidéo : même règle; vérifie automatiquement une qualité plus haute après ouverture et ne coupe pas une vidéo déjà en lecture.
+- Aucun changement worker requis.

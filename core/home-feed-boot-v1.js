@@ -312,6 +312,14 @@
     document.addEventListener('visibilitychange',function(){if(!document.hidden)scheduleRefresh('visible',300);});
     window.addEventListener('focus',function(){scheduleRefresh('focus',500);});
     try{window.addEventListener('storage',function(e){if(e&&/HAPPYAD_HOME_REFRESH_NEEDED|HAPPYAD_DELETED_POST_IDS_V1/.test(e.key||''))scheduleRefresh('storage',80);});}catch(_e){}
+    /* V1087 — quand le worker annonce une optimisation après la qualité visible,
+       rafraîchir doucement le feed afin que le 1080p prêt remplace le 720p.
+       Aucun changement du pipeline de publication : seulement une lecture fraîche. */
+    try{window.addEventListener('FYBLIC_PUBLICATION_PROGRESS_V2',function(e){
+      var d=e&&e.detail||{},status=String(d.status||'').toLowerCase(),progress=Number(d.progress||0);
+      if(d.primaryReady===true&&(status==='optimizing'||status==='published'||progress>=88))scheduleRefresh('quality-upgrade-v1087',650);
+    });}catch(_qualityEvent){}
+    try{window.addEventListener('happyad:marketplace-quality-upgraded',function(){scheduleRefresh('marketplace-quality-v1087',180);});}catch(_marketQuality){}
     try{window.addEventListener('happyad:post-deleted',function(e){
       var id=e&&e.detail&&e.detail.id;Promise.resolve(waitIdle()).then(function(){if(id){bcall('removePost',id);saveFastCache(posts());bcall('render');}setTimeout(function(){refresh('post-deleted');},80);});
     });}catch(_e){}
