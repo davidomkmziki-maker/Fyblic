@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1109-legal-terms-18plus-20260924';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1112-legal-direct-loader-20260924';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -36,7 +36,7 @@ var HAPPYAD_APP_SHELL = [
   './core/system-notification-master-v807.js?v=855r56-notification-preferences',
   './core/seller-verification-supabase-master-v801.js?v=807-team-wording-system-notifications',
   './core/listing-publication-supabase-master-v821.js?v=1087-auto-1080',
-  './core/chat-integration-master-v795.js?v=1105-boutique-readonly-delete',
+  './core/chat-integration-master-v795.js?v=1111-deleted-fail-closed',
   './core/home-chat-header-v1089.js?v=1089-source-svg',
   './core/marketplace-home-master-v828.js?v=1102-fullscreen-card-parity',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
@@ -62,7 +62,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-feed-boot-v1.js?v=1088-adaptive-1080-priority',
   './core/master-registry.js?v=974-p1-module-lifecycle-registry',
   './core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry',
-  './modules/happyad-chat.html?v=1105-guest-readonly-delete',
+  './modules/happyad-chat.html?v=1111-deleted-fail-closed',
   './modules/message-center.html?mode=inbox&source=p1-module-lifecycle&v=1031-storage-security',
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
@@ -102,8 +102,8 @@ var HAPPYAD_APP_SHELL = [
   './core/story-master-v699.js?v=1092-radar-title-removed',
   './core/notification-master-v700.js?v=1031-storage-security',
   './core/fyblic-toast-master-v1105.js?v=1105-action-toast',
-  './core/auth-session-master-v598.js?v=1109-legal-terms-18plus',
-  './conditions-utilisation.html?v=1109-legal-terms',
+  './core/auth-session-master-v598.js?v=1112-direct-legal-loader',
+  './conditions-utilisation.html?v=1112-direct-loader',
   './core/profile-identity-stable-master-v741.js?v=1031-storage-security',
   './core/profile-avatar-recovery-master-v743.js?v=855r32-no-resurrection',
   './core/card-author-avatar-master-v742.js?v=1031-storage-security',

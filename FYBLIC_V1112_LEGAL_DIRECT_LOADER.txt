@@ -1,0 +1,14 @@
+FYBLIC V1112 — CONDITIONS : CHARGEMENT DIRECT
+
+1. Ouverture des Conditions
+- Le clic affiche immédiatement le loader Fyblic blanc dans l’interface actuelle avant la navigation.
+- Navigation dans la même vue afin que le navigateur conserve le loader pendant la transition au lieu d’afficher une surface noire intermédiaire.
+- La page Conditions force aussi un premier rendu blanc avant tout autre style ou lecture du thème.
+
+2. Inscription
+- Le lien « Conditions d’utilisation » dans la case de confirmation 18+ reste explicitement vert (#64ff50) avec priorité CSS.
+
+3. Cache / PWA
+- Cache-busting V1112 appliqué au module d’authentification, à la page Conditions et au service worker.
+
+Aucune modification du pipeline de publication, de compression, de Boutique ou de Supabase.

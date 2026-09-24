@@ -6,8 +6,8 @@
   if(window.__HAPPYAD_CHAT_INTEGRATION_MASTER_V795__)return;
   window.__HAPPYAD_CHAT_INTEGRATION_MASTER_V795__=true;
 
-  var VERSION='V1105_GUEST_BOUTIQUE_DELETE_FIX';
-  var CHAT_URL='modules/happyad-chat.html?v=1105-guest-readonly-delete';
+  var VERSION='V1111_BOUTIQUE_DELETED_FAIL_CLOSED';
+  var CHAT_URL='modules/happyad-chat.html?v=1111-deleted-fail-closed';
   var HOST_ID='happyadChatHostV795';
   var FRAME_ID='happyadChatFrameV795';
   var host=null,frame=null,frameReady=false,pendingMode='ask',pendingContext=null;
@@ -222,22 +222,42 @@
     });
     return out;
   }
+  function deletedListingIdsV1111(){
+    var out={};
+    try{
+      var rows=JSON.parse(localStorage.getItem('HAPPYAD_DELETED_POST_IDS_V1')||'[]');
+      if(Array.isArray(rows))rows.forEach(function(id){id=clean(id);if(id)out[id]=1;});
+    }catch(_e){}
+    return out;
+  }
   async function fetchRemoteListings(){
     var client=supabaseClient();if(!client)return [];
-    /* Source distante officielle : happyad_posts. Le filtre V803 est tenté en premier,
-       mais un résultat vide ne masque pas les anciennes annonces non encore marquées. */
+    /* V1111 : Boutique est fail-closed. Une annonce publique doit être encore active
+       dans Supabase et non supprimée. Aucun fallback ne relit toute la table. */
     try{
-      var filtered=await client.from('happyad_posts').select('*').eq('happyad_marketplace',true).eq('listing_status','active').order('created_at',{ascending:false}).limit(420);
-      if(filtered&&!filtered.error&&Array.isArray(filtered.data)&&filtered.data.length)return filtered.data;
+      var filtered=await client.from('happyad_posts').select('*')
+        .eq('happyad_marketplace',true)
+        .eq('listing_status','active')
+        .eq('is_active',true)
+        .is('deleted_at',null)
+        .order('created_at',{ascending:false}).limit(420);
+      if(filtered&&!filtered.error&&Array.isArray(filtered.data))return filtered.data;
     }catch(_e){}
+    /* Compatibilité ancien schéma : on peut omettre is_active, jamais deleted_at. */
     try{
-      var fallback=await client.from('happyad_posts').select('*').order('created_at',{ascending:false}).limit(420);
+      var fallback=await client.from('happyad_posts').select('*')
+        .eq('happyad_marketplace',true)
+        .eq('listing_status','active')
+        .is('deleted_at',null)
+        .order('created_at',{ascending:false}).limit(420);
       if(fallback&&!fallback.error&&Array.isArray(fallback.data))return fallback.data;
     }catch(_e){}
     return [];
   }
   function activeListingRow(row){
     row=row&&typeof row==='object'?row:{};
+    var id=clean(first(row,['id','post_id','listing_id','offer_id'],''));
+    if(id&&deletedListingIdsV1111()[id])return false;
     var status=clean(row.listing_status||row.status||'active').toLowerCase();
     return !row.deleted_at&&row.is_active!==false&&['removed','expired','sold','paused','deleted','rejected','archived'].indexOf(status)<0;
   }
@@ -249,22 +269,11 @@
     });
   }
   async function activeListings(){
-    /* V815 : Supabase reste la source de vérité. Le cache local accélère l’ouverture,
-       mais ne peut plus remplacer les anciennes annonces par la dernière publication. */
-    var priorRows=[];
-    if(previousBridges.marketplace){
-      var fn=previousBridges.marketplace.getActiveListings||previousBridges.marketplace.listActiveOffers||previousBridges.marketplace.getOffers;
-      if(typeof fn==='function'){
-        try{
-          var prior=await fn.call(previousBridges.marketplace,{status:'active',limit:500,source:'happyad-chat-v817'});
-          priorRows=Array.isArray(prior)?prior:first(prior||{},['data','listings','offers'],[]);
-        }catch(_e){}
-      }
-    }
-    var localRows=localPostRows();
+    /* V1111 : la liste publique vient exclusivement de la source distante validée.
+       Les caches locaux peuvent contenir une ancienne copie après suppression et ne
+       doivent donc jamais réintroduire une annonce absente de Supabase. */
     var remoteRows=await fetchRemoteListings();
-    var merged=mergeListings(remoteRows,mergeListings(priorRows,localRows));
-    return newestFirst(merged.map(slimListing).filter(activeListingRow)).slice(0,500);
+    return newestFirst((remoteRows||[]).filter(activeListingRow).map(slimListing).filter(activeListingRow)).slice(0,500);
   }
 
   function ensureHost(){
@@ -325,11 +334,9 @@
     return null;
   }
   function activeListingsFastV935(){
-    try{
-      var localRows=localPostRows();
-      var merged=mergeListings([],localRows);
-      return newestFirst(merged.map(slimListing).filter(activeListingRow)).slice(0,72);
-    }catch(_e){return [];}
+    /* V1111 : ne jamais prépeindre la Boutique depuis un cache local potentiellement
+       périmé. Le module affiche son état de chargement puis reçoit Supabase. */
+    return [];
   }
   function sendFastBootstrapV935(){
     if(!frame||!frame.contentWindow)return false;

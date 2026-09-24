@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#ffffff" id="themeColorMeta">
+  <meta name="color-scheme" content="light">
+  <style id="fyblicLegalFirstPaintV1112">html,body{margin:0;min-height:100%;background:#fff;color:#14171a}html{color-scheme:light}</style>
   <title>Conditions d’utilisation • Fyblic</title>
   <style>
     :root{
@@ -32,7 +34,6 @@
     h1{font-size:clamp(30px,7vw,44px);line-height:1.05;letter-spacing:-1.4px;margin:0 0 12px}
     .lead{font-size:15.5px;line-height:1.65;color:var(--muted);margin:0;max-width:700px}
     .version{display:inline-flex;margin-top:17px;padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:12px;font-weight:750}
-    .notice{margin:22px 0 4px;padding:15px 16px;border:1px solid var(--line);border-radius:16px;background:var(--soft);font-size:13.5px;line-height:1.55;color:var(--muted)}
     section{padding:25px 0;border-bottom:1px solid var(--line)}
     h2{font-size:20px;line-height:1.25;letter-spacing:-.35px;margin:0 0 12px}
     p,li{font-size:14.5px;line-height:1.68}
@@ -47,10 +48,21 @@
     .toc a{text-decoration:none;color:var(--muted);font-size:13px;line-height:1.35}
     .toc a:hover{color:var(--text)}
     .footer{padding:28px 0 0;color:var(--muted);font-size:12.5px;line-height:1.6;text-align:center}
+    .legal-loader{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:var(--bg);opacity:1;visibility:visible;transition:opacity .22s ease,visibility .22s ease}
+    .legal-loader.is-ready{opacity:0;visibility:hidden;pointer-events:none}
+    .legal-loader-box{width:min(240px,72vw);display:grid;justify-items:center;gap:14px;text-align:center}
+    .legal-loader-brand{display:flex;align-items:center;gap:8px;color:var(--text);font-size:25px;font-weight:850;letter-spacing:-.8px}
+    .legal-loader-brand svg{width:27px;height:27px;display:block}
+    .legal-loader-track{position:relative;width:132px;height:4px;overflow:hidden;border-radius:99px;background:var(--soft);box-shadow:inset 0 0 0 1px var(--line)}
+    .legal-loader-track span{position:absolute;inset:0 auto 0 -48%;width:48%;border-radius:inherit;background:linear-gradient(90deg,#ffe032 0%,#ff8a1f 50%,#ff3030 100%);animation:fyblicLegalLoad 1s cubic-bezier(.4,0,.2,1) infinite}
+    .legal-loader-text{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.01em}
+    @keyframes fyblicLegalLoad{0%{transform:translateX(0)}100%{transform:translateX(310%)}}
+    @media(prefers-reduced-motion:reduce){.legal-loader-track span{animation-duration:1.8s}.legal-loader{transition:none}}
     @media(max-width:560px){.toc-grid{grid-template-columns:1fr}.topbar-inner{height:58px}.brand{font-size:20px}main{padding-top:24px}.icon-btn{width:38px;height:38px}}
   </style>
   <script>
     (function(){
+      window.__fyblicLegalLoadStarted=Date.now();
       try{
         var saved=localStorage.getItem('FYBLIC_LEGAL_THEME_V1');
         if(saved==='dark')document.documentElement.setAttribute('data-theme','dark');
@@ -59,6 +71,30 @@
   </script>
 </head>
 <body>
+  <div class="legal-loader" id="fyblicLegalLoader" role="status" aria-live="polite" aria-label="Chargement des conditions d’utilisation">
+    <div class="legal-loader-box">
+      <div class="legal-loader-brand" aria-hidden="true">
+        <span>Fyblic</span>
+        <svg viewBox="0 0 512 512" focusable="false">
+          <defs>
+            <linearGradient id="fyblicLegalLoaderGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ffe032"/><stop offset=".5" stop-color="#ff7a2f"/><stop offset="1" stop-color="#ff0a9f"/>
+            </linearGradient>
+            <path id="fyblicLegalLoaderLeaf" d="M100.8 0A43.2 43.2 0 0 1 144 43.2A100.8 100.8 0 0 1 43.2 144A43.2 43.2 0 0 1 0 100.8A100.8 100.8 0 0 1 100.8 0Z"/>
+          </defs>
+          <g fill="url(#fyblicLegalLoaderGradient)">
+            <use href="#fyblicLegalLoaderLeaf" transform="translate(104 104) rotate(5 72 72)"/>
+            <use href="#fyblicLegalLoaderLeaf" transform="translate(264 104) rotate(85 72 72)"/>
+            <use href="#fyblicLegalLoaderLeaf" transform="translate(264 264) rotate(175 72 72)"/>
+            <use href="#fyblicLegalLoaderLeaf" transform="translate(104 264) rotate(265 72 72)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="legal-loader-track" aria-hidden="true"><span></span></div>
+      <div class="legal-loader-text">Chargement des conditions…</div>
+    </div>
+  </div>
+  <noscript><style>#fyblicLegalLoader{display:none!important}</style></noscript>
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand" aria-label="Fyblic">
@@ -154,7 +190,6 @@
 
     <section id="contact"><h2>22. Contact et Assistance</h2><p>Pour une question concernant votre compte, un signalement, une demande relative aux présentes Conditions ou un problème de sécurité, utilisez la rubrique <strong>Assistance</strong> de Fyblic. Les coordonnées légales de l’entité exploitant Fyblic et, le cas échéant, les coordonnées spécifiques destinées aux demandes juridiques ou de confidentialité doivent être publiées dans Fyblic avant le lancement commercial officiel.</p></section>
 
-    <div class="notice"><strong>Important avant lancement commercial :</strong> cette version constitue une base contractuelle rédigée pour les fonctionnalités actuelles de Fyblic. Elle doit être complétée par les coordonnées légales exactes de l’exploitant et relue selon les pays où le service sera effectivement proposé, notamment avec une Politique de confidentialité distincte.</div>
     <div class="footer">© 2026 Fyblic • Conditions d’utilisation version 1.0</div>
   </main>
 
@@ -166,10 +201,25 @@
         root.setAttribute('data-theme',theme);
         if(button){button.textContent=theme==='dark'?'☀':'☾';button.setAttribute('aria-label',theme==='dark'?'Passer au thème clair':'Passer au thème sombre');}
         if(meta)meta.setAttribute('content',theme==='dark'?'#0d0f11':'#ffffff');
+        var scheme=document.querySelector('meta[name="color-scheme"]');if(scheme)scheme.setAttribute('content',theme==='dark'?'dark':'light');
         try{localStorage.setItem('FYBLIC_LEGAL_THEME_V1',theme);}catch(_e){}
       }
       apply(root.getAttribute('data-theme')==='dark'?'dark':'light');
       if(button)button.addEventListener('click',function(){apply(root.getAttribute('data-theme')==='dark'?'light':'dark');});
+
+      var loader=document.getElementById('fyblicLegalLoader'),loaderClosed=false;
+      function closeLegalLoader(){
+        if(loaderClosed||!loader)return;loaderClosed=true;
+        var started=Number(window.__fyblicLegalLoadStarted||Date.now());
+        var wait=Math.max(0,360-(Date.now()-started));
+        setTimeout(function(){
+          loader.classList.add('is-ready');
+          setTimeout(function(){if(loader&&loader.parentNode)loader.parentNode.removeChild(loader);},260);
+        },wait);
+      }
+      if(document.readyState==='complete')closeLegalLoader();
+      else window.addEventListener('load',closeLegalLoader,{once:true});
+      setTimeout(closeLegalLoader,1800);
     })();
   </script>
 </body>

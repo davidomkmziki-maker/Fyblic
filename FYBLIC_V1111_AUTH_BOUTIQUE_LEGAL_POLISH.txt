@@ -1,0 +1,27 @@
+FYBLIC V1111 — AUTH / BOUTIQUE / CONDITIONS
+Date: 2026-09-24
+
+1. Connexion / Inscription
+- CTA vert remplacé par un gradient jaune -> orange -> rouge.
+- Focus et accents de l’écran d’authentification harmonisés avec la nouvelle palette.
+
+2. Fond authentification
+- Fond overlay + panneau fixé à #080b10, exactement la couleur finale de l’Accueil.
+
+3. Boutique — suppression stricte
+- Supabase devient la source publique autoritative pour la liste Boutique.
+- Les annonces supprimées/inactives sont filtrées côté requête (deleted_at NULL, statut actif, is_active quand disponible).
+- Suppression du pré-affichage depuis les caches locaux périmés.
+- Les tombstones HAPPYAD_DELETED_POST_IDS_V1 sont aussi vérifiés dans le host et le module Boutique.
+- Les fallbacks Supabase ne peuvent plus relire une annonce deleted_at non NULL.
+
+4. Conditions d’utilisation
+- Ajout d’un écran de chargement Fyblic court et explicite pendant l’ouverture.
+- Le loader respecte le thème clair/sombre déjà enregistré.
+
+5. Nettoyage juridique
+- Suppression complète du bloc interne « Important avant lancement commercial ».
+
+Aucun SQL ajouté. Aucun changement du pipeline publication/compression.
+
+- À chaque réouverture de la Boutique, l’ancienne liste en mémoire est vidée immédiatement avant la résolution Supabase afin d’éviter tout flash d’une annonce supprimée.

@@ -3158,6 +3158,7 @@
 
     function normalizeRealOffer(row,index=0){
       if(!row||typeof row!=='object')return null;
+      if(listingIsLocallyDeletedV838(row))return null;
       const inactive=firstDefined(row,['is_active','active'],true)===false;
       const status=String(firstDefined(row,['listing_status','status','state','moderation_status'],'active')).toLowerCase();
       const earlyOwnerUid=String(firstDefined(row,['seller_id','owner_id','user_id','author_id','profile_id','uid'],'')).trim();
@@ -3324,7 +3325,7 @@
           let response=await query;
           if(response?.error){
             response=await client.from('happyad_posts').select('*',{count:'exact'})
-              .eq('happyad_marketplace',true).eq('listing_status','active')
+              .eq('happyad_marketplace',true).eq('listing_status','active').is('deleted_at',null)
               .eq('marketplace_category',category).order('created_at',{ascending:false})
               .limit(MARKET_INITIAL_PER_CATEGORY);
           }
@@ -3343,13 +3344,13 @@
       const limit=Math.max(1,Math.min(Number(options.limit|| (category?120:500)),500));
       try{
         let query=client.from('happyad_posts').select('*',{count:'exact'})
-          .eq('happyad_marketplace',true).eq('listing_status','active');
+          .eq('happyad_marketplace',true).eq('listing_status','active').eq('is_active',true).is('deleted_at',null);
         if(listingId)query=query.eq('id',listingId);
         if(category)query=query.eq('marketplace_category',category);
         query=query.order('marketplace_show_on_home',{ascending:false}).order('created_at',{ascending:false}).limit(listingId?1:limit);
         let response=await query;
         if(response?.error){
-          query=client.from('happyad_posts').select('*',{count:'exact'}).eq('happyad_marketplace',true).eq('listing_status','active');
+          query=client.from('happyad_posts').select('*',{count:'exact'}).eq('happyad_marketplace',true).eq('listing_status','active').is('deleted_at',null);
           if(listingId)query=query.eq('id',listingId);
           if(category)query=query.eq('marketplace_category',category);
           response=await query.order('created_at',{ascending:false}).limit(listingId?1:limit);
@@ -3735,7 +3736,10 @@
       if(payload.origin)integrationState.origin=payload.origin;
       if(Object.prototype.hasOwnProperty.call(payload,'user'))setIntegratedUser(payload.user,{resolved:true});
       if(Object.prototype.hasOwnProperty.call(payload,'verification'))setIntegratedVerification(payload.verification);
-      if(Array.isArray(payload.listings||payload.offers))applyIntegratedOffers(payload.listings||payload.offers,{replace:true});
+      if(Array.isArray(payload.listings||payload.offers)){
+        marketInitialLoadPendingV935=false;
+        applyIntegratedOffers(payload.listings||payload.offers,{replace:true});
+      }
       if(payload.language&&RESPONSE_TEXT?.[payload.language]){
         conversationLang=payload.language;
         document.documentElement.lang=payload.language;
@@ -3757,11 +3761,19 @@
           const fastUser=payload.user&&typeof payload.user==='object'?payload.user:null;
           const fastUid=String(fastUser?.id||fastUser?.user_id||fastUser?.uid||'').trim();
           if(Object.prototype.hasOwnProperty.call(payload,'user'))setIntegratedUser(fastUser,{resolved:!!fastUid});
-          if(Array.isArray(payload.listings)&&payload.listings.length)applyIntegratedOffers(payload.listings,{replace:true});
+          if(Array.isArray(payload.listings)){
+            /* V1111 : vider immédiatement une ancienne Boutique en mémoire. Cela évite
+               qu'une annonce supprimée reste visible pendant la requête Supabase. */
+            marketInitialLoadPendingV935=true;
+            applyIntegratedOffers(payload.listings,{replace:true});
+          }
           break;
         }
         case 'HAPPYAD_CHAT_INIT': initializeFromHappyad(payload); break;
         case 'HAPPYAD_CHAT_SET_OFFERS':
+          marketInitialLoadPendingV935=false;
+          applyIntegratedOffers(payload.listings||payload.offers||payload,{replace:payload.replace!==false});
+          break;
         case 'HAPPYAD_OFFERS_RESPONSE': applyIntegratedOffers(payload.listings||payload.offers||payload,{replace:payload.replace!==false}); break;
         case 'HAPPYAD_CHAT_SET_USER': {
           beginMarketIdentitySessionV935(payload.openSessionId);
@@ -10481,7 +10493,7 @@ J’affiche déjà les résultats disponibles sans lieu précis. Dans quelle vil
     window.HAPPYAD_MESSAGE_BRIDGE_FALLBACK={open:openHappyadMessage,payload:happyadMessagePayload};
 
     /* V811 : publication réelle de toutes les catégories, succès confirmé par Supabase. */
-    window.HAPPYAD_CHAT_VERSION='V935_MARKET_OWNER_FIRST_PAINT';
+    window.HAPPYAD_CHAT_VERSION='V1111_MARKET_DELETED_FAIL_CLOSED';
     window.HAPPYAD_CHAT_STATE=()=>clonePlain({...searchContext,pendingFields:[...(searchContext.pendingFields||[])]});
     window.HAPPYAD_START_FRESH=()=>startFreshConversation(false);
     window.HAPPYAD_CHAT_BRIDGE={

@@ -538,7 +538,7 @@ html body #list.homeTimeline .miniMedia:not(.haPhotoUserCropV613D)>img{transform
 <script src="core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script src="core/account-isolation-master-v937.js?v=938-action-memory-reset"></script>
 <script src="core/fyblic-toast-master-v1105.js?v=1105-action-toast"></script>
-<script src="core/auth-session-master-v598.js?v=1109-legal-terms-18plus"></script>
+<script src="core/auth-session-master-v598.js?v=1112-direct-legal-loader"></script>
 <script src="core/message-privacy-master-v855r51.js?v=972-p1-single-client"></script>
 <script src="core/account-discovery-privacy-v855r53.js?v=855r53-account-discovery"></script>
 <script src="core/location-privacy-master-v855r54.js?v=855r54-location-privacy"></script>
@@ -8906,7 +8906,7 @@ html body #happyadSmartSearchV427 .haDiscoveryPostTitleV1014.haDiscoveryIdentity
       if(window.__HAPPYAD_PWA_DISABLED__)return;
       if(!('serviceWorker' in navigator))return;
       if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;
-      navigator.serviceWorker.register('./service-worker.js?v=v1105-auth-toast-boutique-20260924',{scope:'./',updateViaCache:'none'}).then(function(reg){
+      navigator.serviceWorker.register('./service-worker.js?v=v1112-legal-direct-loader-20260924',{scope:'./',updateViaCache:'none'}).then(function(reg){
         try{
           if(reg.active)reg.active.postMessage({type:'HAPPYAD_CLEAR_OLD_CACHES'});
           if(reg.waiting)reg.waiting.postMessage({type:'HAPPYAD_SKIP_WAITING'});
@@ -11144,7 +11144,7 @@ html.haProfilePhotoFullscreenV854R8 body #happyadAppShell{pointer-events:none!im
 </script>
 <script src="core/profile/profile-photo-parent-v854r8.js?v=932-profile-handoff-pointer-release"></script>
 <script src="core/navigation-master-v668.js?v=1001-publication-profile-routes"></script>
-<script src="core/auth-session-master-v598.js?v=1109-legal-terms-18plus"></script>
+<script src="core/auth-session-master-v598.js?v=1112-direct-legal-loader"></script>
 <script id="happyad-profile-identity-stable-master-v741" src="core/profile-identity-stable-master-v741.js?v=1031-storage-security"></script>
 <script id="happyad-profile-avatar-recovery-master-v743" src="core/profile-avatar-recovery-master-v743.js?v=855r32-no-resurrection"></script>
 <script src="core/main-tabs-master-v615.js?v=1105-guest-profile-auth"></script>
@@ -12242,7 +12242,7 @@ window.__HAPPYAD_V35_ACCOUNT_RECONNECT_ROUTE_FIX__=true;
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="core/media-compression-client-v1.js?v=1067-compression-lock"></script>
 <script id="happyad-listing-publication-supabase-v821-js" src="core/listing-publication-supabase-master-v821.js?v=1087-auto-1080"></script>
-<script id="happyad-chat-integration-master-v795-js" src="core/chat-integration-master-v795.js?v=1105-boutique-readonly-delete"></script>
+<script id="happyad-chat-integration-master-v795-js" src="core/chat-integration-master-v795.js?v=1111-deleted-fail-closed"></script>
 <script id="fyblic-home-chat-header-v1089-js" src="core/home-chat-header-v1089.js?v=1089-source-svg"></script>
 <script id="happyad-marketplace-home-master-v828-js" src="core/marketplace-home-master-v828.js?v=1102-fullscreen-card-parity"></script>
 <script id="happyad-keyboard-surface-master-v851r7-js" src="core/keyboard-surface-master-v851r7.js?v=855r93-home-silent"></script>
