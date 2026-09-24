@@ -1,0 +1,11 @@
+FYBLIC V1110 - Conditions + œil mot de passe
+
+Corrections appliquées :
+1. Le texte du lien affiché en bas de l'authentification a été raccourci :
+   - Ancien : "Conditions d’utilisation de Fyblic"
+   - Nouveau : "Conditions d’utilisation"
+2. Le bouton du champ mot de passe utilise maintenant une vraie icône SVG :
+   - œil barré quand le mot de passe est masqué
+   - œil ouvert quand le mot de passe est visible
+3. Aucun chargement réseau supplémentaire pour cette icône.
+4. Vérification syntaxique du fichier auth-session-master-v598.js effectuée avec succès.

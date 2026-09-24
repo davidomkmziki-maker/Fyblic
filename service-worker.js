@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1108-auth-compact-original-color-20260924';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1109-legal-terms-18plus-20260924';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -102,7 +102,8 @@ var HAPPYAD_APP_SHELL = [
   './core/story-master-v699.js?v=1092-radar-title-removed',
   './core/notification-master-v700.js?v=1031-storage-security',
   './core/fyblic-toast-master-v1105.js?v=1105-action-toast',
-  './core/auth-session-master-v598.js?v=1107-auth-compact-original-color-google-notice',
+  './core/auth-session-master-v598.js?v=1109-legal-terms-18plus',
+  './conditions-utilisation.html?v=1109-legal-terms',
   './core/profile-identity-stable-master-v741.js?v=1031-storage-security',
   './core/profile-avatar-recovery-master-v743.js?v=855r32-no-resurrection',
   './core/card-author-avatar-master-v742.js?v=1031-storage-security',

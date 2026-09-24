@@ -1,0 +1,13 @@
+FYBLIC V1109 — CONDITIONS D’UTILISATION + 18+
+
+- Nouvelle page conditions-utilisation.html.
+- Thème clair blanc par défaut, bouton pour passer toute la page en thème sombre.
+- Conditions complètes adaptées aux fonctions Fyblic : contenu, Boutique, Stories, Live, Messages, modération, propriété intellectuelle, sécurité, comptes, responsabilité, suppression et litiges.
+- Inscription : ajout d’une case obligatoire confirmant 18+ et l’acceptation des Conditions d’utilisation.
+- La date de naissance reste vérifiée à 18 ans minimum.
+- L’acceptation est ajoutée aux métadonnées Supabase Auth : terms_accepted, terms_version, terms_accepted_at, age_confirmed_18.
+- Texte Connexion/Inscription mis à jour avec lien cliquable vers les Conditions.
+- Logo de l’interface Connexion/Inscription intégré directement dans le code SVG, sans requête réseau.
+- Service worker mis à jour et page Conditions ajoutée au cache de l’application.
+
+Important : compléter avant lancement commercial les coordonnées légales exactes de l’exploitant et publier une Politique de confidentialité distincte.
