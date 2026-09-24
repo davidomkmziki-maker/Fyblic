@@ -3,7 +3,7 @@
   if(window.__HAPPYAD_AUTH_SESSION_MASTER_V598__)return;
   window.__HAPPYAD_AUTH_SESSION_MASTER_V598__=true;
 
-  var VERSION='AUTH_SESSION_V1111_WARM_GRADIENT_HOME_BG';
+  var VERSION='AUTH_SESSION_V1113_LEGAL_BOOT_STABLE';
   var USER_KEY='HAPPYAD_CENTRAL_USER_V10_CLEAN_STATS_FULL';
   var session=null;
   var ready=false;
@@ -471,21 +471,21 @@ body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}
 #happyadAuthGateV595 .haAuthGoogleMarkV1105{font:1000 22px/1 Arial,sans-serif;background:conic-gradient(from -45deg,#4285f4 0 25%,#34a853 0 50%,#fbbc05 0 75%,#ea4335 0);-webkit-background-clip:text;background-clip:text;color:transparent}\
 #happyadAuthGateV595 .haAuthAgreementV1105{max-width:390px;margin:0 auto;text-align:center;color:#858e92;font-size:11.5px;line-height:1.45}\
 #happyadAuthGateV595 .haAuthAgreementV1105 b{color:#ff9a24;font-weight:800}\
-#happyadAuthGateV595 .haAuthAgreementV1105 a{color:#ff9a24;font-weight:800;text-decoration:none}\
+#happyadAuthGateV595 .haAuthAgreementV1105 a{color:#64ff50!important;font-weight:800;text-decoration:none}\
 #happyadAuthGateV595 .haAuthConsentV1109{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;margin:3px 2px 13px;color:#b5bdc1;font-size:12px;line-height:1.42;cursor:pointer}\
 #happyadAuthGateV595 .haAuthConsentV1109 input{width:19px;height:19px;margin:1px 0 0;accent-color:#ff9500}\
 #happyadAuthGateV595 .haAuthConsentV1109 a{color:#64ff50!important;font-weight:800;text-decoration:none}\
 #happyadAuthGateV595 .haAuthConsentV1109 a:active,#happyadAuthGateV595 .haAuthAgreementV1105 a:active{opacity:.72}\
 #happyadAuthGateV595 .haAuthStatus{margin-top:8px!important}\
 #happyadAuthGateV595 .haAuthBack{border-color:rgba(255,255,255,.15)!important;background:#1b1d20!important}\
-#fyblicLegalTransitionV1112{position:fixed;inset:0;z-index:5000010;display:grid;place-items:center;background:#fff;color:#14171a}\
-#fyblicLegalTransitionV1112 .fyblicLegalTransitionBoxV1112{width:min(240px,72vw);display:grid;justify-items:center;gap:14px;text-align:center}\
-#fyblicLegalTransitionV1112 .fyblicLegalTransitionBrandV1112{display:flex;align-items:center;gap:8px;font-size:25px;font-weight:850;letter-spacing:-.8px}\
-#fyblicLegalTransitionV1112 .fyblicLegalTransitionBrandV1112 svg{width:27px;height:27px;display:block}\
-#fyblicLegalTransitionV1112 .fyblicLegalTransitionTrackV1112{position:relative;width:132px;height:4px;overflow:hidden;border-radius:99px;background:#f6f7f8;box-shadow:inset 0 0 0 1px #e8eaed}\
-#fyblicLegalTransitionV1112 .fyblicLegalTransitionTrackV1112 span{position:absolute;inset:0 auto 0 -48%;width:48%;border-radius:inherit;background:linear-gradient(90deg,#ffe032 0%,#ff8a1f 50%,#ff3030 100%);animation:fyblicLegalTransitionLoadV1112 1s cubic-bezier(.4,0,.2,1) infinite}\
-#fyblicLegalTransitionV1112 .fyblicLegalTransitionTextV1112{color:#626b73;font-size:12px;font-weight:700}\
-@keyframes fyblicLegalTransitionLoadV1112{0%{transform:translateX(0)}100%{transform:translateX(310%)}}\
+#fyblicLegalTransitionV1113{position:fixed;inset:0;z-index:5000010;display:grid;place-items:center;background:#fff!important;color:#14171a;isolation:isolate;transform:translateZ(0)}\
+#fyblicLegalTransitionV1113 .fyblicLegalTransitionBoxV1113{width:min(240px,72vw);display:grid;justify-items:center;gap:14px;text-align:center}\
+#fyblicLegalTransitionV1113 .fyblicLegalTransitionBrandV1113{display:flex;align-items:center;gap:8px;font-size:25px;font-weight:850;letter-spacing:-.8px}\
+#fyblicLegalTransitionV1113 .fyblicLegalTransitionBrandV1113 svg{width:27px;height:27px;display:block}\
+#fyblicLegalTransitionV1113 .fyblicLegalTransitionTrackV1113{position:relative;width:132px;height:4px;overflow:hidden;border-radius:99px;background:#f6f7f8;box-shadow:inset 0 0 0 1px #e8eaed}\
+#fyblicLegalTransitionV1113 .fyblicLegalTransitionTrackV1113 span{position:absolute;inset:0 auto 0 -48%;width:48%;border-radius:inherit;background:linear-gradient(90deg,#ffe032 0%,#ff8a1f 50%,#ff3030 100%);animation:fyblicLegalTransitionLoadV1113 1s cubic-bezier(.4,0,.2,1) infinite}\
+#fyblicLegalTransitionV1113 .fyblicLegalTransitionTextV1113{color:#626b73;font-size:12px;font-weight:700}\
+@keyframes fyblicLegalTransitionLoadV1113{0%{transform:translateX(0)}100%{transform:translateX(310%)}}\
 @media(max-width:390px){#happyadAuthGateV595 .haAuthGatePanel{padding-left:17px!important;padding-right:17px!important}#happyadAuthGateRootV595{padding-top:calc(42px + env(safe-area-inset-top,0px))!important}#happyadAuthGateV595 .haAuthBrandV1105{margin-bottom:22px;font-size:25px}#happyadAuthGateV595 .haAuthBrandV1105 img,#happyadAuthGateV595 .haAuthBrandV1105 svg{width:25px;height:25px}#happyadAuthGateV595 .haAuthModeTabsV1105{margin-bottom:20px}#happyadAuthGateV595 .haAuthField{height:51px!important}#happyadAuthGateV595 .haAuthPrimaryV1105{min-height:51px!important}#happyadAuthGateV595 .haAuthSocialDividerV1105{margin:20px 0 15px}#happyadAuthGateV595 .haAuthGoogleV1105{width:48px!important;height:48px!important;min-height:48px!important}}\
 ';document.head.appendChild(uiCss);
     }
@@ -524,10 +524,10 @@ body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}
     return '<div class="haAuthModeTabsV1105" role="tablist" aria-label="Connexion ou inscription"><button type="button" class="haAuthModeTabV1105 '+(mode==='login'?'active':'')+'" id="happyadAuthTabLoginV1105" role="tab" aria-selected="'+(mode==='login'?'true':'false')+'">Se connecter</button><button type="button" class="haAuthModeTabV1105 '+(mode==='signup'?'active':'')+'" id="happyadAuthTabSignupV1105" role="tab" aria-selected="'+(mode==='signup'?'true':'false')+'">Inscription</button></div>';
   }
   function authGoogleV1105(mode){
-    return '<div class="haAuthSocialDividerV1105"><span>Ou continuer avec</span></div><div class="haAuthGoogleRowV1105"><button type="button" class="haAuthGoogleV1105" id="happyadAuthGoogleV1105" aria-label="Continuer avec Google" title="Google"><span class="haAuthGoogleMarkV1105">G</span></button></div><div class="haAuthAgreementV1105">En continuant, vous confirmez avoir au moins 18 ans et accepter les <a href="conditions-utilisation.html?v=1112-direct-loader" data-fyblic-legal-v1112="1">Conditions d’utilisation</a>.</div>';
+    return '<div class="haAuthSocialDividerV1105"><span>Ou continuer avec</span></div><div class="haAuthGoogleRowV1105"><button type="button" class="haAuthGoogleV1105" id="happyadAuthGoogleV1105" aria-label="Continuer avec Google" title="Google"><span class="haAuthGoogleMarkV1105">G</span></button></div><div class="haAuthAgreementV1105">En continuant, vous confirmez avoir au moins 18 ans et accepter les <a href="conditions-utilisation.html?v=1113-legal-boot-stable" data-fyblic-legal-v1113="1">Conditions d’utilisation</a>.</div>';
   }
   function authSignupConsentV1109(){
-    return '<label class="haAuthConsentV1109" for="happyadAuthTermsV1109"><input type="checkbox" id="happyadAuthTermsV1109" value="1"><span>Je confirme avoir au moins 18 ans et j’accepte les <a href="conditions-utilisation.html?v=1112-direct-loader" data-fyblic-legal-v1112="1">Conditions d’utilisation</a>.</span></label>';
+    return '<label class="haAuthConsentV1109" for="happyadAuthTermsV1109"><input type="checkbox" id="happyadAuthTermsV1109" value="1"><span>Je confirme avoir au moins 18 ans et j’accepte les <a href="conditions-utilisation.html?v=1113-legal-boot-stable" data-fyblic-legal-v1113="1">Conditions d’utilisation</a>.</span></label>';
   }
   function passwordEyeSvgV1110(reveal){
     if(reveal){
@@ -535,28 +535,33 @@ body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}
     }
     return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2.2 12s3.35-6 9.8-6 9.8 6 9.8 6-3.35 6-9.8 6-9.8-6-9.8-6Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M4 20L20 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>';
   }
-  function openLegalV1112(e,a){
+  function openLegalV1113(e,a){
     try{
       if(e){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}
-      var href=(a&&a.href)||'conditions-utilisation.html?v=1112-direct-loader';
-      if(!document.getElementById('fyblicLegalTransitionV1112')){
-        var d=document.createElement('div');d.id='fyblicLegalTransitionV1112';d.setAttribute('role','status');d.setAttribute('aria-live','polite');d.setAttribute('aria-label','Chargement des conditions d’utilisation');
-        d.innerHTML='<div class="fyblicLegalTransitionBoxV1112"><div class="fyblicLegalTransitionBrandV1112" aria-hidden="true"><span>Fyblic</span><svg viewBox="0 0 512 512" focusable="false"><defs><linearGradient id="fyblicLegalTransitionGradientV1112" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe032"/><stop offset=".5" stop-color="#ff7a2f"/><stop offset="1" stop-color="#ff0a9f"/></linearGradient><path id="fyblicLegalTransitionLeafV1112" d="M100.8 0A43.2 43.2 0 0 1 144 43.2A100.8 100.8 0 0 1 43.2 144A43.2 43.2 0 0 1 0 100.8A100.8 100.8 0 0 1 100.8 0Z"/></defs><g fill="url(#fyblicLegalTransitionGradientV1112)"><use href="#fyblicLegalTransitionLeafV1112" transform="translate(104 104) rotate(5 72 72)"/><use href="#fyblicLegalTransitionLeafV1112" transform="translate(264 104) rotate(85 72 72)"/><use href="#fyblicLegalTransitionLeafV1112" transform="translate(264 264) rotate(175 72 72)"/><use href="#fyblicLegalTransitionLeafV1112" transform="translate(104 264) rotate(265 72 72)"/></g></svg></div><div class="fyblicLegalTransitionTrackV1112" aria-hidden="true"><span></span></div><div class="fyblicLegalTransitionTextV1112">Chargement des conditions…</div></div>';
+      var href=(a&&a.href)||'conditions-utilisation.html?v=1113-legal-boot-stable';
+      if(!document.getElementById('fyblicLegalTransitionV1113')){
+        var d=document.createElement('div');d.id='fyblicLegalTransitionV1113';d.setAttribute('role','status');d.setAttribute('aria-live','polite');d.setAttribute('aria-label','Chargement des conditions d’utilisation');
+        d.innerHTML='<div class="fyblicLegalTransitionBoxV1113"><div class="fyblicLegalTransitionBrandV1113" aria-hidden="true"><span>Fyblic</span><svg viewBox="0 0 512 512" focusable="false"><defs><linearGradient id="fyblicLegalTransitionGradientV1113" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe032"/><stop offset=".5" stop-color="#ff7a2f"/><stop offset="1" stop-color="#ff0a9f"/></linearGradient><path id="fyblicLegalTransitionLeafV1113" d="M100.8 0A43.2 43.2 0 0 1 144 43.2A100.8 100.8 0 0 1 43.2 144A43.2 43.2 0 0 1 0 100.8A100.8 100.8 0 0 1 100.8 0Z"/></defs><g fill="url(#fyblicLegalTransitionGradientV1113)"><use href="#fyblicLegalTransitionLeafV1113" transform="translate(104 104) rotate(5 72 72)"/><use href="#fyblicLegalTransitionLeafV1113" transform="translate(264 104) rotate(85 72 72)"/><use href="#fyblicLegalTransitionLeafV1113" transform="translate(264 264) rotate(175 72 72)"/><use href="#fyblicLegalTransitionLeafV1113" transform="translate(104 264) rotate(265 72 72)"/></g></svg></div><div class="fyblicLegalTransitionTrackV1113" aria-hidden="true"><span></span></div><div class="fyblicLegalTransitionTextV1113">Chargement des conditions…</div></div>';
         document.body.appendChild(d);
       }
-      requestAnimationFrame(function(){requestAnimationFrame(function(){window.location.href=href;});});
-    }catch(_e){window.location.href='conditions-utilisation.html?v=1112-direct-loader';}
+      var go=function(){window.location.href=href;};
+      try{
+        var layer=document.getElementById('fyblicLegalTransitionV1113');
+        if(layer)void layer.offsetWidth; /* force le premier rendu du loader */
+        if(window.requestAnimationFrame)requestAnimationFrame(function(){setTimeout(go,48);});else setTimeout(go,48);
+      }catch(_paint){setTimeout(go,48);}
+    }catch(_e){window.location.href='conditions-utilisation.html?v=1113-legal-boot-stable';}
     return false;
   }
-  function bindLegalLinksV1112(){
-    try{document.querySelectorAll('#happyadAuthGateV595 a[data-fyblic-legal-v1112="1"]').forEach(function(a){a.onclick=function(e){return openLegalV1112(e,a);};});}catch(_e){}
+  function bindLegalLinksV1113(){
+    try{document.querySelectorAll('#happyadAuthGateV595 a[data-fyblic-legal-v1113="1"]').forEach(function(a){a.onclick=function(e){return openLegalV1113(e,a);};});}catch(_e){}
   }
   function bindAuthShellV1105(mode){
     var login=document.getElementById('happyadAuthTabLoginV1105'),signup=document.getElementById('happyadAuthTabSignupV1105'),google=document.getElementById('happyadAuthGoogleV1105');
     if(login)login.onclick=function(e){stop(e);renderLogin();};
     if(signup)signup.onclick=function(e){stop(e);renderSignup();};
     if(google)google.onclick=function(e){doGoogleAuthV1105(e,mode);};
-    bindLegalLinksV1112();
+    bindLegalLinksV1113();
     var eye=document.getElementById('happyadAuthEyeV1105');
     if(eye){eye.innerHTML=passwordEyeSvgV1110(false);eye.onclick=function(e){stop(e);var pass=document.getElementById(mode==='signup'?'happyadAuthSignupPassV595':'happyadAuthPassV595');if(!pass)return;var reveal=pass.type==='password';pass.type=reveal?'text':'password';eye.innerHTML=passwordEyeSvgV1110(reveal);eye.setAttribute('aria-label',reveal?'Masquer le mot de passe':'Afficher le mot de passe');};}
   }

@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="light" data-legal-boot="1">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#ffffff" id="themeColorMeta">
   <meta name="color-scheme" content="light">
-  <style id="fyblicLegalFirstPaintV1112">html,body{margin:0;min-height:100%;background:#fff;color:#14171a}html{color-scheme:light}</style>
+  <style id="fyblicLegalFirstPaintV1113">
+    html{color-scheme:light;background:#fff}
+    html[data-legal-boot="1"],html[data-legal-boot="1"] body{margin:0;min-height:100%;background:#fff!important;color:#14171a!important}
+  </style>
   <title>Conditions d’utilisation • Fyblic</title>
   <style>
     :root{
@@ -48,25 +51,29 @@
     .toc a{text-decoration:none;color:var(--muted);font-size:13px;line-height:1.35}
     .toc a:hover{color:var(--text)}
     .footer{padding:28px 0 0;color:var(--muted);font-size:12.5px;line-height:1.6;text-align:center}
-    .legal-loader{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:var(--bg);opacity:1;visibility:visible;transition:opacity .22s ease,visibility .22s ease}
+    .legal-loader{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#fff;color:#14171a;opacity:1;visibility:visible;transition:opacity .22s ease,visibility .22s ease;isolation:isolate;transform:translateZ(0)}
     .legal-loader.is-ready{opacity:0;visibility:hidden;pointer-events:none}
     .legal-loader-box{width:min(240px,72vw);display:grid;justify-items:center;gap:14px;text-align:center}
-    .legal-loader-brand{display:flex;align-items:center;gap:8px;color:var(--text);font-size:25px;font-weight:850;letter-spacing:-.8px}
+    .legal-loader-brand{display:flex;align-items:center;gap:8px;color:#14171a;font-size:25px;font-weight:850;letter-spacing:-.8px}
     .legal-loader-brand svg{width:27px;height:27px;display:block}
-    .legal-loader-track{position:relative;width:132px;height:4px;overflow:hidden;border-radius:99px;background:var(--soft);box-shadow:inset 0 0 0 1px var(--line)}
+    .legal-loader-track{position:relative;width:132px;height:4px;overflow:hidden;border-radius:99px;background:#f6f7f8;box-shadow:inset 0 0 0 1px #e8eaed}
     .legal-loader-track span{position:absolute;inset:0 auto 0 -48%;width:48%;border-radius:inherit;background:linear-gradient(90deg,#ffe032 0%,#ff8a1f 50%,#ff3030 100%);animation:fyblicLegalLoad 1s cubic-bezier(.4,0,.2,1) infinite}
-    .legal-loader-text{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.01em}
+    .legal-loader-text{color:#626b73;font-size:12px;font-weight:700;letter-spacing:.01em}
     @keyframes fyblicLegalLoad{0%{transform:translateX(0)}100%{transform:translateX(310%)}}
     @media(prefers-reduced-motion:reduce){.legal-loader-track span{animation-duration:1.8s}.legal-loader{transition:none}}
     @media(max-width:560px){.toc-grid{grid-template-columns:1fr}.topbar-inner{height:58px}.brand{font-size:20px}main{padding-top:24px}.icon-btn{width:38px;height:38px}}
   </style>
   <script>
     (function(){
+      /* V1113: ne jamais appliquer le thème sombre avant le premier affichage du loader.
+         On mémorise seulement le choix et on l'applique sous le loader une fois celui-ci peint. */
       window.__fyblicLegalLoadStarted=Date.now();
+      window.__fyblicLegalSavedTheme='light';
       try{
         var saved=localStorage.getItem('FYBLIC_LEGAL_THEME_V1');
-        if(saved==='dark')document.documentElement.setAttribute('data-theme','dark');
+        if(saved==='dark'||saved==='light')window.__fyblicLegalSavedTheme=saved;
       }catch(_e){}
+      document.documentElement.setAttribute('data-theme','light');
     })();
   </script>
 </head>
@@ -204,10 +211,16 @@
         var scheme=document.querySelector('meta[name="color-scheme"]');if(scheme)scheme.setAttribute('content',theme==='dark'?'dark':'light');
         try{localStorage.setItem('FYBLIC_LEGAL_THEME_V1',theme);}catch(_e){}
       }
-      apply(root.getAttribute('data-theme')==='dark'?'dark':'light');
+      var loader=document.getElementById('fyblicLegalLoader'),loaderClosed=false;
+      function prepareLegalThemeV1113(){
+        var saved=window.__fyblicLegalSavedTheme==='dark'?'dark':'light';
+        apply(saved);
+        root.removeAttribute('data-legal-boot');
+      }
+      /* Le loader est déjà dans le DOM. Le thème final est préparé dessous au frame suivant. */
+      if(window.requestAnimationFrame)requestAnimationFrame(prepareLegalThemeV1113);else setTimeout(prepareLegalThemeV1113,0);
       if(button)button.addEventListener('click',function(){apply(root.getAttribute('data-theme')==='dark'?'light':'dark');});
 
-      var loader=document.getElementById('fyblicLegalLoader'),loaderClosed=false;
       function closeLegalLoader(){
         if(loaderClosed||!loader)return;loaderClosed=true;
         var started=Number(window.__fyblicLegalLoadStarted||Date.now());

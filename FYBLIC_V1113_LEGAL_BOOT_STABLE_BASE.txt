@@ -1,0 +1,22 @@
+FYBLIC V1113 — BASE STABLE CONDITIONS / AUTH
+Date : 24 septembre 2026
+
+Correction ciblée issue de V1112, sans toucher au pipeline publication/compression.
+
+1. Ouverture Conditions d’utilisation
+- Le premier frame est verrouillé en blanc.
+- Aucun thème sombre mémorisé ne peut s’appliquer avant l’affichage du loader.
+- Le loader est indépendant du thème final et s’affiche directement.
+- Le loader de transition est forcé à être peint avant la navigation.
+- Le thème enregistré est appliqué seulement sous le loader, après son premier rendu.
+
+2. Conditions d’utilisation dans l’authentification
+- Les liens Conditions d’utilisation sont verts dans Connexion ET Inscription.
+- Correction du conflit: le bloc Google partagé imposait encore l’orange dans Inscription.
+- Couleur verrouillée : #64ff50.
+
+3. Cache / PWA
+- Cache-busting V1113 sur auth, page Conditions et Service Worker.
+- Nouveau cache PWA afin d’éviter une ancienne V1112 persistante.
+
+Aucun SQL requis.
