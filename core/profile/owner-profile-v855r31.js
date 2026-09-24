@@ -8,7 +8,7 @@ var state={uid:'',profile:null,view:null,postsTotal:null,seq:0,pager:null,items:
 function $(id){return document.getElementById(id);}
 function setTextStable(id,value){var el=typeof id==='string'?$(id):id;if(!el)return false;value=String(value==null?'':value);if(el.textContent===value)return false;el.textContent=value;return true;}
 function alive(seq){return !state.destroyed&&seq===state.seq;}
-function toast(msg){var t=$('profileToast');if(!t)return;clearTimeout(t.__timer);t.textContent=String(msg||'');t.classList.add('on');t.__timer=setTimeout(function(){t.classList.remove('on');},2400);}
+function toast(msg){try{if(window.parent&&window.parent!==window&&window.parent.FyblicToastV1105){window.parent.FyblicToastV1105.show(msg);return;}}catch(_e){}var t=$('profileToast');if(!t)return;clearTimeout(t.__timer);t.textContent=String(msg||'');t.classList.add('on');t.__timer=setTimeout(function(){t.classList.remove('on');},2400);}
 function nonPriority(key,fn,delay){if(typeof fn!=='function')return false;var k='owner-'+String(key||'job');if(S&&typeof S.run==='function')return S.run(k,fn,delay==null?60:delay);setTimeout(fn,Math.max(0,Number(delay)||0));return true;}
 async function waitSecondaryIdle(){if(S&&typeof S.whenIdle==='function')try{await S.whenIdle();}catch(_e){}}
 function commitSecondary(key,fn,delay){if(typeof fn!=='function')return false;var k='owner-'+String(key||'commit');if(S&&typeof S.commit==='function')return S.commit(k,fn,delay==null?70:delay);return nonPriority(key,fn,delay);}

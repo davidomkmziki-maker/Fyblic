@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1104-ui-return-identity-polish-20260924';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1107-auth-compact-original-color-20260924';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -36,7 +36,7 @@ var HAPPYAD_APP_SHELL = [
   './core/system-notification-master-v807.js?v=855r56-notification-preferences',
   './core/seller-verification-supabase-master-v801.js?v=807-team-wording-system-notifications',
   './core/listing-publication-supabase-master-v821.js?v=1087-auto-1080',
-  './core/chat-integration-master-v795.js?v=1085-boutique-validation-visible',
+  './core/chat-integration-master-v795.js?v=1105-boutique-readonly-delete',
   './core/home-chat-header-v1089.js?v=1089-source-svg',
   './core/marketplace-home-master-v828.js?v=1102-fullscreen-card-parity',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
@@ -62,7 +62,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-feed-boot-v1.js?v=1088-adaptive-1080-priority',
   './core/master-registry.js?v=974-p1-module-lifecycle-registry',
   './core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry',
-  './modules/happyad-chat.html?v=1095-boutique-single-media',
+  './modules/happyad-chat.html?v=1105-guest-readonly-delete',
   './modules/message-center.html?mode=inbox&source=p1-module-lifecycle&v=1031-storage-security',
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
@@ -101,16 +101,17 @@ var HAPPYAD_APP_SHELL = [
   './core/share-button-bridge.js?v=938-guest-share-gate',
   './core/story-master-v699.js?v=1092-radar-title-removed',
   './core/notification-master-v700.js?v=1031-storage-security',
-  './core/auth-session-master-v598.js?v=1031-storage-security',
+  './core/fyblic-toast-master-v1105.js?v=1105-action-toast',
+  './core/auth-session-master-v598.js?v=1107-auth-compact-original-color-google-notice',
   './core/profile-identity-stable-master-v741.js?v=1031-storage-security',
   './core/profile-avatar-recovery-master-v743.js?v=855r32-no-resurrection',
   './core/card-author-avatar-master-v742.js?v=1031-storage-security',
   './core/home-scroll-prepaint-master-v696.js?v=855r100-home-scroll-physical-stable',
   './core/profile-edit-clear-master-v742.css?v=742-profile-edit-clear',
   './core/profile-edit-clear-master-v742.js?v=855r93-home-silent',
-  './core/main-tabs-master-v615.js?v=1001-publication-profile-routes',
+  './core/main-tabs-master-v615.js?v=1105-guest-profile-auth',
   './core/guest-radar-auth-v599.js?v=940-guest-auth-rainbow',
-  './core/auth-frame-gate-v596.js?v=938-guest-passive',
+  './core/auth-frame-gate-v596.js?v=1105-boutique-readonly',
   './core/publish-master-v589.js?v=927-publish-canonical-return',
   './core/push-master.js?v=push-v45-message-frame-route-v930',
   './core/internal-return-master-v694.js?v=930-photo-profile-exact-return',

@@ -1,0 +1,41 @@
+FYBLIC V1105 — AUTH + TOAST + BOUTIQUE INVITÉ + SUPPRESSION
+Date : 24/09/2026
+
+1. CONNEXION / INSCRIPTION
+- Nouvelle interface plein écran sombre inspirée de la maquette fournie.
+- Titre Fyblic + logo exact déjà présent dans /icons/fyblic-brand-mark-v1046-transparent.svg.
+- Onglets Se connecter / Inscription.
+- Bouton principal cyan -> vert.
+- Bouton Google unique en bas.
+- Logique existante mot de passe, récupération, 2FA, âge minimum et session conservée.
+- Google utilise réellement Supabase signInWithOAuth(provider="google").
+
+2. NOTIFICATIONS
+- Nouveau maître global : core/fyblic-toast-master-v1105.js.
+- Même style compact que la notification de la Centrale vidéo.
+- Auth, vidéo, photo, publication, messages, Boutique, partage, carte,
+  profils, notifications et paramètres utilisent le même rendu quand possible.
+
+3. PROFIL INVITÉ
+- Un clic sur Profil en étant déconnecté ouvre directement la nouvelle interface
+  Connexion / Inscription.
+- Accueil et Vidéos restent consultables comme avant.
+
+4. SUPPRESSION BOUTIQUE
+- Vérification du vrai UID Supabase avant mutation.
+- Appel RPC propriétaire conservé.
+- Fallback sécurisé via UPDATE avec id + user_id + happyad_marketplace=true.
+- Suppression locale immédiate de la carte après succès.
+- SQL de réparation fourni : FYBLIC_MARKETPLACE_OWNER_ACTIONS_V1105.sql.
+
+5. BOUTIQUE SANS COMPTE
+- Lecture seule stricte en invité.
+- Autorisé : ouvrir Boutique, catégories, recherche, voir les annonces,
+  détails, médias et navigation.
+- Masqué/bloqué : Je cherche, conversations, publier, contacter,
+  gérer, modifier, rendre indisponible, booster et supprimer.
+
+IMPORTANT GOOGLE
+Le bouton Google est câblé côté Fyblic. Pour qu'il fonctionne en production,
+Google doit être activé dans Supabase > Authentication > Providers > Google,
+avec le Client ID / Client Secret et le redirect URL du domaine Fyblic autorisé.

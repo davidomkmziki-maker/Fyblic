@@ -2513,6 +2513,20 @@
   .switcher{grid-template-columns:44px repeat(2,minmax(0,1fr)) 46px!important}
   @media(max-width:390px){.switcher{grid-template-columns:38px repeat(2,minmax(0,1fr)) 42px!important}}
 </style>
+<style id="fyblic-v1105-guest-boutique-css">
+  /* V1105 — invité : Boutique consultable uniquement, aucune surface privée. */
+  body.fyblic-guest-boutique-v1105 .switcher{grid-template-columns:44px minmax(0,1fr)!important}
+  body.fyblic-guest-boutique-v1105 .switcher [data-mode="ask"],
+  body.fyblic-guest-boutique-v1105 .switcher .conversation-tools-btn,
+  body.fyblic-guest-boutique-v1105 #marketPublishButton,
+  body.fyblic-guest-boutique-v1105 #marketEmptyPublish,
+  body.fyblic-guest-boutique-v1105 [data-market-contact],
+  body.fyblic-guest-boutique-v1105 [data-market-owner],
+  body.fyblic-guest-boutique-v1105 .market-owner-detail-actions-v933,
+  body.fyblic-guest-boutique-v1105 #contactSeller{display:none!important}
+  body.fyblic-guest-boutique-v1105 .switcher [data-mode="market"]{display:flex!important}
+  @media(max-width:390px){body.fyblic-guest-boutique-v1105 .switcher{grid-template-columns:38px minmax(0,1fr)!important}}
+</style>
 </head>
 <body>
   <div class="app">
@@ -3443,19 +3457,44 @@
       try{window.parent.postMessage({type:'HAPPYAD_MARKETPLACE_OWNER_MUTATION_V933',detail},'*')}catch(_e){}
       try{document.dispatchEvent(new CustomEvent('HAPPYAD_MARKETPLACE_OWNER_MUTATION_V933',{detail}))}catch(_e){}
     }
+    async function canonicalUserUidV1105(){
+      const client=resolveSupabaseClient();
+      try{if(client?.auth?.getUser){const r=await client.auth.getUser();const uid=String(r?.data?.user?.id||'').trim();if(uid)return uid}}catch(_e){}
+      return currentUserUidV933();
+    }
+    async function directOwnerListingMutationV1105(client,id,uid,action){
+      const patch=action==='delete'?{listing_status:'deleted',is_active:false,deleted_at:new Date().toISOString()}:action==='pause'?{listing_status:'paused',is_active:false}:{listing_status:'active',is_active:true,deleted_at:null};
+      let q=client.from('happyad_posts').update(patch).eq('id',id).eq('user_id',uid).eq('happyad_marketplace',true);
+      q=q.is('deleted_at',null);
+      const r=await q.select('id,user_id,listing_status,is_active,deleted_at').maybeSingle();
+      if(r?.error)throw r.error;
+      if(!r?.data)throw new Error('LISTING_NOT_FOUND_OR_NOT_OWNER');
+      return r.data;
+    }
     async function mutateOwnListingV933(offer,action){
-      if(!isOwnListingV933(offer)){toast('Cette action est réservée au propriétaire de l’annonce.');return false}
-      const client=resolveSupabaseClient();if(!client||typeof client.rpc!=='function'){toast('Connexion Supabase indisponible.');return false}
+      const client=resolveSupabaseClient();if(!client||typeof client.from!=='function'){toast('Connexion Fyblic indisponible.');return false}
       const id=String(offer.id||'').trim();if(!id)return false;
-      const response=await client.rpc(MARKET_OWNER_RPC_V933,{p_listing_id:id,p_action:action});
-      if(response?.error){const msg=String(response.error.message||'');if(msg.includes(MARKET_OWNER_RPC_V933)||msg.includes('Could not find the function'))toast('Installe le SQL propriétaire V933 avant cette action.');else toast('Fyblic n’a pas pu modifier cette annonce.');throw response.error}
-      const data=Array.isArray(response?.data)?response.data[0]:response?.data||{};
+      const uid=await canonicalUserUidV1105();if(!uid){toast('Connexion requise');return false}
+      try{
+        const ownerCheck=await client.from('happyad_posts').select('id,user_id,happyad_marketplace').eq('id',id).maybeSingle();
+        if(ownerCheck?.error)throw ownerCheck.error;
+        const row=ownerCheck?.data;
+        if(!row||String(row.user_id||'')!==uid||row.happyad_marketplace!==true){toast('Cette action est réservée au propriétaire de l’annonce.');return false}
+      }catch(err){console.warn('Fyblic listing owner check',err);if(!isOwnListingV933(offer)){toast('Fyblic n’a pas pu confirmer le propriétaire de cette annonce.');return false}}
+      let data=null,rpcError=null;
+      if(typeof client.rpc==='function'){
+        try{const response=await client.rpc(MARKET_OWNER_RPC_V933,{p_listing_id:id,p_action:action});if(response?.error)rpcError=response.error;else data=Array.isArray(response?.data)?response.data[0]:response?.data||null}catch(err){rpcError=err}
+      }
+      if(!data){
+        try{data=await directOwnerListingMutationV1105(client,id,uid,action);rpcError=null}catch(err){rpcError=err}
+      }
+      if(rpcError){console.warn('Fyblic listing mutation',rpcError);toast('Impossible de modifier cette annonce pour le moment.');throw rpcError}
       if(action==='pause'){offer.listing_status='paused';offer.status='paused';offer.is_active=false}
       if(action==='activate'){offer.listing_status='active';offer.status='active';offer.is_active=true;offer.deleted_at=null}
-      if(action==='delete'){offer.listing_status='deleted';offer.status='deleted';offer.is_active=false;offer.deleted_at=data.deleted_at||new Date().toISOString()}
+      if(action==='delete'){offer.listing_status='deleted';offer.status='deleted';offer.is_active=false;offer.deleted_at=data?.deleted_at||new Date().toISOString()}
       broadcastOwnerListingMutationV933(offer,action);
       if(action==='delete'){
-        offers=offers.filter(item=>String(item?.id)!==id);resultOfferRegistry.forEach((value,key)=>{if(String(value?.id)===id)resultOfferRegistry.delete(key)});closeOwnerListingSheetV933();closeModal('detailModal');renderMarketCategories();renderMarketOffers();toast('Annonce supprimée de façon récupérable.');return true
+        offers=offers.filter(item=>String(item?.id)!==id);resultOfferRegistry.forEach((value,key)=>{if(String(value?.id)===id)resultOfferRegistry.delete(key)});closeOwnerListingSheetV933();closeModal('detailModal');renderMarketCategories();renderMarketOffers();toast('Annonce supprimée.');return true
       }
       offers.forEach(item=>{if(String(item?.id)===id)Object.assign(item,offer)});
       renderMarketCategories();renderMarketOffers();
@@ -3600,6 +3639,14 @@
       if(countryInput&&!countryInput.value&&country)countryInput.value=country;
       if(cityInput&&!cityInput.value&&city)cityInput.value=city;
     }
+    function marketGuestReadOnlyV1105(){return !!marketIdentityResolvedV935&&!currentUserUidV933()}
+    function syncGuestBoutiqueReadOnlyV1105(){
+      const guest=marketGuestReadOnlyV1105();
+      document.body.classList.toggle('fyblic-guest-boutique-v1105',guest);
+      if(guest&&mode!=='market')setMode('market','guest-readonly-v1105');
+      return guest;
+    }
+
     function setIntegratedUser(user=null,options={}){
       const hadExplicitUser=!!integrationState.user;
       const wasResolved=marketIdentityResolvedV935;
@@ -3607,6 +3654,7 @@
       integrationState.user=user&&typeof user==='object'?clonePlain(user):null;
       const afterUid=currentUserUidV933();
       if(options?.resolved===true||!!afterUid)marketIdentityResolvedV935=true;
+      syncGuestBoutiqueReadOnlyV1105();
       prefillSellerVerification(integrationState.user);
       document.dispatchEvent(new CustomEvent('HAPPYAD_CHAT_USER_READY',{detail:clonePlain(integrationState.user)}));
       if(mode==='market'&&(!hadExplicitUser||beforeUid!==afterUid||wasResolved!==marketIdentityResolvedV935)){
@@ -5328,6 +5376,7 @@
 
     function setMode(next,source='system'){
       if(!['ask','offer','market'].includes(next))return;
+      if(marketGuestReadOnlyV1105()&&next!=='market')next='market';
       mode=next;
       if(source==='user')postToHappyad('HAPPYAD_CHAT_MODE_CHANGED',{mode:next});
       document.querySelectorAll('.switcher button[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===next));
@@ -6244,7 +6293,7 @@
       if(emptyText)emptyText.textContent=activeQuery
         ?`Aucune annonce ne correspond à « ${activeQuery} » dans cette catégorie.`
         :'Aucune annonce active reçue de Fyblic dans cette catégorie.';
-      if(emptyPublish)emptyPublish.classList.toggle('hidden',!!activeQuery);
+      if(emptyPublish)emptyPublish.classList.toggle('hidden',!!activeQuery||marketGuestReadOnlyV1105());
       if(loadMore){
         const canLoad=marketHasMore();
         loadMore.classList.toggle('hidden',!canLoad||visible.length===0);
@@ -6282,7 +6331,7 @@
             <p class="market-card-desc">${escapeHtml(offer.description||'')}</p>
             <div class="market-actions ${marketIdentityResolvedV935&&isOwnListingV933(enriched)?'market-owner-row-v934':''}">
               <button class="soft-btn" type="button" data-market-view="${escapeHtml(offerKey)}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.7" stroke="currentColor" stroke-width="1.8"/></svg><span>Voir l’annonce</span></button>
-              ${!marketIdentityResolvedV935?'<button class="primary-btn market-owner-pending-v935" type="button" disabled aria-label="Vérification du profil"><span>Vérification…</span></button>':(isOwnListingV933(enriched)?'<button class="market-owner-menu-v933" type="button" data-market-owner="'+escapeHtml(offerKey)+'" aria-label="Gérer mon annonce">⋮</button>':'<button class="primary-btn" type="button" data-market-contact="'+escapeHtml(offerKey)+'"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-5 4v-4.5A2.5 2.5 0 0 1 3 12V5.5" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 8h9M7.5 11.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Contacter</span></button>')}
+              ${marketGuestReadOnlyV1105()?'':(!marketIdentityResolvedV935?'<button class="primary-btn market-owner-pending-v935" type="button" disabled aria-label="Vérification du profil"><span>Vérification…</span></button>':(isOwnListingV933(enriched)?'<button class="market-owner-menu-v933" type="button" data-market-owner="'+escapeHtml(offerKey)+'" aria-label="Gérer mon annonce">⋮</button>':'<button class="primary-btn" type="button" data-market-contact="'+escapeHtml(offerKey)+'"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-5 4v-4.5A2.5 2.5 0 0 1 3 12V5.5" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 8h9M7.5 11.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Contacter</span></button>'))}
             </div>
           </div>`;
         const image=card.querySelector('.market-media img');
@@ -9639,6 +9688,7 @@ J’affiche déjà les résultats disponibles sans lieu précis. Dans quelle vil
       updateOfferDescriptionCounter();
     }
     function openListingPublisher(){
+      if(marketGuestReadOnlyV1105()){toast('Connexion requise');return false}
       setMode('offer','user');
       refreshSellerState();
       if(verifiedSeller)resetListingPublisher();
@@ -9776,7 +9826,7 @@ J’affiche déjà les résultats disponibles sans lieu précis. Dans quelle vil
         </div>
         <div class="detail-reasons">${reasons.map(r=>`<span>${escapeHtml(r)}</span>`).join('')}</div>
         <div class="detail-desc">${escapeHtml(o.description)}</div>
-        ${!marketIdentityResolvedV935?'<div class="sheet-actions sticky-action"><button class="primary-btn market-owner-pending-v935" type="button" disabled>Vérification du profil…</button></div>':(isOwnListingV933(o)?'<div class="sheet-actions sticky-action market-owner-detail-actions-v933"><button class="primary-btn" id="manageOwnerListingV933">Gérer mon annonce</button><button class="market-owner-menu-v933" id="manageOwnerListingMoreV933" type="button" aria-label="Options de mon annonce">⋮</button></div>':'<div class="sheet-actions sticky-action"><button class="primary-btn" id="contactSeller">Contacter dans Messages Fyblic</button></div>')}`;
+        ${marketGuestReadOnlyV1105()?'':(!marketIdentityResolvedV935?'<div class="sheet-actions sticky-action"><button class="primary-btn market-owner-pending-v935" type="button" disabled>Vérification du profil…</button></div>':(isOwnListingV933(o)?'<div class="sheet-actions sticky-action market-owner-detail-actions-v933"><button class="primary-btn" id="manageOwnerListingV933">Gérer mon annonce</button><button class="market-owner-menu-v933" id="manageOwnerListingMoreV933" type="button" aria-label="Options de mon annonce">⋮</button></div>':'<div class="sheet-actions sticky-action"><button class="primary-btn" id="contactSeller">Contacter dans Messages Fyblic</button></div>'))}`;
     }
     function renderDetailMedia(){
       if(!activeOffer)return;
@@ -9852,6 +9902,7 @@ J’affiche déjà les résultats disponibles sans lieu précis. Dans quelle vil
       };
     }
     async function openHappyadMessage(o){
+      if(marketGuestReadOnlyV1105()){toast('Connexion requise');return false}
       pauseListingVideos();
       const payload=happyadMessagePayload(o);
       if(payload.senderUid&&payload.recipientUid&&String(payload.senderUid)===String(payload.recipientUid)){toast('Tu ne peux pas te contacter toi-même. Utilise le menu de gestion de ton annonce.');return false}
@@ -10069,6 +10120,7 @@ J’affiche déjà les résultats disponibles sans lieu précis. Dans quelle vil
       setTimeout(syncHappyadViewport,60);
     }
     function toast(text){
+      try{if(window.parent&&window.parent!==window&&window.parent.FyblicToastV1105){window.parent.FyblicToastV1105.show(text);return;}}catch(_e){}
       const t=document.querySelector('#toast');t.textContent=text;t.classList.add('show');
       clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2300)
     }

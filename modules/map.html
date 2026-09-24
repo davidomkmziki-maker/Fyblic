@@ -32,7 +32,7 @@
 })();
 </script><script src="../core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry"></script>
 <script src="../core/overlay-scroll-master-v662.js?v=905-p1-single-overlay-master"></script>
-<script src="../core/auth-frame-gate-v596.js?v=938-guest-passive"></script>
+<script src="../core/auth-frame-gate-v596.js?v=1105-boutique-readonly"></script>
 <script src="../core/api.js?v=855r54-location-privacy"></script>
 <script src="../core/location-privacy-master-v855r54.js?v=855r54-location-privacy"></script>
 <script src="../core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical"></script>
@@ -206,7 +206,7 @@ LocStore.load();
 
 let map, userMarker, selectedType="all", selectedTab="discover", markers=[], marketplaceMarkers=[];
 const defaultPos=[0.3476,32.5825]; // Kampala
-function toast(msg){toastEl.textContent=msg;toastEl.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>toastEl.classList.remove("show"),1700)}
+function toast(msg){try{if(window.parent&&window.parent!==window&&window.parent.FyblicToastV1105){window.parent.FyblicToastV1105.show(msg);return}}catch(_e){}toastEl.textContent=msg;toastEl.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>toastEl.classList.remove("show"),1700)}
 function initMap(){
   map=L.map("map",{zoomControl:false}).setView(defaultPos,4);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{

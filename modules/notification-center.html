@@ -3176,6 +3176,7 @@ function openDetails(item) {
 
   let toastTimer = 0;
   function showToast(message) {
+    try{if(window.parent&&window.parent!==window&&window.parent.FyblicToastV1105){window.parent.FyblicToastV1105.show(message);return;}}catch(_e){}
     window.clearTimeout(toastTimer);
     els.toast.textContent = message;
     els.toast.classList.add('is-visible');

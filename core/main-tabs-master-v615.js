@@ -438,11 +438,9 @@
     closeParentMenuLayersV998();
     var auth=window.HappyAuthSessionV598||window.HappyAuthSessionV596||window.HappyAuthSessionV595||null;
     if(name!=='video'&&name!=='home'&&auth&&typeof auth.isAuthenticated==='function'&&!auth.isAuthenticated()&&!loggedIn()&&!resumeDetail.authResume){
-      auth.require({
-        action:'menu-'+name,
-        mainNav:name,
-        resume:function(){openMain(name,Object.assign({},resumeDetail,{authResume:true}));}
-      });
+      var intent={action:'menu-'+name,mainNav:name,resume:function(){openMain(name,Object.assign({},resumeDetail,{authResume:true}));}};
+      if(name==='profile'&&typeof auth.openChoice==='function')auth.openChoice(intent);
+      else auth.require(intent);
       return false;
     }
     cutPreviousMainSurfaceV998(name);

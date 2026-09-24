@@ -1,0 +1,22 @@
+FYBLIC V1106 — AUTH COMPACT + ORANGE + GOOGLE NOTICE
+
+1. Interface Connexion / Inscription rendue plus compacte sur mobile :
+   - marque, onglets, champs, bouton, séparateur et Google rapprochés ;
+   - dimensions réduites sans toucher à la logique d’authentification.
+
+2. Couleur principale Auth passée du vert à l’orange Fyblic (#ff8a00) :
+   - bouton principal ;
+   - focus des champs ;
+   - accent du texte Fyblic.
+
+3. Google :
+   - aucun OAuth lancé au clic ;
+   - affiche la notification Fyblic existante :
+     « Google n’est pas encore disponible. Saisissez votre Gmail et votre mot de passe pour vous connecter. »
+   - en inscription, le message est adapté à la création du compte.
+
+4. Cache :
+   - URL versionnée de auth-session ;
+   - Service Worker V1106 pour éviter l’ancienne interface en cache.
+
+Aucun changement SQL requis pour V1106.

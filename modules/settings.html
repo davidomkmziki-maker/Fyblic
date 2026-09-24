@@ -5136,6 +5136,7 @@ button.happyad-action-executing[data-progress-step]{transform:scale(.92);opacity
   }
 
   function showToast(message){
+    try{if(window.parent&&window.parent!==window&&window.parent.FyblicToastV1105){window.parent.FyblicToastV1105.show(message);return;}}catch(_e){}
     clearTimeout(toastTimer);
     toast.textContent = message;
     toast.classList.add("show");

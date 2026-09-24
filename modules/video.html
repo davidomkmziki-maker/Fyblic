@@ -34,7 +34,7 @@
 })();
 </script><script src="../core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry"></script><script src="../core/global-scroll-coordinator-v868.js?v=869-connection-phase2"></script><script src="../core/connection-work-coordinator-v869.js?v=869-connection-phase2"></script>
 <script src="../core/overlay-scroll-master-v662.js?v=905-p1-single-overlay-master"></script>
-<script src="../core/auth-frame-gate-v596.js?v=938-guest-passive"></script>
+<script src="../core/auth-frame-gate-v596.js?v=1105-boutique-readonly"></script>
 <script src="../core/mention-render-master-v943.js?v=944-photo-profile-handoff"></script>
 <script src="../core/profile-link-master-v992.js?v=996-primary-name-badge"></script><script src="../core/comment-mention-master-v994.js?v=996-primary-name-visible"></script>
 <script src="../core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical"></script>
@@ -454,9 +454,11 @@ let allVideos=[], currentVideos=[], activeVideo=null, activeCommentPost=null, ac
 let happyadVideoSuppressMediaClickV1010=false;
 
 function happyadVideoNoticeV1009(message){
+  var text=String(message||'');
+  try{if(window.parent&&window.parent!==window&&window.parent.FyblicToastV1105){window.parent.FyblicToastV1105.show(text);return;}}catch(_e){}
   if(!cleanHint)return;
   clearTimeout(cleanHint.__happyadNoticeTimerV1009);
-  cleanHint.textContent=String(message||'');
+  cleanHint.textContent=text;
   cleanHint.classList.add('show');
   cleanHint.__happyadNoticeTimerV1009=setTimeout(function(){cleanHint.classList.remove('show');cleanHint.textContent='Mode vidéo seule';},2400);
 }
@@ -2478,7 +2480,8 @@ $('commentList').onclick=async e=>{const mention=e.target.closest('[data-happyad
   window.happyadGuestViewOnlyCanWrite=canWrite;
   function toast(msg){
     msg=msg||'Connexion requise';
-    try{if(typeof window.toast==='function'){window.toast(msg);return}}catch(e){}
+    try{if(window.parent&&window.parent!==window&&window.parent.FyblicToastV1105){window.parent.FyblicToastV1105.show(msg);return}}catch(e){}
+    try{if(window.FyblicToastV1105){window.FyblicToastV1105.show(msg);return}}catch(e){}
     try{
       var old=document.getElementById('happyadGuestActionToast'); if(old)old.remove();
       var d=document.createElement('div'); d.id='happyadGuestActionToast'; d.textContent=msg;

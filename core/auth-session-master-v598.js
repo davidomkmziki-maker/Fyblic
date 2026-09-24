@@ -3,7 +3,7 @@
   if(window.__HAPPYAD_AUTH_SESSION_MASTER_V598__)return;
   window.__HAPPYAD_AUTH_SESSION_MASTER_V598__=true;
 
-  var VERSION='AUTH_SESSION_V964_STABLE_CONNECTED_STATE';
+  var VERSION='AUTH_SESSION_V1105_UI_GOOGLE_GUEST_PROFILE';
   var USER_KEY='HAPPYAD_CENTRAL_USER_V10_CLEAN_STATS_FULL';
   var session=null;
   var ready=false;
@@ -439,6 +439,42 @@ body.happyadAuthGateOpenV595{overflow:hidden!important}\
 body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}\
 ';document.head.appendChild(css);
     }
+    var uiCss=document.getElementById('fyblicAuthUiCssV1105');
+    if(!uiCss){
+      uiCss=document.createElement('style');uiCss.id='fyblicAuthUiCssV1105';uiCss.textContent='\
+#happyadAuthGateV595{align-items:stretch!important;justify-content:center!important;padding:0!important;background:#111214!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}\
+#happyadAuthGateV595 .haAuthGatePanel{width:min(480px,100%)!important;min-height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;border:0!important;border-radius:0!important;background:#111214!important;box-shadow:none!important;padding:0 22px calc(24px + env(safe-area-inset-bottom,0px))!important;scrollbar-width:none!important}\
+#happyadAuthGateV595 .haAuthGatePanel::-webkit-scrollbar{display:none!important}\
+#happyadAuthGateV595 .haAuthGateClose{position:fixed!important;right:max(14px,calc((100vw - 480px)/2 + 14px))!important;top:calc(10px + env(safe-area-inset-top,0px))!important;width:34px!important;height:34px!important;min-height:34px!important;border-color:rgba(255,255,255,.12)!important;background:rgba(255,255,255,.05)!important;color:#d9dde2!important;font-size:20px!important;z-index:3!important}\
+#happyadAuthGateRootV595{padding-top:calc(46px + env(safe-area-inset-top,0px))!important}\
+#happyadAuthGateV595 .haAuthBrandV1105{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0 28px;color:#eef4f5;font-size:27px;font-weight:850;letter-spacing:-.9px}\
+#happyadAuthGateV595 .haAuthBrandV1105 img{width:27px;height:27px;display:block;object-fit:contain}\
+#happyadAuthGateV595 .haAuthModeTabsV1105{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:0 0 24px;padding:4px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:#18191b}\
+#happyadAuthGateV595 .haAuthModeTabV1105{min-height:46px!important;border:0!important;border-radius:12px!important;background:transparent!important;color:#899096!important;font-size:15.5px!important;font-weight:650!important;padding:7px 9px!important;box-shadow:none!important}\
+#happyadAuthGateV595 .haAuthModeTabV1105.active{background:#2a2a2d!important;color:#f4f7f8!important}\
+#happyadAuthGateV595 .haAuthTitle{font-size:23px!important;padding-right:44px!important;margin-bottom:16px!important}\
+#happyadAuthGateV595 .haAuthHint{color:#8c9397!important;font-size:14px!important;margin:4px 0 18px!important;font-weight:600!important}\
+#happyadAuthGateV595 .haAuthField{height:54px!important;margin:0 0 11px!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:15px!important;background:#222325!important;color:#f7f8f9!important;padding:0 16px!important;font-size:15.5px!important;box-shadow:none!important}\
+#happyadAuthGateV595 .haAuthField::placeholder{color:#899195!important}\
+#happyadAuthGateV595 .haAuthField:focus{border-color:#54ff45!important;box-shadow:0 0 0 1px #54ff45!important}\
+#happyadAuthGateV595 .haAuthPasswordWrapV1105{position:relative;margin-bottom:11px}\
+#happyadAuthGateV595 .haAuthPasswordWrapV1105 .haAuthField{margin:0!important;padding-right:58px!important}\
+#happyadAuthGateV595 .haAuthEyeV1105{position:absolute;right:7px;top:50%;transform:translateY(-50%)!important;width:40px!important;height:40px!important;min-height:40px!important;border:0!important;background:transparent!important;color:#99a3a6!important;padding:0!important;font-size:21px!important;box-shadow:none!important}\
+#happyadAuthGateV595 .haAuthPrimaryV1105{min-height:54px!important;margin-top:2px!important;border:0!important;border-radius:15px!important;background:linear-gradient(110deg,#09dfca 0%,#00f58e 42%,#48ff00 100%)!important;color:#061008!important;font-size:17px!important;font-weight:1000!important;box-shadow:none!important}\
+#happyadAuthGateV595 .haAuthPrimaryV1105:disabled{background:linear-gradient(110deg,#0bb9aa,#1ac86d,#55cd25)!important;color:#061008!important;opacity:.72!important;border:0!important}\
+#happyadAuthGateV595 #happyadAuthForgotV595{margin:8px auto 0!important;color:#b6bec1!important}\
+#happyadAuthGateV595 .haAuthSocialDividerV1105{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;color:#879093;font-size:14px;font-weight:650;margin:24px 0 18px}\
+#happyadAuthGateV595 .haAuthSocialDividerV1105:before,#happyadAuthGateV595 .haAuthSocialDividerV1105:after{content:"";height:1px;background:rgba(255,255,255,.11)}\
+#happyadAuthGateV595 .haAuthGoogleRowV1105{display:flex;justify-content:center;margin-bottom:18px}\
+#happyadAuthGateV595 .haAuthGoogleV1105{width:50px!important;height:50px!important;min-height:50px!important;border-radius:50%!important;border:0!important;background:#fff!important;color:#222!important;padding:0!important;display:grid!important;place-items:center!important;box-shadow:none!important}\
+#happyadAuthGateV595 .haAuthGoogleMarkV1105{font:1000 22px/1 Arial,sans-serif;background:conic-gradient(from -45deg,#4285f4 0 25%,#34a853 0 50%,#fbbc05 0 75%,#ea4335 0);-webkit-background-clip:text;background-clip:text;color:transparent}\
+#happyadAuthGateV595 .haAuthAgreementV1105{max-width:370px;margin:0 auto;text-align:center;color:#858e92;font-size:11.5px;line-height:1.4}\
+#happyadAuthGateV595 .haAuthAgreementV1105 b{color:#64ff50;font-weight:800}\
+#happyadAuthGateV595 .haAuthStatus{margin-top:8px!important}\
+#happyadAuthGateV595 .haAuthBack{border-color:rgba(255,255,255,.15)!important;background:#1b1d20!important}\
+@media(max-width:390px){#happyadAuthGateV595 .haAuthGatePanel{padding-left:17px!important;padding-right:17px!important}#happyadAuthGateRootV595{padding-top:calc(42px + env(safe-area-inset-top,0px))!important}#happyadAuthGateV595 .haAuthBrandV1105{margin-bottom:22px;font-size:25px}#happyadAuthGateV595 .haAuthBrandV1105 img{width:25px;height:25px}#happyadAuthGateV595 .haAuthModeTabsV1105{margin-bottom:20px}#happyadAuthGateV595 .haAuthField{height:51px!important}#happyadAuthGateV595 .haAuthPrimaryV1105{min-height:51px!important}#happyadAuthGateV595 .haAuthSocialDividerV1105{margin:20px 0 15px}#happyadAuthGateV595 .haAuthGoogleV1105{width:48px!important;height:48px!important;min-height:48px!important}}\
+';document.head.appendChild(uiCss);
+    }
     overlay=document.createElement('div');overlay.id='happyadAuthGateV595';overlay.setAttribute('aria-hidden','true');
     overlay.innerHTML='<div class="haAuthGatePanel" role="dialog" aria-modal="true" aria-label="Connexion Fyblic"><button type="button" class="haAuthGateClose" aria-label="Fermer">×</button><div id="happyadAuthGateRootV595"></div></div>';
     document.body.appendChild(overlay);panelRoot=overlay.querySelector('#happyadAuthGateRootV595');
@@ -466,17 +502,31 @@ body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}
       }
     }catch(_e){}
   }
+  function authBrandV1105(){
+    return '<div class="haAuthBrandV1105"><span>Fyblic</span><img src="icons/fyblic-brand-mark-v1046-transparent.svg" alt="" aria-hidden="true"></div>';
+  }
+  function authTabsV1105(mode){
+    return '<div class="haAuthModeTabsV1105" role="tablist" aria-label="Connexion ou inscription"><button type="button" class="haAuthModeTabV1105 '+(mode==='login'?'active':'')+'" id="happyadAuthTabLoginV1105" role="tab" aria-selected="'+(mode==='login'?'true':'false')+'">Se connecter</button><button type="button" class="haAuthModeTabV1105 '+(mode==='signup'?'active':'')+'" id="happyadAuthTabSignupV1105" role="tab" aria-selected="'+(mode==='signup'?'true':'false')+'">Inscription</button></div>';
+  }
+  function authGoogleV1105(mode){
+    return '<div class="haAuthSocialDividerV1105"><span>Ou continuer avec</span></div><div class="haAuthGoogleRowV1105"><button type="button" class="haAuthGoogleV1105" id="happyadAuthGoogleV1105" aria-label="Continuer avec Google" title="Google"><span class="haAuthGoogleMarkV1105">G</span></button></div><div class="haAuthAgreementV1105">En continuant, vous confirmez respecter les conditions d’utilisation de <b>Fyblic</b>.</div>';
+  }
+  function bindAuthShellV1105(mode){
+    var login=document.getElementById('happyadAuthTabLoginV1105'),signup=document.getElementById('happyadAuthTabSignupV1105'),google=document.getElementById('happyadAuthGoogleV1105');
+    if(login)login.onclick=function(e){stop(e);renderLogin();};
+    if(signup)signup.onclick=function(e){stop(e);renderSignup();};
+    if(google)google.onclick=function(e){doGoogleAuthV1105(e,mode);};
+    var eye=document.getElementById('happyadAuthEyeV1105');
+    if(eye)eye.onclick=function(e){stop(e);var pass=document.getElementById(mode==='signup'?'happyadAuthSignupPassV595':'happyadAuthPassV595');if(!pass)return;var reveal=pass.type==='password';pass.type=reveal?'text':'password';eye.textContent=reveal?'◉':'◌';eye.setAttribute('aria-label',reveal?'Masquer le mot de passe':'Afficher le mot de passe');};
+  }
   function renderChoice(){
-    ensureOverlay();
-    panelRoot.innerHTML='<div class="haAuthTitle">Compte Fyblic</div><div class="haAuthHint">Connecte-toi ou crée un compte pour utiliser cette action.</div><div class="haAuthChoices"><button type="button" id="happyadAuthLoginChoiceV595">Se connecter</button><button type="button" id="happyadAuthCreateChoiceV595">Créer un compte</button></div><div class="haAuthFoot">Les vidéos et les photos de l’accueil restent consultables sans compte.</div>';
-    document.getElementById('happyadAuthLoginChoiceV595').onclick=renderLogin;
-    document.getElementById('happyadAuthCreateChoiceV595').onclick=renderSignup;
+    renderLogin();
   }
   function renderLogin(prefill){
     ensureOverlay();
     prefill=clean(prefill||'');
-    panelRoot.innerHTML='<button type="button" class="haAuthBack" id="happyadAuthBackV595">Retour</button><div class="haAuthTitle">Se connecter</div><div class="haAuthHint">Entre ton Gmail et ton mot de passe.</div><input class="haAuthField" id="happyadAuthEmailV595" type="email" autocomplete="email" placeholder="Gmail" value="'+esc(prefill)+'"><input class="haAuthField" id="happyadAuthPassV595" type="password" autocomplete="current-password" placeholder="Mot de passe"><div class="haAuthChoices"><button type="button" id="happyadAuthLoginSubmitV595">Se connecter</button></div><button type="button" class="haAuthTextLinkV855R61" id="happyadAuthForgotV595">Mot de passe oublié</button><div class="haAuthStatus" id="happyadAuthStatusV595"></div>';
-    document.getElementById('happyadAuthBackV595').onclick=renderChoice;
+    panelRoot.innerHTML=authBrandV1105()+authTabsV1105('login')+'<input class="haAuthField" id="happyadAuthEmailV595" type="email" autocomplete="email" placeholder="E-mail" value="'+esc(prefill)+'"><div class="haAuthPasswordWrapV1105"><input class="haAuthField" id="happyadAuthPassV595" type="password" autocomplete="current-password" placeholder="Mot de passe"><button type="button" class="haAuthEyeV1105" id="happyadAuthEyeV1105" aria-label="Afficher le mot de passe">◌</button></div><div class="haAuthChoices"><button type="button" class="haAuthPrimaryV1105" id="happyadAuthLoginSubmitV595">Se connecter</button></div><button type="button" class="haAuthTextLinkV855R61" id="happyadAuthForgotV595">Mot de passe oublié</button><div class="haAuthStatus" id="happyadAuthStatusV595"></div>'+authGoogleV1105('login');
+    bindAuthShellV1105('login');
     document.getElementById('happyadAuthLoginSubmitV595').onclick=doLogin;
     document.getElementById('happyadAuthForgotV595').onclick=function(e){stop(e);renderForgot(value('happyadAuthEmailV595'));};
     var pass=document.getElementById('happyadAuthPassV595');
@@ -527,8 +577,8 @@ body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}
   function renderSignup(){
     ensureOverlay();
     var d=new Date();d.setFullYear(d.getFullYear()-18);var max=d.toISOString().slice(0,10);
-    panelRoot.innerHTML='<button type="button" class="haAuthBack" id="happyadAuthBackV595">Retour</button><div class="haAuthTitle">Créer un compte</div><div class="haAuthHint">Remplis les informations demandées.</div><input class="haAuthField" id="happyadAuthNameV595" placeholder="Nom"><input class="haAuthField" id="happyadAuthHandleV595" placeholder="Nom d’utilisateur complet"><input class="haAuthField" id="happyadAuthBirthV595" type="date" max="'+esc(max)+'" aria-label="Date de naissance"><input class="haAuthField" id="happyadAuthSignupEmailV595" type="email" autocomplete="email" placeholder="Gmail"><input class="haAuthField" id="happyadAuthSignupPassV595" type="password" autocomplete="new-password" placeholder="Mot de passe"><input class="haAuthField" id="happyadAuthSignupPass2V595" type="password" autocomplete="new-password" placeholder="Confirmer le mot de passe"><div class="haAuthChoices"><button type="button" id="happyadAuthSignupSubmitV595">Créer mon compte</button></div><div class="haAuthStatus" id="happyadAuthStatusV595"></div>';
-    document.getElementById('happyadAuthBackV595').onclick=renderChoice;
+    panelRoot.innerHTML=authBrandV1105()+authTabsV1105('signup')+'<input class="haAuthField" id="happyadAuthNameV595" placeholder="Nom"><input class="haAuthField" id="happyadAuthHandleV595" placeholder="Nom d’utilisateur complet"><input class="haAuthField" id="happyadAuthBirthV595" type="date" max="'+esc(max)+'" aria-label="Date de naissance"><input class="haAuthField" id="happyadAuthSignupEmailV595" type="email" autocomplete="email" placeholder="E-mail"><div class="haAuthPasswordWrapV1105"><input class="haAuthField" id="happyadAuthSignupPassV595" type="password" autocomplete="new-password" placeholder="Mot de passe"><button type="button" class="haAuthEyeV1105" id="happyadAuthEyeV1105" aria-label="Afficher le mot de passe">◌</button></div><input class="haAuthField" id="happyadAuthSignupPass2V595" type="password" autocomplete="new-password" placeholder="Confirmer le mot de passe"><div class="haAuthChoices"><button type="button" class="haAuthPrimaryV1105" id="happyadAuthSignupSubmitV595">S’inscrire</button></div><div class="haAuthStatus" id="happyadAuthStatusV595"></div>'+authGoogleV1105('signup');
+    bindAuthShellV1105('signup');
     document.getElementById('happyadAuthSignupSubmitV595').onclick=doSignup;
   }
   function lifecycleMissingV855R48(error){
@@ -844,6 +894,14 @@ body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}
     finally{busy=false;setSubmitBusy('happyadAuthForgotSaveV855R40',false,'Enregistrement…','Enregistrer le mot de passe');}
   }
   function ageFromBirth(value){var b=new Date(value+'T00:00:00');if(isNaN(b.getTime()))return -1;var n=new Date();var a=n.getFullYear()-b.getFullYear();var m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate()))a--;return a;}
+  async function doGoogleAuthV1105(e,mode){
+    stop(e);if(busy)return false;
+    setStatus('');
+    toast(mode==='signup'
+      ? 'Google n’est pas encore disponible. Inscrivez-vous avec votre Gmail et un mot de passe.'
+      : 'Google n’est pas encore disponible. Saisissez votre Gmail et votre mot de passe pour vous connecter.');
+    return false;
+  }
   async function doSignup(e){
     stop(e);if(busy)return;
     var name=value('happyadAuthNameV595'),handle=value('happyadAuthHandleV595').replace(/^@+/,'').replace(/\s+/g,'').toLowerCase();
@@ -1013,6 +1071,7 @@ body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}
        surfaces privées continuent à passer par guestNotice(). */
     if(target.closest('#homeSearchBtn,#homeSearchPanel,#happyadSmartSearchV427,.chip'))return true;
     if(target.closest('.bottom [data-happyad-main-nav="home"],.bottom [data-happyad-main-nav="video"]'))return true;
+    if(target.closest('.happyadMarketplaceCardCtaV856,[data-happyad-open-listing],[data-open-marketplace-listing]'))return true;
     if(target.closest('button.radarItem[data-story-owner],#homeRadarStoryMasterV629 button.radarItem[data-story-owner]'))return true;
     if(target.closest('.miniTop,.creatorPill,[data-open-slide-profile],[data-open-comment-profile],[data-ha-profile-uid],.happyadMentionLink,[data-happyad-profile-uid]'))return true;
     if(target.closest('[aria-label="Retour"],[aria-label="Revenir à la page précédente"],[aria-label="Fermer"],[data-happyad-internal-return],[data-happyad-internal-return-v591],.ha629Back,.haHomeFsBackV591,.haHomeFsClose'))return true;
@@ -1033,6 +1092,8 @@ body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}
     /* Une vérification réseau momentanément en retard ne doit pas avaler le clic
        sur une surface locale déjà autorisée. Chaque module reconfirme ensuite la
        session canonique avant son travail connecté. */
+    if(target.closest&&target.closest('.bottom [data-happyad-main-nav="profile"]')){stop(e);openChoice({action:'profile-guest',mainNav:'profile'});return false;}
+    if(target.closest&&target.closest('.bottom [data-happyad-main-nav="profile"]')){try{e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}catch(_e){}return;}
     if(isCachedMainDockSurfaceV877(target))return;
     if(isGuestPassiveAllowedV938(target))return;
     var direct=target.closest&&target.closest('[data-happyad-auth-direct-v598]');

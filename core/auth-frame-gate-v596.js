@@ -22,6 +22,11 @@
     if(t.closest('.happyadVideoFollowV855R34,.haHomeFsFollowV855R34,[data-follow],[data-act="follow"]'))return false;
     return !!t.closest('.haHomeFsBackV591,.haHomeFsClose,.haHomeFsSeeMore,.happyadInternalBackV591,[data-happyad-internal-return],[data-happyad-internal-return-v591],#backButton,#photoFixedBackV587,#photoReturnV591,.messageBack,.chatBack,#messageBackBtn,#notificationBackBtn,.notificationBack,.viewerClose,.draftFullClose,[data-close],[aria-label="Fermer"],[aria-label="Retour"],.tapSound,[data-video-control],.videoControl,.muteBtn,.soundBtn,.creatorPill,.slideCreator,[data-open-slide-profile],[data-open-comment-profile],.more,.miniSeeMore,[aria-label="Revenir à la page précédente"]');
   }
+  function marketplaceReadOnlyAllowedV1105(t){
+    if(!t||!t.closest||!/happyad-chat\.html/i.test(String(location.pathname||'')))return false;
+    try{if(!document.body.classList.contains('fyblic-guest-boutique-v1105'))return false;}catch(_e){return false;}
+    return !!t.closest('#happyadChatBack,[data-mode="market"],#marketSearchToggle,#marketSearchForm,#marketSearchClear,#marketSearchForm button[type="submit"],[data-market-category],#marketLoadMore,[data-market-view],#detailMediaPrev,#detailMediaNext,#expandDetailMedia,[data-detail-media],.viewerClose,[data-close]');
+  }
   function actionable(t){
     if(!t||!t.closest)return null;
     return t.closest('button,a[href],[role="button"],input[type="button"],input[type="submit"],select,textarea,[data-card-act],[data-act],[data-profile-act],.creatorPill,.profileMedia,.radarItem,.mapLite');
@@ -29,7 +34,7 @@
   function gate(e){
     if(bypassOnce){bypassOnce=false;return;}
     if(connected())return;
-    var t=e&&e.target;if(!t||alwaysAllowed(t))return;
+    var t=e&&e.target;if(!t||alwaysAllowed(t)||marketplaceReadOnlyAllowedV1105(t))return;
     var act=actionable(t);if(!act)return;
     var now=Date.now();if(now-lastAt<250){stop(e);return;}lastAt=now;
     pendingTarget=act;stop(e);

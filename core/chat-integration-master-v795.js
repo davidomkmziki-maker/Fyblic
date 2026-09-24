@@ -6,8 +6,8 @@
   if(window.__HAPPYAD_CHAT_INTEGRATION_MASTER_V795__)return;
   window.__HAPPYAD_CHAT_INTEGRATION_MASTER_V795__=true;
 
-  var VERSION='V935_MARKET_OWNER_FIRST_PAINT';
-  var CHAT_URL='modules/happyad-chat.html?v=1085-boutique-validation-visible';
+  var VERSION='V1105_GUEST_BOUTIQUE_DELETE_FIX';
+  var CHAT_URL='modules/happyad-chat.html?v=1105-guest-readonly-delete';
   var HOST_ID='happyadChatHostV795';
   var FRAME_ID='happyadChatFrameV795';
   var host=null,frame=null,frameReady=false,pendingMode='ask',pendingContext=null;

@@ -57,7 +57,7 @@
 })();
 </script><script src="../core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry"></script>
 <script src="../core/overlay-scroll-master-v662.js?v=905-p1-single-overlay-master"></script>
-<script src="../core/auth-frame-gate-v596.js?v=938-guest-passive"></script>
+<script src="../core/auth-frame-gate-v596.js?v=1105-boutique-readonly"></script>
 <script src="../core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical"></script>
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
@@ -715,7 +715,9 @@ button:disabled{filter:none;transform:none}
       .replace(/Supabase/gi,'Fyblic');
   }
   function toast(msg){
-    $("toast").textContent=publicPublishMessage(msg);
+    var text=publicPublishMessage(msg);
+    try{if(window.parent&&window.parent!==window&&window.parent.FyblicToastV1105){window.parent.FyblicToastV1105.show(text);return;}}catch(_e){}
+    $("toast").textContent=text;
     $("toast").classList.add("show");
     clearTimeout(window.__happyadToast);
     window.__happyadToast=setTimeout(()=>$("toast").classList.remove("show"),1800);

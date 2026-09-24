@@ -1,0 +1,19 @@
+FYBLIC V1105 — À FAIRE AVANT LE TEST COMPLET
+
+1) Déployer tout le contenu du ZIP sur le site.
+
+2) Pour la suppression Boutique, exécuter dans Supabase SQL Editor :
+   FYBLIC_MARKETPLACE_OWNER_ACTIONS_V1105.sql
+   Le site possède aussi un fallback sécurisé côté client.
+
+3) Pour Google :
+   Supabase > Authentication > Providers > Google
+   - activer Google
+   - renseigner Client ID + Client Secret
+   - autoriser le domaine Fyblic comme redirect URL
+
+TESTS CONSEILLÉS
+- Déconnecté > Profil : l'écran Connexion / Inscription doit s'ouvrir directement.
+- Déconnecté > Boutique : navigation/recherche/détails/médias seulement.
+- Connecté > Boutique > Gérer mon annonce > Supprimer : la carte doit disparaître après succès.
+- Centrale vidéo > son : le toast doit avoir le même rendu que les autres petites notifications.

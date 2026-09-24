@@ -32,7 +32,7 @@
 })();
 </script><script src="../core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry"></script><script src="../core/global-scroll-coordinator-v868.js?v=869-connection-phase2"></script><script src="../core/connection-work-coordinator-v869.js?v=869-connection-phase2"></script>
 <script src="../core/overlay-scroll-master-v662.js?v=905-p1-single-overlay-master"></script>
-<script src="../core/auth-frame-gate-v596.js?v=938-guest-passive"></script>
+<script src="../core/auth-frame-gate-v596.js?v=1105-boutique-readonly"></script>
 <script src="../core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
@@ -9959,6 +9959,7 @@
       }
 
       function showToast(message, duration){
+        try{if(window.parent&&window.parent!==window&&window.parent.FyblicToastV1105){window.parent.FyblicToastV1105.show(clean(message),duration);return;}}catch(_e){}
         let toast = byId('happyadMessagePhase1Toast');
         if(!toast){
           toast = document.createElement('div');

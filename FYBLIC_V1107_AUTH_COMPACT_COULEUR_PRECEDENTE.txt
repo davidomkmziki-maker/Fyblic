@@ -1,0 +1,8 @@
+FYBLIC V1107 — Auth compacte, couleur précédente, notification Google
+
+- Conserve le format compact de V1106.
+- Restaure exactement la couleur principale précédente de V1105 : dégradé cyan/vert.
+- Restaure le focus vert et l’accent vert du texte de conditions.
+- Le bouton Google reste temporairement désactivé et affiche une notification Fyblic invitant à utiliser Gmail + mot de passe.
+- Mise à jour de la version du service worker pour forcer le rafraîchissement du cache.
+- Aucun nouveau SQL requis par V1107. Le SQL V1105 Marketplace reste le même.

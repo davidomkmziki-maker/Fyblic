@@ -8,7 +8,7 @@
 #currentUserInitials{display:none!important}
 </style><script src="../core/module-lifecycle-master-v614.js?v=974-p1-module-lifecycle-registry"></script>
 <script src="../core/overlay-scroll-master-v662.js?v=905-p1-single-overlay-master"></script>
-<script src="../core/auth-frame-gate-v596.js?v=938-guest-passive"></script>
+<script src="../core/auth-frame-gate-v596.js?v=1105-boutique-readonly"></script>
 <script src="../core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical"></script>
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
@@ -111,7 +111,7 @@
   function client(){try{if(parent&&parent!==window){if(typeof parent.happyadSb==='function')return parent.happyadSb();if(parent.happyadSupabase)return parent.happyadSupabase;if(parent.supabaseClient)return parent.supabaseClient;}}catch(_e){}return null;}
   function avatarMaster(){return window.HappyProfileAvatarMasterV855R32||window.HappyProfileAvatarMaster||null;}
   function canonicalAvatar(id,fallback){const m=avatarMaster(),uid=clean(id);if(m&&uid){const entry=m.getEntry&&m.getEntry(uid);if(entry&&entry.known)return clean(entry.url);if(m.resolve)m.resolve(uid).catch(()=>{});return '';}return clean(fallback);}
-  function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2200);}
+  function toast(msg){try{if(parent&&parent!==window&&parent.FyblicToastV1105){parent.FyblicToastV1105.show(msg);return;}}catch(_e){}const el=$('toast');el.textContent=msg;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2200);}
   function postParent(type,detail){try{parent.postMessage({type,detail:detail||{}},'*');}catch(_e){}}
   async function rpc(name,variants){const c=client();if(!c||!c.rpc)throw new Error('Connexion Supabase indisponible.');let last=null;for(const payload of variants){const r=await c.rpc(name,payload);if(!r.error)return r.data;last=r.error;const m=clean(last&&last.message).toLowerCase();if(!(last&&last.code==='PGRST202')&&!m.includes('function')&&!m.includes('schema cache'))break;}throw new Error(clean(last&&(last.message||last.details))||('Échec de '+name));}
   function rows(data){if(Array.isArray(data))return data;if(data&&Array.isArray(data.data))return data.data;if(data&&typeof data==='object')return [data];return [];}
