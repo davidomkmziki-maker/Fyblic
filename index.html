@@ -545,7 +545,7 @@ html body #list.homeTimeline .miniMedia:not(.haPhotoUserCropV613D)>img{transform
 <script src="core/interaction-privacy-master-v855r52.js?v=972-p1-single-client"></script>
 <script src="core/message-presence-app-master-v855r51.js?v=869-connection-phase2"></script>
 <script src="core/mention-render-master-v943.js?v=944-photo-profile-handoff"></script>
-<script src="core/post-options-master-v693.js?v=1100-quality-tap-fix"></script>
+<script src="core/post-options-master-v693.js?v=1104-menu-tap-polish"></script>
 <style id="happyad-v107-hide-home-count">#postCount{display:none!important}
 /* V114 — Home officiel: rectangle dynamique, Radar Pour Toi, lives, recherche simple */
 .topRow{grid-template-columns:44px 1fr 44px!important}.searchRound{background:#11151d!important;border-color:rgba(255,255,255,.14)!important}.searchIcon{width:21px;height:21px;display:block}.searchIcon svg{width:100%;height:100%;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}.bellLineIcon,.messageLineIcon{width:22px;height:22px;margin:0 auto 2px;display:block}.bellLineIcon svg,.messageLineIcon svg{width:100%;height:100%;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
@@ -7612,6 +7612,31 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
   function searchOpen(){var root=qs(ROOT_ID);return !!(root&&root.classList&&root.classList.contains('on'));}
   function isCurrentQuery(q){return searchOpen() && clean(currentQuery())===clean(q||'');}
 
+  /* V1104 — retour photo atomique : la Recherche est repeinte SOUS le fullscreen
+     avant que celui-ci disparaisse. Elle reste non interactive pendant les quelques
+     millisecondes nécessaires au dépilage History, puis son onResume normal reprend. */
+  function armSearchPhotoReturnV1104(postId,suspended){
+    try{
+      if(!suspended){window.__FYBLIC_SEARCH_PHOTO_RETURN_V1104__=null;return false;}
+      window.__FYBLIC_SEARCH_PHOTO_RETURN_V1104__={postId:String(postId||''),armed:true,at:Date.now()};
+      return true;
+    }catch(_e){return false;}
+  }
+  function clearSearchPhotoReturnV1104(){
+    var root=qs(ROOT_ID);
+    try{window.__FYBLIC_SEARCH_PHOTO_RETURN_V1104__=null;}catch(_e){}
+    if(root){root.removeAttribute('data-fyblic-search-prepaint-v1104');root.style.removeProperty('pointer-events');}
+  }
+  function prepareSearchUnderPhotoV1104(){
+    var state=null;try{state=window.__FYBLIC_SEARCH_PHOTO_RETURN_V1104__;}catch(_e){}
+    var root=qs(ROOT_ID);if(!state||state.armed!==true||!root)return false;
+    root.classList.add('on');
+    root.setAttribute('data-fyblic-search-prepaint-v1104','1');
+    root.style.setProperty('pointer-events','none','important');
+    return true;
+  }
+  window.FyblicSearchReturnV1104={preparePhotoReturn:prepareSearchUnderPhotoV1104,clearPhotoReturn:clearSearchPhotoReturnV1104};
+
   function rawAvatarValue(p){
     p=p||{};
     return String(p.avatar_url||p.avatarUrl||p.avatar||p.user_avatar||p.userAvatar||p.author_avatar||p.authorAvatar||p.actor_avatar||p.actorAvatar||p.creator_avatar||p.creatorAvatar||p.seller_avatar||p.sellerAvatar||p.photo_url||p.photoUrl||p.photoURL||p.photo||p.profile_photo||p.profilePhoto||p.profile_photo_url||p.profilePhotoUrl||p.profile_picture||p.profilePicture||p.profile_picture_url||p.profilePictureUrl||p.profile_pic||p.profilePic||p.profile_pic_url||p.profilePicUrl||p.picture||p.picture_url||p.pictureUrl||p.image||p.image_url||p.imageUrl||p.user_photo||p.userPhoto||p.user_photo_url||p.userPhotoUrl||p.avatar_image||p.avatarImage||p.avatar_image_url||p.avatarImageUrl||p.photo_profil||p.photoProfil||p.profil_photo||p.profilPhoto||p.profil_image||p.profilImage||p.photo_de_profil||p.photoDeProfil||p.photo_de_profil_url||p.photoDeProfilUrl||p.profile_image_url||p.profileImageUrl||p.profile_image||p.profileImage||p.profil_photo_url||p.profilPhotoUrl||p.profil_image_url||p.profilImageUrl||p.photo_profil_url||p.photoProfilUrl||p.profile_avatar_url||p.profileAvatarUrl||p.profile_avatar||p.profileAvatar||p.avatar_path||p.avatarPath||p.photo_path||p.photoPath||p.profile_photo_path||p.profilePhotoPath||p.profile_picture_path||p.profilePicturePath||p.profile_image_path||p.profileImagePath||'').trim();
@@ -7945,6 +7970,7 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
       return true;
     }
     root.classList.remove('on');
+    clearSearchPhotoReturnV1104();
     var api=internalReturnV1017();if(api&&typeof api.close==='function'){try{api.close(SEARCH_LAYER_ID_V1017);}catch(_e){}}
     return true;
   }
@@ -7955,7 +7981,11 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
   }
   function resumeSearchSurfaceV1018(){
     searchOpeningPostV1103=false;
-    var root=qs(ROOT_ID);if(!root)return;root.classList.add('on');
+    var root=qs(ROOT_ID);if(!root)return;
+    root.classList.add('on');
+    root.removeAttribute('data-fyblic-search-prepaint-v1104');
+    root.style.removeProperty('pointer-events');
+    try{window.__FYBLIC_SEARCH_PHOTO_RETURN_V1104__=null;}catch(_e){}
     setDiscoveryLoadingV1017(false);
   }
   function suspendSearchForRouteV1018(){
@@ -8248,6 +8278,7 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
        Le retour depuis un profil visiteur restaure donc publication -> Recherche,
        sans écran noir ni saut direct vers Accueil. */
     var suspended=suspendSearchForRouteV1018();
+    if(video)clearSearchPhotoReturnV1104();else armSearchPhotoReturnV1104(exactId,suspended);
     try{
       if(video&&typeof openLongVideo==='function'){
         openLongVideo(exactId);
@@ -8263,18 +8294,21 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
         return;
       }
       if(!video&&typeof openLongPhoto==='function'){openLongPhoto(exactId,exact);return;}
-    }catch(_open){searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);return;}
+    }catch(_open){clearSearchPhotoReturnV1104();searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);return;}
 
     var url=(video?'modules/video.html':'modules/photo.html')+'?post='+encodeURIComponent(exactId);
     if(window.happyadOpenInternalUrlV492){
-      try{var ok=window.happyadOpenInternalUrlV492(url);if(ok===false){searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);}return ok;}
-      catch(_route){searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);return false;}
+      try{var ok=window.happyadOpenInternalUrlV492(url);if(ok===false){clearSearchPhotoReturnV1104();searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);}return ok;}
+      catch(_route){clearSearchPhotoReturnV1104();searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);return false;}
     }
+    clearSearchPhotoReturnV1104();
     searchOpeningPostV1103=false;
     resumeSearchAfterRouteFailureV1018(suspended);
     location.href=url;
   }
 
+
+  window.addEventListener('HAPPYAD_MAIN_MENU_NAVIGATION_V927',function(){clearSearchPhotoReturnV1104();},true);
   window.addEventListener('HAPPYAD_NAV_CHANGED_V586',function(ev){
     var root=qs(ROOT_ID);if(!root)return;
     var api=internalReturnV1017(),page=String(ev&&ev.detail&&ev.detail.page||'');
@@ -8871,7 +8905,7 @@ html body #happyadSmartSearchV427 .haDiscoveryPostTitleV1014.haDiscoveryIdentity
       if(window.__HAPPYAD_PWA_DISABLED__)return;
       if(!('serviceWorker' in navigator))return;
       if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;
-      navigator.serviceWorker.register('./service-worker.js?v=v1103-search-return-integrity-20260924',{scope:'./',updateViaCache:'none'}).then(function(reg){
+      navigator.serviceWorker.register('./service-worker.js?v=v1104-ui-return-identity-polish-20260924',{scope:'./',updateViaCache:'none'}).then(function(reg){
         try{
           if(reg.active)reg.active.postMessage({type:'HAPPYAD_CLEAR_OLD_CACHES'});
           if(reg.waiting)reg.waiting.postMessage({type:'HAPPYAD_SKIP_WAITING'});
@@ -11144,7 +11178,7 @@ body.happyadPhotoSurfaceV591 #happyadAppShell{inset:0!important;width:100vw!impo
 #happyadHomePhotoFullscreen .haHomeFsSeeMore:active{background:rgba(255,255,255,.14)!important;border-color:#fff!important;color:#fff!important;transform:scale(.97)!important}
 </style>
 <script src="core/internal-return-master-v694.js?v=930-photo-profile-exact-return"></script>
-<script src="core/home-photo-fullscreen-master-v591.js?v=932-profile-handoff-pointer-release"></script>
+<script src="core/home-photo-fullscreen-master-v591.js?v=1104-search-photo-atomic-return"></script>
 <script src="core/share-master.js?v=1041-first-open-ready"></script>
 <script src="core/share-button-bridge.js?v=938-guest-share-gate"></script>
 <script src="core/share-count-master.js?v=share-count-v567"></script>
@@ -11154,7 +11188,7 @@ body.happyadPhotoSurfaceV591 #happyadAppShell{inset:0!important;width:100vw!impo
 
 <!-- Fyblic CORE V4: regroupement passif des maîtres par module/catégorie, sans changer le design -->
 <script src="core/photo-master.js?v=core-photo-v14"></script>
-<script src="core/profile-master.js?v=core-profile-v17-r73-visitor-fast-warm"></script>
+<script src="core/profile-master.js?v=1104-canonical-visitor-identity"></script>
 <script src="core/cache-master.js?v=core-grouped-v4"></script>
 <script src="core/auth-master.js?v=core-grouped-v4"></script>
 <script src="core/push-master.js?v=push-v45-message-frame-route-v930"></script>

@@ -1,0 +1,11 @@
+FYBLIC V1104 — RETURN / IDENTITY / POPUP POLISH
+Date: 2026-09-24
+Base: FYBLIC_V1103_SEARCH_RETURN_INTEGRITY
+
+Corrections ciblées:
+1. Recherche -> fullscreen photo -> retour : pré-affichage atomique de Recherche sous le fullscreen avant fermeture, suppression du flash Accueil.
+2. Profil visiteur : résolution canonique du nom et du badge; les valeurs de secours (Utilisateur Fyblic / aucun) ne bloquent plus une identité réelle. Lecture de happyad_profiles_public_v1 par id puis user_id. Le warm cache ne remplace plus une bonne identité par un placeholder.
+3. Centrale vidéo, menu ... : suppression du séparateur/flash blanc au toucher; feedback discret par opacité.
+4. Popup Qualité vidéo : interface publique simplifiée (Auto, 1080p, 720p, 540p, 360p) sans texte interne ni mention de logique de sélection.
+
+Aucun changement Worker média, compression, SQL, publication, Story ou Boutique.

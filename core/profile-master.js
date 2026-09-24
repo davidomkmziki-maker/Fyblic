@@ -3,7 +3,7 @@
   if(window.__HAPPYAD_PROFILE_MASTER_V16__)return;
   window.__HAPPYAD_PROFILE_MASTER_V16__=true;
 
-  var MASTER_VERSION='PROFILE_MASTER_V17_VISITOR_FAST_WARM';
+  var MASTER_VERSION='PROFILE_MASTER_V1104_CANONICAL_VISITOR_IDENTITY';
   var legacyOpenFromPost=typeof window.happyadOpenPublicProfileFromPostV417==='function'?window.happyadOpenPublicProfileFromPostV417:null;
   var legacyOpenViewer=typeof window.openViewerProfile==='function'?window.openViewerProfile:null;
   var legacyOpenProfile=typeof window.openProfile==='function'?window.openProfile:null;
@@ -70,7 +70,8 @@
     return clean(x.uid||x.user_id||x.userId||x.auth_user_id||x.authUserId||x.account_uid||x.accountUid||x.creatorId||x.creator_id||x.ownerId||x.owner_id||x.author_id||x.profile_id||x.requestedUid||x.id);
   }
   function avatarOf(p){p=p||{};return clean(p.avatar||p.avatar_url||p.author_avatar||p.creator_avatar||p.photo||p.profile_photo||p.image_url||p.picture);}
-  function nameOf(p){p=p||{};return clean(p.name||p.full_name||p.display_name||p.creatorName||p.creator_name||p.username||p.handle)||'Utilisateur Fyblic';}
+  function poorNameV1104(v){v=lower(v);return !v||v==='utilisateur'||v==='utilisateur happyad'||v==='utilisateur fyblic'||v==='happyad'||v==='fyblic'||v==='compte happyad'||v==='compte fyblic'||v.indexOf('aucun compte')>=0||v.indexOf('chargement profil')>=0;}
+  function nameOf(p){p=p||{};var vals=[p.name,p.full_name,p.display_name,p.creatorName,p.creator_name,p.user_name,p.author_name,p.business_name,p.store_name,p.company_name];for(var i=0;i<vals.length;i++){if(!poorNameV1104(vals[i]))return clean(vals[i]);}var h=clean(p.username||p.handle).replace(/^@+/, '');return poorNameV1104(h)?'Utilisateur Fyblic':h;}
   function badgeOf(p){
     p=p||{};
     var vals=[p.badge,p.user_badge,p.badge_type,p.certification,p.verified_badge,p.role_badge,p.profile_badge,p.account_badge];
@@ -110,7 +111,13 @@
       /* R73 : la carte Accueil possède déjà l'identité minimale du visiteur. On la
          place aussi dans le cache canonique lu par visitor-profile afin que le
          premier rendu n'attende aucune requête réseau. */
-      try{localStorage.setItem('HAPPYAD_PROFILE_V854_VISITOR_'+n.id+'_IDENTITY',JSON.stringify(Object.assign({},n,{__cachedAt:Date.now(),__happyadWarmFromCardV855R73:true,__happyadAvatarKnownV855R32:!!n.avatar})));}catch(_warm73){}
+      try{
+        var visitorKeyV1104='HAPPYAD_PROFILE_V854_VISITOR_'+n.id+'_IDENTITY',oldVisitorV1104=readJson(visitorKeyV1104)||{},safeVisitorV1104=Object.assign({},oldVisitorV1104,n);
+        if(poorNameV1104(n.name)&&!poorNameV1104(oldVisitorV1104.name||oldVisitorV1104.full_name||oldVisitorV1104.display_name)){var oldNameV1104=nameOf(oldVisitorV1104);safeVisitorV1104.name=oldNameV1104;safeVisitorV1104.full_name=oldNameV1104;safeVisitorV1104.display_name=oldNameV1104;}
+        if(!n.badge&&badgeOf(oldVisitorV1104)){safeVisitorV1104.badge=badgeOf(oldVisitorV1104);safeVisitorV1104.user_badge=safeVisitorV1104.badge;}
+        if(!n.avatar&&avatarOf(oldVisitorV1104)){safeVisitorV1104.avatar=avatarOf(oldVisitorV1104);safeVisitorV1104.avatar_url=safeVisitorV1104.avatar;}
+        localStorage.setItem(visitorKeyV1104,JSON.stringify(Object.assign({},safeVisitorV1104,{__cachedAt:Date.now(),__happyadWarmFromCardV855R73:true,__happyadAvatarKnownV855R32:!!safeVisitorV1104.avatar})));
+      }catch(_warm73){}
     }catch(_e){try{if(makeActive!==false){localStorage.setItem('HAPPYAD_ACTIVE_PROFILE',JSON.stringify(n));localStorage.setItem('HAPPYAD_ACTIVE_PROFILE_UID',n.id);localStorage.setItem('HAPPYAD_PUBLIC_PROFILE_ACTIVE_UID',n.id);}}catch(_x){}}
     if(makeActive!==false){try{sessionStorage.setItem('HAPPYAD_PROFILE_MASTER_ACTIVE_UID',n.id);sessionStorage.setItem('HAPPYAD_PROFILE_MASTER_ACTIVE_URL','modules/visitor-profile.html?uid='+esc(n.id));}catch(_s){}}
     return n;
@@ -143,7 +150,7 @@
     opts=opts||{};post=post||{};
     var uid=uidOf(post); if(!uid){try{alert('Profil introuvable: UID propriétaire absent');}catch(_a){} return false;}
     if(isOwnUid(uid))return openMy(Object.assign({},opts,{postId:post.id||post.post_id||opts.postId,source:'own-profile-from-post'}));
-    var p=normalizeProfile(Object.assign({},post,{id:uid,user_id:uid,name:post.creatorName||post.creator_name||post.display_name||post.full_name||post.name,avatar:post.avatar||post.avatar_url||post.creator_avatar||post.author_avatar,badge:post.badge||post.user_badge}));
+    var p=normalizeProfile(Object.assign({},post,{id:uid,user_id:uid,name:nameOf(post),avatar:post.avatar||post.avatar_url||post.creator_avatar||post.author_avatar,badge:post.badge||post.user_badge}));
     return openVisitor(uid,p,Object.assign({},opts,{postId:post.id||post.post_id||opts.postId}));
   }
   function openViewer(p,uid){return openVisitor(uid||uidOf(p),p||{},{});}

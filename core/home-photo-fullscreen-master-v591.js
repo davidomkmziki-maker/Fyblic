@@ -3,7 +3,7 @@
   if(window.__HAPPYAD_HOME_PHOTO_FULLSCREEN_MASTER_V591__)return;
   window.__HAPPYAD_HOME_PHOTO_FULLSCREEN_MASTER_V591__=true;
 
-  var VERSION='V932_PROFILE_FULLSCREEN_HANDOFF_POINTER_RELEASE';
+  var VERSION='V1104_SEARCH_PHOTO_ATOMIC_RETURN';
   var LAYER_ID='home-photo';
   var localObserver=null;
   var handoffBusyV928=false;
@@ -148,6 +148,11 @@
   function closeLocal(){
     var box=document.getElementById('happyadHomePhotoFullscreen');
     if(!box)return false;
+    var searchUnderlayPreparedV1104=false;
+    try{
+      var sr=window.FyblicSearchReturnV1104;
+      if(sr&&typeof sr.preparePhotoReturn==='function')searchUnderlayPreparedV1104=sr.preparePhotoReturn()===true;
+    }catch(_prepaint){}
     try{
       clearSuspendedStyleV928(box);
       box.classList.remove('on');
@@ -157,7 +162,7 @@
     }catch(_e){}
     try{var c=controller();if(c)c.close(LAYER_ID);}catch(_e){}
     forceDock(false);
-    restoreHomeSource();
+    if(!searchUnderlayPreparedV1104)restoreHomeSource();
     return true;
   }
   function requestBack(ev){
