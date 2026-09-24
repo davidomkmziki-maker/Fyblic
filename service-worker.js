@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1101-home-background-unified-20260924';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1103-search-return-integrity-20260924';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -38,7 +38,7 @@ var HAPPYAD_APP_SHELL = [
   './core/listing-publication-supabase-master-v821.js?v=1087-auto-1080',
   './core/chat-integration-master-v795.js?v=1085-boutique-validation-visible',
   './core/home-chat-header-v1089.js?v=1089-source-svg',
-  './core/marketplace-home-master-v828.js?v=1097-boutique-card-maturity',
+  './core/marketplace-home-master-v828.js?v=1102-fullscreen-card-parity',
   './core/home-feed-repository-v1.js?v=2-batch-complete',
   './core/home-feed-master-v1.js?v=1096-card-visual-hq',
   './core/home-media-loader-v1.js?v=1099-photo-max-quality',
@@ -67,7 +67,7 @@ var HAPPYAD_APP_SHELL = [
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
   './modules/assistance.html?v=974-p1-module-lifecycle-registry',
-  './modules/video.html?v=1099-user-global-quality',
+  './modules/video.html?v=1102-quality-popup-dock',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
   './modules/publish.html?v=1072-finalisation-reseau',
@@ -134,7 +134,7 @@ var HAPPYAD_APP_SHELL = [
   './core/profile/settings-data-v855r36.js?v=972-p1-single-client',
   './modules/visitor-profile.html?v=1001-profile-identity-scale',
   './modules/profile-stats.html?v=974-p1-module-lifecycle-registry',
-  './core/profile/profile-design-v854r5.css?v=1001-profile-identity-scale',
+  './core/profile/profile-design-v854r5.css?v=1102-profile-grid-clean',
   './core/profile/profile-stats-host-v855r4.css?v=855r28-skeleton',
   './core/profile/profile-settings-host-v855r26.css?v=855r28-skeleton',
   './core/profile/profile-edit-host-v855r31.css?v=855r31-securite-complete',

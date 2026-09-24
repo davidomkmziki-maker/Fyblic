@@ -165,3 +165,22 @@ body[data-profile-mode="owner"] .haProfileMarketplaceTileV856 .haProfileMarketpl
   contain:layout paint style;
 }
 .haProfileLoadHint.on{opacity:1;visibility:visible}
+
+
+/* Fyblic V1102 — grille Profil propre : aucune commande Boutique sur la petite
+   vignette. La vignette ouvre le fullscreen, qui porte Voir l’annonce + Partager. */
+body[data-profile-mode="owner"] .haProfileMarketplaceTileV856 .haProfileMarketplaceTagV856,
+body[data-profile-mode="owner"] .haProfileMarketplaceTileV856 .haProfileMarketplaceShareV857,
+body[data-profile-mode="owner"] .haProfileMarketplaceTileV856 .haProfileMarketplaceCtaV856,
+body[data-profile-mode="visitor"] .haProfileMarketplaceTileV856 .haProfileMarketplaceTagV856,
+body[data-profile-mode="visitor"] .haProfileMarketplaceTileV856 .haProfileMarketplaceShareV857,
+body[data-profile-mode="visitor"] .haProfileMarketplaceTileV856 .haProfileMarketplaceCtaV856{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body[data-profile-mode="owner"] .haProfileMarketplaceTileV856:after,
+body[data-profile-mode="visitor"] .haProfileMarketplaceTileV856:after{
+  content:none!important;
+  display:none!important;
+}

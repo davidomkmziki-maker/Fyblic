@@ -1,0 +1,6 @@
+FYBLIC V1102 — FINAL UI CORRECTIONS
+
+1. Qualité vidéo : le second popup est remonté au-dessus du dock principal ; Annuler reste accessible au clic simple.
+2. Mon profil / Profil visiteur : les petites cartes Boutique n’affichent plus ANNONCE, Partager ni Voir l’annonce. Un clic sur la vignette ouvre le fullscreen, où les deux commandes utiles sont affichées.
+3. Fullscreen photo Boutique (Accueil + ouverture depuis profils) : ordre et style alignés sur la carte Accueil — barre orange pleine largeur Voir l’annonce, puis titre + Partager libre à droite.
+4. Aucun changement SQL, Supabase, Worker, compression, publication ou moteur de qualité vidéo.

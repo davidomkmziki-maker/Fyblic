@@ -1,0 +1,44 @@
+FYBLIC V1103 — SEARCH RETURN INTEGRITY
+Date: 2026-09-24
+Base: FYBLIC_V1102_FINAL_UI_CORRECTIONS
+
+Corrections ciblées — Recherche uniquement
+
+1) Retour Recherche -> publication -> profil visiteur
+- La couche Recherche est maintenant suspendue AVANT l'ouverture du fullscreen photo/vidéo.
+- Le retour restaure la publication exacte puis la Recherche, sans couche Recherche cachée.
+- Protection contre le double clic pendant la vérification/ouverture.
+- Watchdog vidéo: si la Centrale ne s'ouvre réellement pas, Recherche est restaurée au lieu de laisser un écran vide.
+
+2) Publications cassées / supprimées / Boutique
+- Filtrage des publications supprimées, privées, masquées, archivées, non publiées, désactivées et inactives dans les caches Recherche.
+- Avant l'ouverture, une carte ancienne est confirmée dans happyad_posts. Si l'ID n'existe plus, la carte est retirée et aucune autre publication n'est ouverte à sa place.
+- Les groupes sont confirmés par leurs IDs connus; les éléments supprimés sont exclus.
+- Les médias Boutique utilisent les champs canoniques marketplace_cover_url, marketplace_cover_path et marketplace_media via le normaliseur Accueil existant.
+- Les URLs de média vidéo ne sont plus utilisées comme <img> quand aucun poster n'est disponible.
+
+3) Badge Nouveau sur publication groupée
+- Nouveau et le badge de groupe sont maintenant indépendants.
+- Nouveau reste en haut à droite; le compteur de groupe est décalé dessous lorsqu'ils sont tous les deux présents.
+
+Cache/PWA
+- Service Worker: fyblic-pwa-v1103-search-return-integrity-20260924
+- Enregistrement SW forcé sur v1103 pour éviter de conserver l'ancien index en cache.
+
+Non modifié
+- Worker média / compression
+- SQL / Supabase schema
+- Pipeline de publication
+- Qualité 1080p
+- Stories / Boutique publication / Centrale vidéo hors handoff de Recherche
+
+Validation statique effectuée
+- Syntaxe JavaScript du module Recherche: OK (node --check)
+- Syntaxe service-worker.js: OK
+- Archive ZIP: à valider après création
+
+Test téléphone recommandé
+A. Recherche -> vidéo -> profil visiteur -> Retour = vidéo -> Retour = Recherche.
+B. Recherche -> photo -> profil visiteur -> Retour = photo -> Retour = Recherche.
+C. Cliquer une vieille carte supprimée = elle disparaît / Publication indisponible, jamais une autre publication.
+D. Publication groupée <24 h = Nouveau + compteur groupe visibles ensemble.

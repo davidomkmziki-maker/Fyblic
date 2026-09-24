@@ -3289,5 +3289,20 @@ body.happyadVideoCommentsOpenV1009 .topBar{opacity:0!important;pointer-events:no
 <style id="happyad-v1027-sound-notice-up">
 .cleanHint{bottom:calc(94px + env(safe-area-inset-bottom,0px))!important}
 </style>
+
+<style id="fyblic-v1102-quality-sheet-above-dock">
+/* V1102 — le sélecteur de qualité reste entièrement au-dessus du dock principal. */
+#happyadVideoQualitySheetV1099 .haVqBox{
+  margin-bottom:calc(66px + env(safe-area-inset-bottom,0px))!important;
+  max-height:calc(100dvh - 86px - env(safe-area-inset-top,0px))!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+#happyadVideoQualitySheetV1099 .haVqCancel{margin-bottom:2px!important;}
+@media(max-height:680px){
+  #happyadVideoQualitySheetV1099 .haVqBox{margin-bottom:calc(62px + env(safe-area-inset-bottom,0px))!important;max-height:calc(100dvh - 76px)!important;}
+}
+</style>
 </body>
 </html>

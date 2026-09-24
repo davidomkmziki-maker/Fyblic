@@ -7597,6 +7597,7 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
   var SEARCH_LAYER_ID_V1017='home-search-v1017';
   var discoveryBadgeIndexV1018={};
   var HISTORY_KEY_V1014='FYBLIC_SEARCH_HISTORY_V1014';
+  var searchOpeningPostV1103=false;
 
   function qs(id){return document.getElementById(id);}
   function esc(v){return String(v==null?'':v).replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]||ch;});}
@@ -7643,11 +7644,31 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
     map[p.id]=Object.assign({},old,p,{name:p.name||old.name,handle:p.handle||old.handle,avatar:p.avatar||old.avatar,badge:p.badge||old.badge});
   }
 
+  var searchUnavailableV1103=Object.create(null);
+  function searchDeletedIdsV1103(){
+    var out=Object.create(null),rows=readJson('HAPPYAD_DELETED_POST_IDS_V1',[]);
+    if(Array.isArray(rows))rows.forEach(function(id){id=String(id||'').trim();if(id)out[id]=1;});
+    return out;
+  }
+  function searchPostPublicV1103(p){
+    p=p||{};var id=String(p.id||p.post_id||p.uuid||'').trim();
+    if(!id||searchUnavailableV1103[id])return false;
+    if(searchDeletedIdsV1103()[id])return false;
+    if(p.deleted_at||p.deletedAt||p.deleted===true||p.is_deleted===true)return false;
+    if(p.published===false||p.is_active===false)return false;
+    if(p.private_at||p.privated_at||p.hidden_at||p.archived_at)return false;
+    if(p.is_private===true||p.private===true||p.private_only===true||p.only_me===true||p.is_public===false)return false;
+    var vals=[p.visibility,p.privacy,p.audience,p.access,p.share_scope,p.who_can_see,p.status],blocked=['private','privé','prive','only_me','only-me','moi','custom','restricted','hidden','draft','brouillon','archived','unpublished','disabled','deleted','removed','pending'];
+    for(var i=0;i<vals.length;i++){var v=clean(vals[i]);if(blocked.indexOf(v)>=0)return false;}
+    return true;
+  }
   function normalizePost(p){
     if(!p)return null;
-    var id=String(p.id||p.post_id||p.uuid||p.createdAt||p.created_at||'').trim();
+    var raw=p,mapped=p;
+    try{var feed=window.HappyHomeFeedV1;if(feed&&typeof feed.normalizePost==='function')mapped=Object.assign({},raw,feed.normalizePost(raw)||{});}catch(_feed){}
+    var id=String(mapped.id||mapped.post_id||mapped.uuid||mapped.createdAt||mapped.created_at||raw.id||raw.post_id||'').trim();
     if(!id)return null;
-    return Object.assign({},p,{id:id});
+    return Object.assign({},raw,mapped,{id:id});
   }
 
   function addPosts(out,seen,arr){
@@ -7655,6 +7676,7 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
     function addOne(raw){
       var p=normalizePost(raw); if(!p)return;
       if(String(p.mode||p.type||'').toLowerCase().includes('story'))return;
+      if(!searchPostPublicV1103(p))return;
       if(seen[p.id])return;
       seen[p.id]=1; out.push(p);
     }
@@ -7742,21 +7764,40 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
       return '';
     }
     if(typeof v==='object'){
-      return firstMediaFromValue(v.url||v.src||v.media_url||v.mediaUrl||v.image_url||v.imageUrl||v.photo_url||v.photoUrl||v.video_url||v.videoUrl||v.thumbnail_url||v.thumbnailUrl||v.poster_url||v.posterUrl);
+      return firstMediaFromValue(v.poster_url||v.posterUrl||v.thumbnail_url||v.thumbnailUrl||v.thumb||v.preview||v.cover_url||v.coverUrl||v.image_url||v.imageUrl||v.photo_url||v.photoUrl||v.publicUrl||v.public_url||v.url||v.src||v.media_url||v.mediaUrl||v.video_url||v.videoUrl||v.path||v.media_path||v.storage_path||v.file_path);
     }
     return '';
   }
 
+  function searchMarketplaceCoverV1103(p){
+    p=p||{};var rows=Array.isArray(p.marketplaceMedia)?p.marketplaceMedia:(Array.isArray(p.marketplace_media)?p.marketplace_media:[]);
+    if(!rows.length)return null;
+    var idx=Math.max(0,Math.min(Number(p.marketplaceCoverIndex!=null?p.marketplaceCoverIndex:p.marketplace_cover_index)||0,rows.length-1));
+    return rows[idx]||rows[0]||null;
+  }
+  function searchPublicMediaUrlV1103(value){
+    var raw=firstMediaFromValue(value);if(!raw)return '';
+    try{if(typeof happyadPublicMediaUrlV34==='function')return happyadPublicMediaUrlV34(raw);}catch(_public){}
+    if(/^https?:\/\//i.test(raw)||/^(?:blob|data):/i.test(raw))return raw;
+    var base=String(window.HAPPYAD_SUPABASE_URL||'').replace(/\/+$/,'');
+    raw=String(raw).replace(/^\/+/, '').replace(/^happyad-media\//,'');
+    return base?base+'/storage/v1/object/public/happyad-media/'+encodeURI(raw):raw;
+  }
   function mediaUrl(p){
-    p=p||{};
-    return firstMediaFromValue(p.thumbnailUrl||p.thumbnail_url||p.posterUrl||p.poster_url||p.cover_url||p.coverUrl||p.image_url||p.imageUrl||p.photo_url||p.photoUrl||p.mediaUrl||p.media_url||p.video_url||p.videoUrl||p.url||p.media||p.medias||p.images||p.photos||p.files||p.attachments);
+    p=p||{};var market=searchMarketplaceCoverV1103(p)||{};
+    var poster=firstMediaFromValue(p.thumbnailUrl||p.thumbnail_url||p.posterUrl||p.poster_url||market.poster_url||market.poster||market.thumbnail_url||market.thumb||market.preview||p.cover_url||p.coverUrl||p.image_url||p.imageUrl||p.photo_url||p.photoUrl);
+    if(poster)return searchPublicMediaUrlV1103(poster);
+    var raw=firstMediaFromValue(p.marketplaceCoverUrl||p.marketplace_cover_url||p.marketplaceCoverPath||p.marketplace_cover_path||market||p.mediaUrl||p.media_url||p.video_url||p.videoUrl||p.url||p.media||p.medias||p.images||p.photos||p.files||p.attachments);
+    if(/\.(?:mp4|webm|mov|m4v|avi|mkv)(?:[?#]|$)/i.test(String(raw||'')))return '';
+    return searchPublicMediaUrlV1103(raw);
   }
 
   function isVideoPost(p){
     try{if(typeof isVideo==='function')return isVideo(p);}catch(e){}
-    var s=String(((p&&p.kind)||'')+' '+((p&&p.mediaType)||'')+' '+((p&&p.media_type)||'')+' '+((p&&p.type)||'')).toLowerCase();
-    var u=String(mediaUrl(p)||'');
-    return s.indexOf('video')>=0||/\.mp4|\.webm|\.mov/i.test(u);
+    p=p||{};var market=searchMarketplaceCoverV1103(p)||{};
+    var s=String((p.marketplaceCoverType||p.marketplace_cover_type||market.type||market.media_type||'')+' '+(p.kind||'')+' '+(p.mediaType||'')+' '+(p.media_type||'')+' '+(p.type||'')).toLowerCase();
+    var u=String(firstMediaFromValue(p.marketplaceCoverUrl||p.marketplace_cover_url||market.url||market.src||market.media_url||p.mediaUrl||p.media_url||p.video_url||p.videoUrl||p.url||'')||'');
+    return s.indexOf('video')>=0||/\.(?:mp4|webm|mov|m4v|avi|mkv)(?:[?#]|$)/i.test(u);
   }
 
   function postTitle(p){
@@ -7828,7 +7869,8 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
   }
   function postTileV1014(p){
     var video=isVideoPost(p),thumb=mediaUrl(p),fresh=postTimeV1014(p)&&Date.now()-postTimeV1014(p)<86400000,views=postViewsV1015(p),ident=cardIdentityV1018(p),groupCount=searchGroupCountV1026(p);
-    return '<button type="button" class="haDiscoveryPostV1014" data-ha-post-id="'+esc(p.id)+'" data-ha-post-video="'+(video?'1':'0')+'" data-ha-owner-id="'+esc(ownerIdV1014(p))+'">'+(thumb?'<img src="'+esc(thumb)+'" alt="">':'<span class="haDiscoveryFallbackV1014">'+(video?'▶':'▧')+'</span>')+(video?'<span class="haDiscoveryPlayV1014">▶</span>':'')+(groupCount>1?'<span class="haDiscoveryGroupV1026" aria-label="Publication groupée">▣ '+groupCount+'</span>':(fresh?'<span class="haDiscoveryNewV1014">Nouveau</span>':''))+'<span class="haDiscoveryPostTitleV1014'+(ident.badge?' haDiscoveryIdentityV1018':'')+'">'+discoveryTitleHtmlV1018(p)+'</span>'+(video?'<span class="haDiscoveryViewsV1015">▶ '+compactSearchCountV1015(views)+'</span>':'')+'</button>';
+    var badges=(fresh?'<span class="haDiscoveryNewV1014">Nouveau</span>':'')+(groupCount>1?'<span class="haDiscoveryGroupV1026'+(fresh?' haDiscoveryGroupWithNewV1103':'')+'" aria-label="Publication groupée">▣ '+groupCount+'</span>':'');
+    return '<button type="button" class="haDiscoveryPostV1014" data-ha-post-id="'+esc(p.id)+'" data-ha-post-video="'+(video?'1':'0')+'" data-ha-owner-id="'+esc(ownerIdV1014(p))+'">'+(thumb?'<img src="'+esc(thumb)+'" alt="">':'<span class="haDiscoveryFallbackV1014">'+(video?'▶':'▧')+'</span>')+(video?'<span class="haDiscoveryPlayV1014">▶</span>':'')+badges+'<span class="haDiscoveryPostTitleV1014'+(ident.badge?' haDiscoveryIdentityV1018':'')+'">'+discoveryTitleHtmlV1018(p)+'</span>'+(video?'<span class="haDiscoveryViewsV1015">▶ '+compactSearchCountV1015(views)+'</span>':'')+'</button>';
   }
   function suggestionProfilesV1014(){
     var master=window.HappyNotificationMaster,items=[],seen={},viewer=String(localStorage.getItem('HAPPYAD_AUTH_UID')||'').trim();try{items=master&&typeof master.suggestions==='function'?master.suggestions():[];}catch(_e){}
@@ -7912,6 +7954,7 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
     return handleSearchBackV1017();
   }
   function resumeSearchSurfaceV1018(){
+    searchOpeningPostV1103=false;
     var root=qs(ROOT_ID);if(!root)return;root.classList.add('on');
     setDiscoveryLoadingV1017(false);
   }
@@ -8019,7 +8062,15 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
         var remotePosts=pr.data.slice(),batchIds=[];
         remotePosts.forEach(function(row){var batch=String(row&&(row.batch_id||row.batchId)||'').trim();if(batch&&batchIds.indexOf(batch)<0)batchIds.push(batch);});
         if(batchIds.length){try{var siblings=await c.from('happyad_posts').select('*').in('batch_id',batchIds.slice(0,40)).is('deleted_at',null).order('group_index',{ascending:true}).limit(240);if(siblings&&Array.isArray(siblings.data))remotePosts=remotePosts.concat(siblings.data);}catch(_siblings){}}
-        var remoteSeen={},remoteComplete=[];remotePosts.forEach(function(row){var rid=String(row&&(row.id||row.post_id)||'').trim();if(rid&&!remoteSeen[rid]){remoteSeen[rid]=1;remoteComplete.push(row);}});
+        var confirmedAtV1103=Date.now();
+        var remoteSeen={},remoteComplete=[];remotePosts.forEach(function(row){
+          var rid=String(row&&(row.id||row.post_id)||'').trim();
+          if(rid&&!remoteSeen[rid]){
+            remoteSeen[rid]=1;
+            try{row=Object.assign({},row,{__searchServerConfirmedAtV1103:confirmedAtV1103});}catch(_mark){}
+            remoteComplete.push(row);
+          }
+        });
         cachedRemotePosts=remoteComplete;
         writeJson('HAPPYAD_SEARCH_POSTS_FAST_CACHE_V1',remoteComplete);
         try{
@@ -8090,26 +8141,138 @@ html.haSearchLocked,html.haSearchLocked body{overflow:hidden!important;height:10
     location.href='modules/visitor-profile.html?uid='+encodeURIComponent(p.id);
   }
 
-  function seedExactSearchPostV1025(id,video){
+  function findExactSearchPostV1103(id){
     id=String(id||'').trim();if(!id)return null;
-    var exact=groupSearchPostsV1026(allLocalPosts()).find(function(item){return String(item&&(item.id||item.post_id)||'').trim()===id||(item&&Array.isArray(item.__albumItems)&&item.__albumItems.some(function(row){return String(row&&(row.id||row.post_id)||'').trim()===id;}));})||null;
+    return groupSearchPostsV1026(allLocalPosts()).find(function(item){
+      return String(item&&(item.id||item.post_id)||'').trim()===id || (item&&Array.isArray(item.__albumItems)&&item.__albumItems.some(function(row){return String(row&&(row.id||row.post_id)||'').trim()===id;}));
+    })||null;
+  }
+  function searchExactIdsV1103(exact,id){
+    var out=[],seen=Object.create(null);
+    function put(v){v=String(v||'').trim();if(v&&!seen[v]){seen[v]=1;out.push(v);}}
+    put(id);
+    if(exact){put(exact.id||exact.post_id);if(Array.isArray(exact.__albumItems))exact.__albumItems.forEach(function(row){put(row&&(row.id||row.post_id));});}
+    return out;
+  }
+  function searchRowFreshV1103(row){
+    if(!row)return false;
+    /* Seul un résultat Recherche vérifié récemment est considéré frais ici.
+       Les caches Accueil peuvent être anciens après une suppression distante. */
+    var ts=Number(row.__searchServerConfirmedAtV1103||0)||0;
+    return !!(ts&&Date.now()-ts<90000);
+  }
+  function searchExactFreshV1103(exact){
+    if(!exact)return false;
+    var rows=Array.isArray(exact.__albumItems)&&exact.__albumItems.length?exact.__albumItems:[exact];
+    return rows.every(searchRowFreshV1103);
+  }
+  function mergeConfirmedSearchRowsV1103(rows){
+    if(!Array.isArray(rows)||!rows.length)return;
+    var map=Object.create(null),out=[];
+    (cachedRemotePosts||[]).concat(rows).forEach(function(raw){
+      var row=normalizePost(raw),rid=String(row&&(row.id||row.post_id)||'').trim();
+      if(!rid||!searchPostPublicV1103(row))return;
+      if(map[rid]){
+        var idx=out.indexOf(map[rid]);
+        var merged=Object.assign({},map[rid],row);
+        if(idx>=0)out[idx]=merged;map[rid]=merged;
+      }else{map[rid]=row;out.push(row);}
+    });
+    cachedRemotePosts=out.slice(0,240);
+    writeJson('HAPPYAD_SEARCH_POSTS_FAST_CACHE_V1',cachedRemotePosts);
+  }
+  function markSearchUnavailableV1103(ids){
+    var bad=Object.create(null);
+    (ids||[]).forEach(function(v){v=String(v||'').trim();if(v){bad[v]=1;searchUnavailableV1103[v]=1;}});
+    function cleanRows(rows){return (Array.isArray(rows)?rows:[]).filter(function(row){var rid=String(row&&(row.id||row.post_id)||'').trim();return !bad[rid];});}
+    cachedRemotePosts=cleanRows(cachedRemotePosts);
+    var fast=readJson('HAPPYAD_SEARCH_POSTS_FAST_CACHE_V1',[]);
+    if(Array.isArray(fast))writeJson('HAPPYAD_SEARCH_POSTS_FAST_CACHE_V1',cleanRows(fast));
+    if(searchOpen()){
+      if(searchModeV1014==='discovery')renderDiscoveryV1014();
+      else if(searchModeV1014==='history')renderHistoryV1014();
+      else render(currentQuery());
+    }
+  }
+  function searchUnavailableNoticeV1103(){
+    try{if(typeof toast==='function'){toast('Publication indisponible');return;}}catch(_toast){}
+    try{if(typeof toastMsg==='function'){toastMsg('Publication indisponible');return;}}catch(_toastMsg){}
+  }
+  async function confirmSearchPostV1103(id,exact){
+    id=String(id||'').trim();if(!id)return null;
+    if(exact&&searchExactFreshV1103(exact))return exact;
+    var c=null;try{c=(typeof happyadSb==='function')?happyadSb():null;}catch(_sb){}
+    if(!c||!c.from)return exact;
+    var ids=searchExactIdsV1103(exact,id);
+    try{
+      var req=c.from('happyad_posts').select('*').in('id',ids.slice(0,40)).is('deleted_at',null);
+      var res=await req;
+      if(!res||res.error)return exact;
+      var now=Date.now(),rows=(Array.isArray(res.data)?res.data:[]).map(function(row){return Object.assign({},row,{__searchServerConfirmedAtV1103:now});}).map(normalizePost).filter(searchPostPublicV1103);
+      if(!rows.length){markSearchUnavailableV1103(ids);return null;}
+      mergeConfirmedSearchRowsV1103(rows);
+      var grouped=groupSearchPostsV1026(rows),chosen=grouped.find(function(item){return String(item&&(item.id||item.post_id)||'').trim()===id||(item&&Array.isArray(item.__albumItems)&&item.__albumItems.some(function(row){return String(row&&(row.id||row.post_id)||'').trim()===id;}));})||grouped[0]||rows[0]||null;
+      if(chosen&&Array.isArray(exact&&exact.__albumItems)&&chosen.__albumItems&&chosen.__albumItems.length<exact.__albumItems.length){
+        var valid=Object.create(null);rows.forEach(function(row){valid[String(row&&(row.id||row.post_id)||'').trim()]=1;});
+        exact.__albumItems.forEach(function(row){var rid=String(row&&(row.id||row.post_id)||'').trim();if(rid&&!valid[rid])searchUnavailableV1103[rid]=1;});
+      }
+      return chosen;
+    }catch(_network){return exact;}
+  }
+  function seedExactSearchPostV1025(id,video,provided){
+    id=String(id||'').trim();if(!id)return null;
+    var exact=provided||findExactSearchPostV1103(id);
     if(!exact)return null;
+    var exactId=String(exact.id||exact.post_id||id).trim()||id;
     try{
       var key=video?'HAPPYAD_VIDEO_CACHE_STABLE_V1':'HAPPYAD_PHOTO_STABLE_CACHE_V1';
       var old=readJson(key,[]),list=Array.isArray(old)?old:(old&&Array.isArray(old.list)?old.list:[]);
-      list=[exact].concat(list.filter(function(item){return String(item&&(item.id||item.post_id)||'').trim()!==id;})).slice(0,120);
+      list=[exact].concat(list.filter(function(item){var itemId=String(item&&(item.id||item.post_id)||'').trim();return itemId!==exactId&&itemId!==id;})).slice(0,120);
       localStorage.setItem(key,JSON.stringify(video?list:{ts:Date.now(),list:list}));
-      sessionStorage.setItem('FYBLIC_SEARCH_EXACT_POST_V1025',JSON.stringify({ts:Date.now(),postId:id,video:!!video,target:exact}));
+      sessionStorage.setItem('FYBLIC_SEARCH_EXACT_POST_V1025',JSON.stringify({ts:Date.now(),postId:exactId,sourcePostId:id,video:!!video,target:exact}));
     }catch(_cache){}
     return exact;
   }
 
-  function openPost(id,video){
-    id=String(id||'').trim(); if(!id)return;
-    var exact=seedExactSearchPostV1025(id,video);
-    try{if(video&&typeof openLongVideo==='function'){openLongVideo(id);return;} if(!video&&typeof openLongPhoto==='function'){openLongPhoto(id,exact);return;}}catch(e){}
-    if(window.happyadOpenInternalUrlV492)return openRouteFromSearchV1018((video?'modules/video.html':'modules/photo.html')+'?post='+encodeURIComponent(id));
-    location.href=(video?'modules/video.html':'modules/photo.html')+'?post='+encodeURIComponent(id);
+  async function openPost(id,video){
+    id=String(id||'').trim();if(!id||searchOpeningPostV1103)return;
+    searchOpeningPostV1103=true;
+    var localExact=findExactSearchPostV1103(id);
+    var exact=await confirmSearchPostV1103(id,localExact);
+    if(!exact){searchOpeningPostV1103=false;searchUnavailableNoticeV1103();return;}
+    var exactId=String(exact.id||exact.post_id||id).trim()||id;
+    video=isVideoPost(exact);
+    seedExactSearchPostV1025(exactId,video,exact);
+
+    /* V1103: la Recherche reste dans la pile mais est suspendue AVANT le fullscreen.
+       Le retour depuis un profil visiteur restaure donc publication -> Recherche,
+       sans écran noir ni saut direct vers Accueil. */
+    var suspended=suspendSearchForRouteV1018();
+    try{
+      if(video&&typeof openLongVideo==='function'){
+        openLongVideo(exactId);
+        /* openVideoDirect peut préparer le frame jusqu'à ~1,4 s avant de le révéler.
+           On ne réactive Recherche que si, bien après ce délai, la navigation est
+           encore réellement sur Accueil. Un profil déjà ouvert n'est jamais touché. */
+        setTimeout(function(){
+          try{
+            var n=window.HappyNavigation,page=n&&typeof n.currentPage==='function'?String(n.currentPage()||''):'';
+            if(page==='home'&&!searchOpen()){searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);}
+          }catch(_watch){}
+        },2600);
+        return;
+      }
+      if(!video&&typeof openLongPhoto==='function'){openLongPhoto(exactId,exact);return;}
+    }catch(_open){searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);return;}
+
+    var url=(video?'modules/video.html':'modules/photo.html')+'?post='+encodeURIComponent(exactId);
+    if(window.happyadOpenInternalUrlV492){
+      try{var ok=window.happyadOpenInternalUrlV492(url);if(ok===false){searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);}return ok;}
+      catch(_route){searchOpeningPostV1103=false;resumeSearchAfterRouteFailureV1018(suspended);return false;}
+    }
+    searchOpeningPostV1103=false;
+    resumeSearchAfterRouteFailureV1018(suspended);
+    location.href=url;
   }
 
   window.addEventListener('HAPPYAD_NAV_CHANGED_V586',function(ev){
@@ -8203,6 +8366,7 @@ html body #happyadSmartSearchV427 .haDiscoveryPostTitleV1014{bottom:25px!importa
 html body #happyadSmartSearchV427 .haDiscoveryViewsV1015{position:absolute;left:10px;right:10px;bottom:9px;z-index:3;color:#dbe0e8;font-size:10.5px;font-weight:750;}
 html body #happyadSmartSearchV427 .haDiscoveryNewV1014{padding:4px 7px!important;font-size:9px!important;text-transform:none!important;letter-spacing:0!important;}
 html body #happyadSmartSearchV427 .haDiscoveryGroupV1026{position:absolute;right:8px;top:8px;z-index:3;min-width:30px;height:25px;padding:0 7px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:3px;background:rgba(7,11,18,.82);border:1px solid rgba(255,255,255,.24);color:#fff;font-size:10px;font-weight:900;box-sizing:border-box;backdrop-filter:blur(6px);}
+html body #happyadSmartSearchV427 .haDiscoveryGroupV1026.haDiscoveryGroupWithNewV1103{top:39px!important;}
 html body #happyadSmartSearchV427 .haSearchThumbGroupV1026{position:absolute;right:3px;top:3px;z-index:3;min-width:24px;height:19px;padding:0 4px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:rgba(5,8,13,.82);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:8px;font-weight:900;line-height:1;}
 html body #happyadSmartSearchV427 .haSearchSectionTitle{font-size:12.5px!important;font-weight:850!important;text-transform:none!important;letter-spacing:0!important;color:#ff9826!important;}
 html body #happyadSmartSearchV427 .haSearchSuggestionV1014{width:100%;min-height:64px;padding:7px 2px;border-bottom:1px solid rgba(255,255,255,.055);display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px;}
@@ -8707,7 +8871,7 @@ html body #happyadSmartSearchV427 .haDiscoveryPostTitleV1014.haDiscoveryIdentity
       if(window.__HAPPYAD_PWA_DISABLED__)return;
       if(!('serviceWorker' in navigator))return;
       if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;
-      navigator.serviceWorker.register('./service-worker.js?v=v1097-boutique-card-maturity-20260923',{scope:'./',updateViaCache:'none'}).then(function(reg){
+      navigator.serviceWorker.register('./service-worker.js?v=v1103-search-return-integrity-20260924',{scope:'./',updateViaCache:'none'}).then(function(reg){
         try{
           if(reg.active)reg.active.postMessage({type:'HAPPYAD_CLEAR_OLD_CACHES'});
           if(reg.waiting)reg.waiting.postMessage({type:'HAPPYAD_SKIP_WAITING'});
@@ -12045,7 +12209,7 @@ window.__HAPPYAD_V35_ACCOUNT_RECONNECT_ROUTE_FIX__=true;
 <script id="happyad-listing-publication-supabase-v821-js" src="core/listing-publication-supabase-master-v821.js?v=1087-auto-1080"></script>
 <script id="happyad-chat-integration-master-v795-js" src="core/chat-integration-master-v795.js?v=1085-boutique-validation-visible"></script>
 <script id="fyblic-home-chat-header-v1089-js" src="core/home-chat-header-v1089.js?v=1089-source-svg"></script>
-<script id="happyad-marketplace-home-master-v828-js" src="core/marketplace-home-master-v828.js?v=1097-boutique-card-maturity"></script>
+<script id="happyad-marketplace-home-master-v828-js" src="core/marketplace-home-master-v828.js?v=1102-fullscreen-card-parity"></script>
 <script id="happyad-keyboard-surface-master-v851r7-js" src="core/keyboard-surface-master-v851r7.js?v=855r93-home-silent"></script>
 <script id="happyad-language-preference-master-v855r59-js" src="core/language-preference-master-v855r59.js?v=855r59-language-storage-real"></script>
 <style id="happyadCommentFluidV901">
