@@ -3462,14 +3462,31 @@
       try{if(client?.auth?.getUser){const r=await client.auth.getUser();const uid=String(r?.data?.user?.id||'').trim();if(uid)return uid}}catch(_e){}
       return currentUserUidV933();
     }
-    async function directOwnerListingMutationV1105(client,id,uid,action){
-      const patch=action==='delete'?{listing_status:'deleted',is_active:false,deleted_at:new Date().toISOString()}:action==='pause'?{listing_status:'paused',is_active:false}:{listing_status:'active',is_active:true,deleted_at:null};
-      let q=client.from('happyad_posts').update(patch).eq('id',id).eq('user_id',uid).eq('happyad_marketplace',true);
-      q=q.is('deleted_at',null);
+    async function directOwnerListingMutationV1108(client,id,uid,action){
+      /*
+       * V1108: la suppression Boutique suit désormais exactement le chemin
+       * de suppression des publications Fyblic: deleted_at est la source de
+       * vérité. On ne force plus listing_status='deleted' car certaines bases
+       * n'acceptent que active/paused dans cette colonne, ce qui faisait
+       * échouer à la fois le RPC et l'ancien fallback.
+       */
+      const patch=action==='delete'?{deleted_at:new Date().toISOString()}:action==='pause'?{listing_status:'paused',is_active:false}:{listing_status:'active',is_active:true,deleted_at:null};
+      let q=client.from('happyad_posts').update(patch).eq('id',id).eq('user_id',uid);
+      if(action!=='activate')q=q.is('deleted_at',null);
       const r=await q.select('id,user_id,listing_status,is_active,deleted_at').maybeSingle();
       if(r?.error)throw r.error;
       if(!r?.data)throw new Error('LISTING_NOT_FOUND_OR_NOT_OWNER');
       return r.data;
+    }
+    async function standardFyblicDeleteV1108(client,id){
+      if(!client||typeof client.rpc!=='function')return null;
+      const stamp=new Date().toISOString();
+      try{
+        const r=await client.rpc('happyad_mutate_my_post_v855r64',{p_post_id:id,p_patch:{deleted_at:stamp}});
+        if(r?.error)return null;
+        const row=Array.isArray(r?.data)?r.data[0]:r?.data;
+        return row||null;
+      }catch(_e){return null}
     }
     async function mutateOwnListingV933(offer,action){
       const client=resolveSupabaseClient();if(!client||typeof client.from!=='function'){toast('Connexion Fyblic indisponible.');return false}
@@ -3485,10 +3502,18 @@
       if(typeof client.rpc==='function'){
         try{const response=await client.rpc(MARKET_OWNER_RPC_V933,{p_listing_id:id,p_action:action});if(response?.error)rpcError=response.error;else data=Array.isArray(response?.data)?response.data[0]:response?.data||null}catch(err){rpcError=err}
       }
-      if(!data){
-        try{data=await directOwnerListingMutationV1105(client,id,uid,action);rpcError=null}catch(err){rpcError=err}
+      if(!data&&action==='delete'){
+        const standardRow=await standardFyblicDeleteV1108(client,id);
+        if(standardRow){data=standardRow;rpcError=null}
       }
-      if(rpcError){console.warn('Fyblic listing mutation',rpcError);toast('Impossible de modifier cette annonce pour le moment.');throw rpcError}
+      if(!data){
+        try{data=await directOwnerListingMutationV1108(client,id,uid,action);rpcError=null}catch(err){rpcError=err}
+      }
+      if(rpcError){
+        console.warn('Fyblic listing mutation V1108',rpcError);
+        toast(action==='delete'?'Suppression impossible pour le moment. Réessayez.':'Impossible de modifier cette annonce pour le moment.');
+        throw rpcError
+      }
       if(action==='pause'){offer.listing_status='paused';offer.status='paused';offer.is_active=false}
       if(action==='activate'){offer.listing_status='active';offer.status='active';offer.is_active=true;offer.deleted_at=null}
       if(action==='delete'){offer.listing_status='deleted';offer.status='deleted';offer.is_active=false;offer.deleted_at=data?.deleted_at||new Date().toISOString()}

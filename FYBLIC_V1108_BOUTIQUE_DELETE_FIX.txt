@@ -1,0 +1,12 @@
+FYBLIC V1108 — Boutique delete fix
+
+Cause corrigée :
+- l'ancien RPC et son fallback écrivaient tous les deux listing_status='deleted'.
+- la suppression normale de Fyblic repose déjà sur deleted_at.
+- si la base refuse 'deleted' dans listing_status, les deux chemins échouaient ensemble.
+
+Correction :
+- suppression Boutique = deleted_at uniquement côté base.
+- second chemin de secours via happyad_mutate_my_post_v855r64, déjà utilisé par la suppression normale.
+- fallback direct propriétaire id + user_id si le RPC n'est pas disponible.
+- aucun média ou autre module n'est modifié.

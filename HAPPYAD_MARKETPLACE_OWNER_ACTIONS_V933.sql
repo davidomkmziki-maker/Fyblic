@@ -1,6 +1,6 @@
--- HAPPYAD V933 — actions propriétaire Marketplace sécurisées.
--- À exécuter une seule fois dans Supabase SQL Editor.
--- Les actions sont limitées à l'utilisateur authentifié propriétaire de l'annonce.
+-- FYBLIC V1108 — correction définitive de la suppression Boutique.
+-- La suppression utilise deleted_at comme source de vérité, comme les
+-- publications normales Fyblic. Elle ne force plus listing_status='deleted'.
 
 create or replace function public.happyad_manage_my_listing_v933(
   p_listing_id text,
@@ -32,9 +32,8 @@ begin
     update public.happyad_posts
        set listing_status = 'paused',
            is_active = false
-     where id::text = p_listing_id
+     where id::text = trim(p_listing_id)
        and user_id::text = v_uid::text
-       and happyad_marketplace = true
        and deleted_at is null
      returning * into v_row;
 
@@ -42,20 +41,19 @@ begin
     update public.happyad_posts
        set listing_status = 'active',
            is_active = true
-     where id::text = p_listing_id
+     where id::text = trim(p_listing_id)
        and user_id::text = v_uid::text
-       and happyad_marketplace = true
        and deleted_at is null
      returning * into v_row;
 
   else
+    -- IMPORTANT V1108:
+    -- ne pas écrire listing_status='deleted'. L'application entière masque
+    -- déjà une publication dès que deleted_at n'est plus NULL.
     update public.happyad_posts
-       set listing_status = 'deleted',
-           is_active = false,
-           deleted_at = coalesce(deleted_at, now())
-     where id::text = p_listing_id
+       set deleted_at = coalesce(deleted_at, now())
+     where id::text = trim(p_listing_id)
        and user_id::text = v_uid::text
-       and happyad_marketplace = true
        and deleted_at is null
      returning * into v_row;
   end if;
@@ -76,3 +74,5 @@ $$;
 
 revoke all on function public.happyad_manage_my_listing_v933(text,text) from public;
 grant execute on function public.happyad_manage_my_listing_v933(text,text) to authenticated;
+
+notify pgrst, 'reload schema';
