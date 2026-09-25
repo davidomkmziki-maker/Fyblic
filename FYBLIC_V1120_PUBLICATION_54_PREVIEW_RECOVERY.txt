@@ -1,0 +1,23 @@
+FYBLIC V1120 — PUBLICATION 54 % + APERÇU ANDROID + REPRISE TUS
+Date: 2026-09-25
+
+Base: FYBLIC V1119 MEDIA PREVIEW ROBUSTE.
+Aucun nouveau SQL requis.
+
+1. Aperçu Android
+- Le src n'est plus injecté avant les listeners load/error.
+- Les listeners sont attachés d'abord, puis le Blob URL est fourni.
+- Reprise espacée 220 ms / 700 ms / 1.6 s / 3.2 s.
+- Petit probe de lecture (64 KiB) avant reconstruction d'un aperçu.
+- Le File original reste intact.
+
+2. Envoi direct téléphone -> Supabase
+- Morceaux TUS adaptatifs 2 à 12 MiB, départ 8 MiB si le worker V1120 est actif.
+- Sur 404/410 d'une URL TUS, le site demande une nouvelle session au worker et reprend.
+- 401/403 conserve la réauthentification déjà existante.
+
+3. Cache
+- Route Publication, moteur et contrôleur ont une nouvelle version de cache V1120.
+- Service worker V1120 pour éviter le recyclage d'un module V1119.
+
+Important: déployer le worker V1120 et le site V1120 ensemble. Aucun SQL à exécuter.

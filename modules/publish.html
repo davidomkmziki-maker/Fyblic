@@ -62,9 +62,9 @@
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="../core/media-preview-controller-v1119.js?v=1119-media-preview-guard"></script>
+<script src="../core/media-preview-controller-v1119.js?v=1121-android-preflight"></script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-engine-v1082.js?v=1118-six-points-rebase"></script>
+<script src="../core/publication-engine-v1082.js?v=1121-tus-404-grace"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -1181,10 +1181,13 @@ button:disabled{filter:none;transform:none}
   function mediaPreviewHTML(extraClass,controls){
     if(!state.file||!state.objectUrl)return '';
     extraClass=extraClass||'';
+    /* V1120 : ne jamais placer src dans innerHTML lorsque le contrôleur robuste est
+       actif. Les listeners load/error sont attachés d'abord, puis src est fourni. */
+    var srcAttr=previewControllerV1119?'':(' src="'+escapeHtml(state.objectUrl)+'"');
     if(state.kind==='video'){
-      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="auto" '+(controls?'controls':'')+'></video>';
+      return '<video class="cardCropMedia videoFramePreview '+extraClass+'"'+srcAttr+' '+(state.videoMuted?'muted ':'')+'playsinline preload="auto" '+(controls?'controls':'')+'></video>';
     }
-    if(state.kind==='photo')return '<img class="cardCropMedia '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" alt="Aperçu de la publication" decoding="async">';
+    if(state.kind==='photo')return '<img class="cardCropMedia '+extraClass+'"'+srcAttr+' alt="Aperçu de la publication" decoding="async">';
     return '<div style="padding:24px;text-align:center;font-weight:1000">'+escapeHtml(state.file.name||'Média sélectionné')+'</div>';
   }
 

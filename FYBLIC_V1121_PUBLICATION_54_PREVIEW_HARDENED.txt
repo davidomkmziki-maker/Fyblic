@@ -1,0 +1,26 @@
+FYBLIC V1121 — 54 % DURCI + APERÇU ANDROID PRÉ-TESTÉ
+Date: 2026-09-25
+
+Base: Site V1120.
+Aucun nouveau SQL requis.
+
+1. Publication / TUS téléphone
+- Un 404/410 n'entraîne plus immédiatement la destruction de la session TUS.
+- Le site reteste d'abord la même session avec une courte fenêtre de grâce.
+- Renouvellement réel seulement si la session reste introuvable.
+- Jusqu'à 3 renouvellements avant échec réel.
+- Morceaux adaptatifs 2 à 12 Mio conservés.
+
+2. Aperçu Android
+- Les listeners restent attachés avant le src.
+- Nouveau pré-test de lecture des premiers 64 Kio du File avant de fournir le blob URL au décodeur.
+- Si le fournisseur Galerie Android est lent, Fyblic garde le loader au lieu d'exposer une icône média cassée.
+- Le File original reste inchangé et la récupération V1120 reste active.
+
+3. Cache
+- Publication / moteur / contrôleur passent aux URLs de cache V1121.
+- Service worker V1121 pour forcer la nouvelle logique après déploiement.
+
+Important:
+Déployer le worker V1121 en premier, puis le site V1121.
+Aucun SQL à exécuter.

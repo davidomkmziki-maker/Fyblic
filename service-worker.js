@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1119-media-preview-robuste-20260925';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1121-publication-54-hardened-20260925';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -70,10 +70,10 @@ var HAPPYAD_APP_SHELL = [
   './modules/video.html?v=1104-quality-clean',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
-  './modules/publish.html?v=1119-media-preview-robuste',
-  './core/media-preview-controller-v1119.js?v=1119-media-preview-guard',
+  './modules/publish.html?v=1121-publication-54-hardened',
+  './core/media-preview-controller-v1119.js?v=1121-android-preflight',
   './core/media-compression-client-v1.js?v=1067-compression-lock',
-  './core/publication-engine-v1082.js?v=1118-six-points-rebase',
+  './core/publication-engine-v1082.js?v=1121-tus-404-grace',
   './core/publication-background-ui-v2.js?v=1118-six-points-rebase',
   './core/profile-publication-notice-v1066.js?v=1066-silent-finish',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
@@ -83,7 +83,7 @@ var HAPPYAD_APP_SHELL = [
   './core/global-scroll-coordinator-v868.js?v=869-connection-phase2',
   './core/connection-work-coordinator-v869.js?v=869-connection-phase2',
   './core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical',
-  './core/navigation-master-v668.js?v=1119-media-preview-route',
+  './core/navigation-master-v668.js?v=1120-publication-route',
   './core/home-scroll-priority-master-v863.js?v=869-connection-phase2',
   './core/profile-avatar-master-v855r32.js?v=1031-storage-security',
   './core/follow-master-v855r34.js?v=986-professional-icons-love',
@@ -111,7 +111,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-scroll-prepaint-master-v696.js?v=855r100-home-scroll-physical-stable',
   './core/profile-edit-clear-master-v742.css?v=742-profile-edit-clear',
   './core/profile-edit-clear-master-v742.js?v=855r93-home-silent',
-  './core/main-tabs-master-v615.js?v=1119-media-preview-route',
+  './core/main-tabs-master-v615.js?v=1120-publication-route',
   './core/guest-radar-auth-v599.js?v=940-guest-auth-rainbow',
   './core/auth-frame-gate-v596.js?v=1105-boutique-readonly',
   './core/publish-master-v589.js?v=927-publish-canonical-return',

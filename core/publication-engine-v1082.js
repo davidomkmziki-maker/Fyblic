@@ -1,11 +1,11 @@
-/* Fyblic V1083 Story TUS Anchor — correctif ciblé sur Story, base moteur V1082 inchangée pour Normal/Boutique.
+/* Fyblic V1121 — moteur publication durable : grâce TUS 404/410 + reprise adaptative.
    - Un seul protocole TUS direct pour tous les médias.
    - Les fichiers restent détenus par la fenêtre principale quand le module Publication se ferme.
    - Les publications multi-médias sont orchestrées comme un groupe unique avec progression agrégée.
 */
 (function(){
   'use strict';
-  if(window.FyblicPublicationEngineV1082)return;
+  if(window.FyblicPublicationEngineV1082&&String(window.FyblicPublicationEngineV1082.version||'').indexOf('1121.')===0)return;
 
   var BASE=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app').replace(/\/+$/,'');
   var JOBS_KEY='FYBLIC_PUBLICATION_JOBS_V1080';
@@ -14,7 +14,11 @@
   var ACTIVE_GROUPS_KEY='FYBLIC_ACTIVE_PUBLICATIONS_V1117';
   var REQUIRED_SCHEMA_VERSION=1118;
   var REQUIRED_PROTOCOL_VERSION=1118;
-  var DIRECT_TUS_CHUNK=6*1024*1024;
+  var DIRECT_TUS_CHUNK=8*1024*1024;
+  var DIRECT_TUS_MIN_CHUNK=2*1024*1024;
+  var DIRECT_TUS_MAX_CHUNK=12*1024*1024;
+  var DIRECT_TUS_MAX_REFRESHES=3;
+  var DIRECT_TUS_404_GRACE_MS=[250,700,1500];
   var STORY_FIRST_TUS_CHUNK=1*1024*1024;
   // V1112 Étape 1 : défense client cohérente avec Supabase et le worker.
   var MAX_MEDIA_BYTES_V1112=4_000_000_000;
@@ -29,6 +33,7 @@
     var m=clean(value);
     if(!m)return 'Publication impossible. Réessaie.';
     if(/requested file could not be read|permission problems|reference to a file|notreadableerror|file.*could not be read/i.test(m))return 'Le téléphone a interrompu l’accès au média. Sélectionne-le puis réessaie.';
+    if(/404|not found|introuvable/i.test(m))return 'Une étape média a expiré. Fyblic tente désormais une reprise automatique.';
     if(/supabase|23502|failing row|violates|constraint|postgres|pgrst|sql/i.test(m))return 'La publication n’a pas pu être enregistrée. Réessaie après la mise à jour.';
     return m.slice(0,160);
   }
@@ -94,34 +99,99 @@
   function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0',apikey:clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY)},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
   async function directFetch(url,options,timeoutMs){var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}}
   async function tusOffset(upload,token){var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000);if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}var offset=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');return offset;}
+  async function tusOffsetWithGrace(upload,token,delays){
+    delays=Array.isArray(delays)?delays:DIRECT_TUS_404_GRACE_MS;
+    var lastError=null;
+    for(var i=0;i<=delays.length;i++){
+      try{return await tusOffset(upload,token);}
+      catch(error){
+        lastError=error;
+        if(!error||[404,410].indexOf(Number(error.status||0))<0||i>=delays.length)throw error;
+        await sleep(Math.max(0,Number(delays[i]||0)));
+      }
+    }
+    throw lastError||new Error('Session directe indisponible');
+  }
   async function uploadDirect(file,created,currentAuth,onProgress,transferOptions){
     transferOptions=transferOptions&&typeof transferOptions==='object'?transferOptions:{};
-    var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct V1082 absente');
-    var token=currentAuth.token,offset=await tusOffset(upload,token),retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
+    var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct absente');
+    var token=currentAuth.token,retries=0,sessionRefreshes=0;
+    var chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
+    chunkBytes=Math.max(DIRECT_TUS_MIN_CHUNK,Math.min(DIRECT_TUS_MAX_CHUNK,chunkBytes));
     var firstChunkBytes=Number(transferOptions.firstChunkBytes||0);if(!Number.isSafeInteger(firstChunkBytes)||firstChunkBytes<0)firstChunkBytes=0;if(firstChunkBytes>chunkBytes)firstChunkBytes=chunkBytes;
-    var anchored=offset>0;
+    var offset=0,anchored=false;
     function reportAnchored(){if(!anchored)return;if(typeof transferOptions.onAnchored==='function'){try{transferOptions.onAnchored(Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/Math.max(1,file.size)*44))),stage:'Envoi du média'}),{offset:offset,fileSize:file.size});}catch(uiError){try{console.warn('Fyblic Story TUS anchor UI ignorée:',uiError&&uiError.message||uiError);}catch(_e){}}transferOptions.onAnchored=null;}}
-    if(anchored)reportAnchored();
+    async function refreshUploadSession(reason){
+      if(sessionRefreshes>=DIRECT_TUS_MAX_REFRESHES)throw new Error('Session d’envoi expirée plusieurs fois');
+      sessionRefreshes++;
+      var refreshed=visibleJob((await request('/api/v2/publications/'+created.id+'/refresh-upload',{method:'POST'},currentAuth.token,45000)).body);
+      if(!refreshed||!refreshed.upload||!/^https:\/\//i.test(clean(refreshed.upload.url)))throw new Error('Reprise de session indisponible');
+      Object.assign(created,refreshed);upload=created.upload;
+      chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
+      chunkBytes=Math.max(DIRECT_TUS_MIN_CHUNK,Math.min(DIRECT_TUS_MAX_CHUNK,chunkBytes));
+      offset=Number(upload.offset||0);if(!Number.isSafeInteger(offset)||offset<0)offset=0;
+      anchored=offset>0;
+      retries=0;
+      try{console.warn('Fyblic: session TUS renouvelée',reason||'404/410');}catch(_e){}
+      if(anchored)reportAnchored();
+    }
+    try{offset=await tusOffsetWithGrace(upload,token);}
+    catch(initialError){
+      if(initialError&&(initialError.status===401||initialError.status===403)){
+        try{
+          currentAuth=await auth();token=currentAuth.token;
+          offset=await tusOffsetWithGrace(upload,token,[200,600]);
+          initialError=null;
+        }catch(authRetryError){initialError=authRetryError;}
+      }
+      if(initialError&&(initialError.status===404||initialError.status===410))await refreshUploadSession('initial-'+initialError.status);
+      else if(initialError)throw initialError;
+    }
+    anchored=offset>0;if(anchored)reportAnchored();
     while(offset<file.size){
       var step=(!anchored&&firstChunkBytes>0)?firstChunkBytes:chunkBytes;
-      var end=Math.min(offset+step,file.size),blob=file.slice(offset,end);
+      var end=Math.min(offset+step,file.size),blob=file.slice(offset,end),startedAt=Date.now(),attemptChunkBytes=end-offset;
       try{
         var response=await directFetch(upload.url,{method:'PATCH',headers:directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'}),body:blob},600000);
         if(!response.ok){var rejected=new Error('Envoi direct refusé ('+response.status+')');rejected.status=response.status;throw rejected;}
         var next=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(next)||next<=offset||next>end)throw new Error('Confirmation directe incohérente');
-        offset=next;retries=0;
+        offset=next;
+        var elapsed=Math.max(1,Date.now()-startedAt);
+        if(retries===0&&attemptChunkBytes>=DIRECT_TUS_MIN_CHUNK){
+          if(elapsed<4500&&chunkBytes<DIRECT_TUS_MAX_CHUNK)chunkBytes=Math.min(DIRECT_TUS_MAX_CHUNK,chunkBytes+2*1024*1024);
+          else if(elapsed>22000&&chunkBytes>DIRECT_TUS_MIN_CHUNK)chunkBytes=Math.max(DIRECT_TUS_MIN_CHUNK,chunkBytes-2*1024*1024);
+        }
+        retries=0;
         if(!anchored&&offset>0){anchored=true;reportAnchored();}
         var uploadState=Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/file.size*44))),stage:'Envoi du média'});
         if(onProgress)onProgress(uploadState);
       }catch(error){
         retries++;if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
         if(error&&(error.status===401||error.status===403)){try{currentAuth=await auth();token=currentAuth.token;}catch(_authError){}}
-        try{offset=await tusOffset(upload,token);if(!anchored&&offset>0){anchored=true;reportAnchored();}}catch(_offsetError){}
+        if(error&&(error.status===404||error.status===410)){
+          try{
+            offset=await tusOffsetWithGrace(upload,token,[300,900]);
+            if(!anchored&&offset>0){anchored=true;reportAnchored();}
+            await sleep(120);
+            continue;
+          }catch(sameSessionError){
+            if(!sameSessionError||[404,410].indexOf(Number(sameSessionError.status||0))<0)throw sameSessionError;
+          }
+          await refreshUploadSession('patch-'+error.status);
+          await sleep(300);
+          continue;
+        }
+        chunkBytes=Math.max(DIRECT_TUS_MIN_CHUNK,Math.min(chunkBytes,Math.floor(chunkBytes/2)||DIRECT_TUS_MIN_CHUNK));
+        try{offset=await tusOffsetWithGrace(upload,token,[300,900]);if(!anchored&&offset>0){anchored=true;reportAnchored();}}
+        catch(offsetError){
+          if(offsetError&&(offsetError.status===404||offsetError.status===410)){await refreshUploadSession('head-'+offsetError.status);await sleep(300);continue;}
+        }
         await sleep(Math.min(10000,retries*900));
       }
     }
     return offset;
   }
+
   function fingerprint(file){return [file.name||'media',file.size||0,file.lastModified||0,file.type||''].join(':');}
   async function status(id,token){var job=visibleJob((await request('/api/v2/publications/'+id,{},token,30000)).body);return guardJob(job)||job;}
   function primaryVisible(job){return !!(job&&job.primary_ready===true&&(job.publication_type!=='album'||(job.result&&job.result.group_visible===true)));}
@@ -205,6 +275,6 @@
     });
   }
 
-  var api={version:'1118.0-six-points-rebase',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
+  var api={version:'1121.0-54-preview-hardened',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();
