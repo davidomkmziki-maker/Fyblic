@@ -1,0 +1,41 @@
+FYBLIC V1118 — REBASE STABLE, POINTS 1 À 6
+Date: 2026-09-25
+
+Base
+- Repart strictement du FYBLIC.zip fourni par l'utilisateur.
+- Les fonctions d'aperçu renderSelectionPreview, setSelectedFile, showFiles et showFile restent identiques à la base fournie.
+
+1. Limites
+- 4 000 000 000 octets maximum par média.
+- 15 minutes maximum par vidéo.
+- Aucun lecteur vidéo temporaire avant aperçu.
+- Si Android fournit la durée à l'aperçu, le site refuse > 15 min avant publication.
+- FFprobe worker reste la validation définitive à 900 s.
+- TUS reste à 6 Mio.
+
+2. Parent + renditions
+- fyblic_publication_jobs reste le parent.
+- fyblic_publication_renditions suit 1080p/720p/540p/360p disponibles sans upscaling.
+
+3. Equité utilisateur
+- Scheduler round-robin persistant par user_id.
+- FYBLIC_MEDIA_MAX_ACTIVE_PER_USER=1 par défaut.
+- Un utilisateur ne peut pas monopoliser la file globale.
+
+4. Qualité principale
+- Meilleure qualité standard native disponible: 1080 > 720 > 540 > 360.
+- Aucun upscaling.
+
+5. Fast Path
+- H.264/AAC web-compatible peut être remuxé rapidement pour la qualité principale.
+- Les variantes secondaires restent planifiées et continuent en arrière-plan.
+
+6. Publications multiples
+- Le verrou global localStorage est supprimé du formulaire.
+- Anti-double-tap local au formulaire avant le premier await.
+- Plusieurs groupes actifs sont suivis par le moteur durable.
+- Idempotence serveur postId + fingerprint conservée.
+
+SQL
+- Exécuter FYBLIC_PUBLICATION_ARCHITECTURE_V1118_POINTS_1_A_6.sql après les SQL V1112 à V1116 déjà exécutés.
+- La migration est de réconciliation: aucun DROP TABLE, aucune suppression de publication.

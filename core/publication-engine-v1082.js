@@ -12,8 +12,8 @@
   var GROUPS_KEY='FYBLIC_PUBLICATION_GROUPS_V1080';
   var LEGACY_ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
   var ACTIVE_GROUPS_KEY='FYBLIC_ACTIVE_PUBLICATIONS_V1117';
-  var REQUIRED_SCHEMA_VERSION=1116;
-  var REQUIRED_PROTOCOL_VERSION=1117;
+  var REQUIRED_SCHEMA_VERSION=1118;
+  var REQUIRED_PROTOCOL_VERSION=1118;
   var DIRECT_TUS_CHUNK=6*1024*1024;
   var STORY_FIRST_TUS_CHUNK=1*1024*1024;
   // V1112 Étape 1 : défense client cohérente avec Supabase et le worker.
@@ -21,10 +21,6 @@
   var healthCache={at:0,value:false,detail:null};
   var watchers={};
   var terminalJobs={};
-  // V1117R2 : l'annulation appartient au groupe, pas à l'interface courante.
-  // Elle coupe les nouveaux morceaux TUS et empêche la création d'autres enfants.
-  var canceledGroups={};
-  var activeTransfers={};
 
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
   function clean(v){return String(v==null?'':v).trim();}
@@ -75,34 +71,6 @@
   function rememberGroup(group){if(!group||!group.id)return;var list=readList(GROUPS_KEY).filter(function(x){return x&&x.id!==group.id;});list.unshift({id:group.id,postId:group.postId||'',publicationType:group.publicationType||'',children:(group.children||[]).slice(),assetCount:Number(group.assetCount||0),createdAt:group.createdAt||new Date().toISOString(),updatedAt:Date.now()});writeList(GROUPS_KEY,list,20);}
   function forgetGroup(id){writeList(GROUPS_KEY,readList(GROUPS_KEY).filter(function(x){return x&&String(x.id)!==String(id||'');}),20);}
   function forgetJob(id){writeList(JOBS_KEY,readList(JOBS_KEY).filter(function(x){return x&&String(x.id)!==String(id||'');}),60);}
-  function localChildrenForGroup(id){
-    id=String(id||'');if(!id)return [];
-    var group=readList(GROUPS_KEY).find(function(x){return x&&String(x.id)===id;});
-    if(group&&Array.isArray(group.children))return group.children.filter(Boolean).map(String);
-    return readList(JOBS_KEY).filter(function(x){return x&&String(x.groupId||'')===id&&x.id;}).map(function(x){return String(x.id);});
-  }
-  function purgeGroup(id,children){
-    id=String(id||'');children=Array.isArray(children)?children.map(String):localChildrenForGroup(id);
-    var childSet={};children.forEach(function(child){childSet[child]=1;delete terminalJobs[child];});
-    writeList(JOBS_KEY,readList(JOBS_KEY).filter(function(x){return x&&!childSet[String(x.id||'')]&&String(x.groupId||'')!==id;}),60);
-    forgetGroup(id);clearActive(id);
-    try{var muted=JSON.parse(localStorage.getItem('FYBLIC_PUBLICATION_MUTED_V1')||'{}')||{};delete muted[id];children.forEach(function(child){delete muted[child];});localStorage.setItem('FYBLIC_PUBLICATION_MUTED_V1',JSON.stringify(muted));}catch(_e){}
-  }
-  /* V1117R2 : au démarrage, un échec/une annulation ne doit jamais rester
-     dans les caches locaux et redevenir un faux travail actif. */
-  function scrubTerminalLocalCache(){
-    try{
-      var jobs=readList(JOBS_KEY).filter(function(job){return job&&['failed','canceled'].indexOf(String(job.status||''))<0;});
-      writeList(JOBS_KEY,jobs,60);
-      var live={};jobs.forEach(function(job){if(job&&job.id)live[String(job.id)]=1;});
-      var groups=readList(GROUPS_KEY).filter(function(group){return group&&group.id&&Array.isArray(group.children)&&group.children.some(function(id){return live[String(id||'')];});});
-      writeList(GROUPS_KEY,groups,20);
-      var groupSet={};groups.forEach(function(group){groupSet[String(group.id)]=1;});
-      writeActiveGroups(activeGroups().filter(function(active){return active&&groupSet[String(active.id||'')];}));
-    }catch(_e){}
-  }
-  function isGroupCanceled(id){return !!canceledGroups[String(id||'')];}
-  function canceledError(){var e=new Error('Publication annulée');e.code='PUBLICATION_CANCELED';return e;}
   function dispatch(detail){
     detail=detail||{};
     try{window.dispatchEvent(new CustomEvent('FYBLIC_PUBLICATION_PROGRESS_V2',{detail:detail}));}catch(_e){}
@@ -118,41 +86,27 @@
     try{
       var r=await request('/health',{},'',10000),p=r.body&&r.body.pipelineV2||{};
       var caps=p.capabilities||{};
-      var ok=!!(r.body&&r.body.ok&&p.enabled&&p.ready&&p.schemaReady&&Number(p.schemaVersion||0)>=REQUIRED_SCHEMA_VERSION&&Number(p.protocolVersion||0)>=REQUIRED_PROTOCOL_VERSION&&p.uploadMode==='direct-tus-binary'&&caps.normal===true&&caps.story===true&&caps.boutique===true&&caps.album===true&&caps.groupAssets===true&&caps.groupFinalize===true&&caps.postMediaSafe===true&&caps.yieldingOptimization===true&&caps.posterBeforePrimary===true&&caps.renditionsTable===true&&caps.parentRenditions===true&&caps.renditionState===true&&caps.renditionClose===true&&caps.fairUserScheduler===true&&caps.userScheduleTable===true&&caps.perUserActiveCap===true&&caps.highestNativePrimary===true&&caps.fastPathBackgroundVariants===true&&caps.fastPathSafeRemux===true&&caps.multiQueuedPerUser===true&&caps.submissionIdempotency===true&&caps.cooperativeCancellation===true);
+      var ok=!!(r.body&&r.body.ok&&p.enabled&&p.ready&&p.schemaReady&&Number(p.schemaVersion||0)>=REQUIRED_SCHEMA_VERSION&&Number(p.protocolVersion||0)>=REQUIRED_PROTOCOL_VERSION&&p.uploadMode==='direct-tus-binary'&&caps.normal===true&&caps.story===true&&caps.boutique===true&&caps.album===true&&caps.groupAssets===true&&caps.groupFinalize===true&&caps.postMediaSafe===true&&caps.yieldingOptimization===true&&caps.posterBeforePrimary===true&&caps.renditionsTable===true&&caps.parentRenditions===true&&caps.renditionState===true&&caps.renditionClose===true&&caps.fairUserScheduler===true&&caps.userScheduleTable===true&&caps.perUserActiveCap===true&&caps.highestNativePrimary===true&&caps.fastPathBackgroundVariants===true&&caps.fastPathSafeRemux===true&&caps.limits4gb===true&&caps.duration15m===true&&caps.primary1080WhenAvailable===true&&caps.noVideoUpscaling===true&&caps.fastPathPrimaryFirst===true&&caps.multiQueuedPerUser===true&&caps.submissionIdempotency===true);
       healthCache={at:Date.now(),value:ok,detail:p};return ok;
     }catch(error){healthCache={at:Date.now(),value:false,detail:{schemaError:error&&error.message||'Service média indisponible'}};return false;}
   }
-  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1116|1115|1114|1113|1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1116 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1117 requise avant de publier.';if(d.capabilities&&d.capabilities.cooperativeCancellation!==true)return 'Mise à jour du worker V1117R2 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
+  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1118|1116|1115|1114|1113|1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1118 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1118 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
   function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0',apikey:clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY)},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
-  async function directFetch(url,options,timeoutMs,externalSignal){
-    var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null,abortHandler=null;options=Object.assign({},options||{});
-    if(controller){
-      options.signal=controller.signal;
-      if(externalSignal){
-        abortHandler=function(){try{controller.abort();}catch(_e){}};
-        if(externalSignal.aborted)abortHandler();else try{externalSignal.addEventListener('abort',abortHandler,{once:true});}catch(_e){}
-      }
-      timer=setTimeout(function(){controller.abort();},timeoutMs||600000);
-    }
-    try{return await fetch(url,options);}
-    catch(error){if(externalSignal&&externalSignal.aborted)throw canceledError();if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}
-    finally{if(timer)clearTimeout(timer);if(externalSignal&&abortHandler)try{externalSignal.removeEventListener('abort',abortHandler);}catch(_e){}}
-  }
-  async function tusOffset(upload,token,signal){var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000,signal);if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}var offset=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');return offset;}
+  async function directFetch(url,options,timeoutMs){var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}}
+  async function tusOffset(upload,token){var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000);if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}var offset=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');return offset;}
   async function uploadDirect(file,created,currentAuth,onProgress,transferOptions){
     transferOptions=transferOptions&&typeof transferOptions==='object'?transferOptions:{};
     var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct V1082 absente');
-    var signal=transferOptions.signal||null;if(signal&&signal.aborted)throw canceledError();var token=currentAuth.token,offset=await tusOffset(upload,token,signal),retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
+    var token=currentAuth.token,offset=await tusOffset(upload,token),retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
     var firstChunkBytes=Number(transferOptions.firstChunkBytes||0);if(!Number.isSafeInteger(firstChunkBytes)||firstChunkBytes<0)firstChunkBytes=0;if(firstChunkBytes>chunkBytes)firstChunkBytes=chunkBytes;
     var anchored=offset>0;
     function reportAnchored(){if(!anchored)return;if(typeof transferOptions.onAnchored==='function'){try{transferOptions.onAnchored(Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/Math.max(1,file.size)*44))),stage:'Envoi du média'}),{offset:offset,fileSize:file.size});}catch(uiError){try{console.warn('Fyblic Story TUS anchor UI ignorée:',uiError&&uiError.message||uiError);}catch(_e){}}transferOptions.onAnchored=null;}}
     if(anchored)reportAnchored();
     while(offset<file.size){
-      if(transferOptions.groupId&&isGroupCanceled(transferOptions.groupId))throw canceledError();
       var step=(!anchored&&firstChunkBytes>0)?firstChunkBytes:chunkBytes;
       var end=Math.min(offset+step,file.size),blob=file.slice(offset,end);
       try{
-        var response=await directFetch(upload.url,{method:'PATCH',headers:directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'}),body:blob},600000,signal);
+        var response=await directFetch(upload.url,{method:'PATCH',headers:directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'}),body:blob},600000);
         if(!response.ok){var rejected=new Error('Envoi direct refusé ('+response.status+')');rejected.status=response.status;throw rejected;}
         var next=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(next)||next<=offset||next>end)throw new Error('Confirmation directe incohérente');
         offset=next;retries=0;
@@ -160,11 +114,9 @@
         var uploadState=Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/file.size*44))),stage:'Envoi du média'});
         if(onProgress)onProgress(uploadState);
       }catch(error){
-        if(transferOptions.groupId&&isGroupCanceled(transferOptions.groupId))throw canceledError();
-        if(error&&error.code==='PUBLICATION_CANCELED')throw error;
         retries++;if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
         if(error&&(error.status===401||error.status===403)){try{currentAuth=await auth();token=currentAuth.token;}catch(_authError){}}
-        try{offset=await tusOffset(upload,token,signal);if(!anchored&&offset>0){anchored=true;reportAnchored();}}catch(_offsetError){}
+        try{offset=await tusOffset(upload,token);if(!anchored&&offset>0){anchored=true;reportAnchored();}}catch(_offsetError){}
         await sleep(Math.min(10000,retries*900));
       }
     }
@@ -175,7 +127,7 @@
   function primaryVisible(job){return !!(job&&job.primary_ready===true&&(job.publication_type!=='album'||(job.result&&job.result.group_visible===true)));}
   async function watch(id,token,onProgress,untilPrimary){
     var key=id+'::'+(untilPrimary?'primary':'final');if(watchers[key])return watchers[key];
-    watchers[key]=(async function(){try{for(;;){var job=await status(id,token);job=guardJob(job);if(!job){await sleep(800);continue;}rememberJob(job,job.publication_group_id||'');if(onProgress)onProgress(job);if(['failed','canceled'].indexOf(job.status)>=0){forgetJob(id);return job;}if(untilPrimary&&primaryVisible(job))return job;if(job.status==='published'&&(!untilPrimary||job.publication_type!=='album'||(job.result&&job.result.group_visible===true)))return job;await sleep(job.status==='uploading'?2200:850);}}finally{delete watchers[key];}})();
+    watchers[key]=(async function(){try{for(;;){var job=await status(id,token);job=guardJob(job);if(!job){await sleep(800);continue;}rememberJob(job,job.publication_group_id||'');if(onProgress)onProgress(job);if(['failed','canceled'].indexOf(job.status)>=0)return job;if(untilPrimary&&primaryVisible(job))return job;if(job.status==='published'&&(!untilPrimary||job.publication_type!=='album'||(job.result&&job.result.group_visible===true)))return job;await sleep(job.status==='uploading'?2200:850);}}finally{delete watchers[key];}})();
     return watchers[key];
   }
   async function createAndUpload(file,options,currentAuth,onProgress){
@@ -188,14 +140,9 @@
     if(typeof options.onCreated==='function')options.onCreated(created);
     if(created.primary_ready===true||created.status==='published'){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(created,{offset:file.size,fileSize:file.size,reused:true});}catch(_anchorUi){}}return created;}
     if(created.status==='uploading'){
-      var transferController=typeof AbortController!=='undefined'?new AbortController():null;
-      if(transferController)activeTransfers[String(created.id)]={controller:transferController,groupId:String(options.groupId||'')};
-      try{
-        await uploadDirect(file,created,currentAuth,function(job){rememberJob(job,options.groupId||'');if(onProgress)onProgress(job);},{groupId:options.groupId||'',signal:transferController?transferController.signal:null,firstChunkBytes:options.publicationType==='story'?STORY_FIRST_TUS_CHUNK:0,onAnchored:options.onUploadAnchored||null});
-        if(options.groupId&&isGroupCanceled(options.groupId))throw canceledError();
-        created=visibleJob((await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},currentAuth.token,45000)).body);
-        rememberJob(created,options.groupId||'');if(onProgress)onProgress(created);
-      }finally{delete activeTransfers[String(created.id)];}
+      await uploadDirect(file,created,currentAuth,function(job){rememberJob(job,options.groupId||'');if(onProgress)onProgress(job);},{firstChunkBytes:options.publicationType==='story'?STORY_FIRST_TUS_CHUNK:0,onAnchored:options.publicationType==='story'?options.onUploadAnchored:null});
+      created=visibleJob((await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},currentAuth.token,45000)).body);
+      rememberJob(created,options.groupId||'');if(onProgress)onProgress(created);
     }
     return created;
   }
@@ -204,13 +151,13 @@
     var count=states.length||1,total=0,allPrimary=true,allPublished=true,failed=null,canceled=false,anyUploading=false;
     states.forEach(function(job){job=job||{};total+=Math.max(0,Math.min(100,Number(job.progress||0)));if(!primaryVisible(job))allPrimary=false;if(job.status!=='published')allPublished=false;if(job.status==='failed'&&!failed)failed=job;if(job.status==='canceled')canceled=true;if(job.status==='uploading')anyUploading=true;});
     var progress=Math.round(total/count),status=failed?'failed':canceled?'canceled':allPublished?'published':(allPrimary?'optimizing':(anyUploading?'uploading':'processing'));
-    return {jobId:group.id,groupId:group.id,jobIds:(group.children||[]).slice(),postId:group.postId||'',publicationType:group.publicationType||'normal',status:status,primaryReady:allPrimary,progress:progress,stage:failed?'Échec':canceled?'Publication annulée':allPublished?'Publication terminée':allPrimary?'Publication visible · optimisation':anyUploading?'Envoi du média':'Publication en cours',error:failed?publicError(failed.error_message||failed.error||''):''};
+    return {jobId:group.id,groupId:group.id,postId:group.postId||'',publicationType:group.publicationType||'normal',status:status,primaryReady:allPrimary,progress:progress,stage:failed?'Échec':canceled?'Publication annulée':allPublished?'Publication terminée':allPrimary?'Publication visible · optimisation':anyUploading?'Envoi du média':'Publication en cours',error:failed?publicError(failed.error_message||failed.error||''):''};
   }
   async function submitMany(files,options){
     options=options||{};files=Array.prototype.slice.call(files||[]).filter(Boolean);if(!files.length)throw new Error('Média absent');
     for(var limitIndex=0;limitIndex<files.length;limitIndex++){var limitFile=files[limitIndex];if(!Number.isSafeInteger(Number(limitFile.size))||Number(limitFile.size)<=0)throw new Error('Média invalide');if(Number(limitFile.size)>MAX_MEDIA_BYTES_V1112)throw new Error('Média trop lourd : maximum 4 Go');}
     if(options.publicationType==='story'&&files.length!==1)throw new Error('Une Story accepte un seul média.');
-    if(!(await available(true)))return {used:false,reason:'engine-v1117-unavailable'};
+    if(!(await available(true)))return {used:false,reason:'engine-v1118-unavailable'};
     var a=await auth();
     var group={id:clean(options.groupId)||('pub_'+uid().replace(/-/g,'')),postId:clean(options.postId)||('p_'+uid().replace(/-/g,'')),publicationType:clean(options.publicationType)||'normal',assetCount:files.length,children:[],createdAt:new Date().toISOString()};
     rememberGroup(group);activateGroup(group);
@@ -224,27 +171,21 @@
     async function runner(){
       for(;;){
         var index=cursor++;if(index>=files.length)return;
-        if(isGroupCanceled(group.id))throw canceledError();
         var file=files[index],postId=typeof options.postIdForAsset==='function'?options.postIdForAsset(index,file):((files.length===1)?group.postId:(group.postId+'_'+(index+1)));
         var payload=typeof options.payloadForAsset==='function'?options.payloadForAsset(index,file):(options.payload||{});
         try{
           var queued=await createAndUpload(file,{kind:kindOf(file),publicationType:group.publicationType==='normal'&&files.length>1?'album':group.publicationType,postId:postId,payload:payload,groupId:group.id,assetIndex:index,assetCount:files.length,onCreated:function(job){if(job&&job.id&&group.children.indexOf(job.id)<0){group.children.push(job.id);rememberGroup(group);updateActiveChildren(group);}emit(index,job);},onUploadAnchored:group.publicationType==='story'?function(job,info){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(group,job,info||{});}catch(uiError){try{console.warn('Fyblic Story ancrage UI ignoré:',uiError&&uiError.message||uiError);}catch(_e){}}}}:null},a,function(job){emit(index,job);});
           queuedJobs[index]=queued;emit(index,queued);
-        }catch(error){states[index]=Object.assign({},states[index],{status:(error&&error.code==='PUBLICATION_CANCELED')?'canceled':'failed',error_message:error&&error.message||String(error)});emit(index,states[index]);throw error;}
+        }catch(error){states[index]=Object.assign({},states[index],{status:'failed',error_message:error&&error.message||String(error)});emit(index,states[index]);throw error;}
       }
     }
     var uploads=[];for(var i=0;i<Math.min(concurrency,files.length);i++)uploads.push(runner());
-    try{await Promise.all(uploads);}catch(error){
-      canceledGroups[group.id]=true;
-      await cancelGroup(group.id,group.children,{silent:true,reason:'upload-failed'}).catch(function(){});
-      purgeGroup(group.id,group.children);
-      throw error;
-    }
+    try{await Promise.all(uploads);}catch(error){clearActive(group.id);throw error;}
 
     var visiblePromises=queuedJobs.map(function(job,index){return watch(job.id,a.token,function(current){emit(index,current);},true);});
     var fullPromises=queuedJobs.map(function(job,index){return watch(job.id,a.token,function(current){emit(index,current);},false);});
     var visibleCompletion=Promise.all(visiblePromises).then(function(rows){var bad=rows.find(function(j){return j&&['failed','canceled'].indexOf(j.status)>=0;});if(bad)throw new Error(bad.error_message||'Publication échouée');return rows;});
-    var fullCompletion=Promise.all(fullPromises).then(function(rows){var bad=rows.find(function(j){return j&&['failed','canceled'].indexOf(j.status)>=0;});if(bad)throw new Error(bad.error_message||'Publication échouée');clearActive(group.id);forgetGroup(group.id);dispatch(aggregate(group,rows));return rows;}).catch(function(error){purgeGroup(group.id,group.children);throw error;});
+    var fullCompletion=Promise.all(fullPromises).then(function(rows){var bad=rows.find(function(j){return j&&['failed','canceled'].indexOf(j.status)>=0;});if(bad)throw new Error(bad.error_message||'Publication échouée');clearActive(group.id);forgetGroup(group.id);dispatch(aggregate(group,rows));return rows;}).catch(function(error){clearActive(group.id);throw error;});
     return {used:true,group:group,jobs:queuedJobs,visibleCompletion:visibleCompletion,completion:fullCompletion};
   }
   async function submit(file,options){
@@ -253,34 +194,17 @@
     return {used:true,group:result.group,jobs:result.jobs,job:result.jobs[0],visibleCompletion:result.visibleCompletion.then(function(rows){return rows[0];}),completion:result.completion.then(function(rows){return rows[0];})};
   }
   async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+id+'/cancel',{method:'POST'},a.token,30000)).body;rawEvent(job,job.publication_group_id||'',true);return job;}
-  async function cancelGroup(id,children,options){
-    options=options||{};id=String(id||'');if(!id)return {canceled:false};
-    canceledGroups[id]=true;
-    children=Array.isArray(children)&&children.length?children.map(String):localChildrenForGroup(id);
-    children.forEach(function(childId){var active=activeTransfers[String(childId)];if(active&&active.controller)try{active.controller.abort();}catch(_e){}});
-    var a=null;try{a=await auth();}catch(_authError){}
-    var failures=[];
-    if(a&&children.length){
-      await Promise.all(children.map(async function(childId){try{return await request('/api/v2/publications/'+childId+'/cancel',{method:'POST'},a.token,30000);}catch(error){failures.push(error);return null;}}));
-    }
-    if(failures.length&&failures.length===children.length){delete canceledGroups[id];throw failures[0];}
-    purgeGroup(id,children);
-    if(!options.silent)dispatch({jobId:id,groupId:id,jobIds:children,status:'canceled',primaryReady:false,progress:0,stage:'Publication annulée',error:''});
-    setTimeout(function(){delete canceledGroups[id];},10*60*1000);
-    return {canceled:true,groupId:id,jobIds:children};
-  }
-  function forget(id){var children=localChildrenForGroup(id);purgeGroup(id,children);}
+  function forget(id){forgetJob(id);forgetGroup(id);clearActive(id);}
   async function resumeTracking(){
     var groups=activeGroups().filter(function(a){return a&&a.id&&Array.isArray(a.children)&&a.children.length;});if(!groups.length)return;
     var session;try{session=await auth();}catch(_e){return;}
     groups.forEach(function(a){
       var group={id:a.id,postId:a.postId||'',publicationType:a.mode||'normal',children:a.children.slice(),assetCount:a.children.length};
       var states=new Array(group.children.length).fill(null).map(function(){return {status:'processing',progress:45,primary_ready:false};});
-      group.children.forEach(function(id,index){watch(id,session.token,function(job){states[index]=mergeJobState(states[index],job);dispatch(aggregate(group,states));},false).then(function(row){states[index]=mergeJobState(states[index],row);var allDone=states.every(function(item){return item&&terminalStatus(item.status);});if(allDone){var failed=states.some(function(item){return item&&item.status==='failed';});if(failed)purgeGroup(group.id,group.children);else clearActive(group.id);}}).catch(function(error){states[index]={status:'failed',progress:Number(states[index]&&states[index].progress||45),error_message:error.message};dispatch(aggregate(group,states));purgeGroup(group.id,group.children);});});
+      group.children.forEach(function(id,index){watch(id,session.token,function(job){states[index]=mergeJobState(states[index],job);dispatch(aggregate(group,states));},false).then(function(){var allDone=states.every(function(row){return row&&terminalStatus(row.status);});if(allDone)clearActive(group.id);}).catch(function(error){states[index]={status:'failed',progress:Number(states[index]&&states[index].progress||45),error_message:error.message};dispatch(aggregate(group,states));});});
     });
   }
 
-  var api={version:'1117.2-stability-preview-cancel',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,cancelGroup:cancelGroup,forget:forget,purgeGroup:purgeGroup};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
-  scrubTerminalLocalCache();
+  var api={version:'1118.0-six-points-rebase',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

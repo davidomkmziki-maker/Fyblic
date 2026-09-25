@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-engine-v1082.js?v=1117r3-preview-stable"></script>
+<script src="../core/publication-engine-v1082.js?v=1118-six-points-rebase"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -675,15 +675,15 @@ button:disabled{filter:none;transform:none}
 
 <script>
 (function(){
-  // Fyblic V1112 Étape 1 — limites réelles avant upload : 15 minutes / 4 Go.
-  const FYBLIC_MAX_MEDIA_BYTES_V1112=4_000_000_000;
-  const FYBLIC_MAX_VIDEO_SECONDS_V1112=15*60;
+  // V1118 — limites de publication. Aucun décodage supplémentaire n'est fait avant l'aperçu.
+  const FYBLIC_MAX_MEDIA_BYTES_V1118=4_000_000_000;
+  const FYBLIC_MAX_VIDEO_SECONDS_V1118=15*60;
   const initialMode=(new URLSearchParams(location.search).get("mode")||"publish").toLowerCase();
   // V886 : seuls Publier / Story / Live sont des modes visibles.
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],selectionToken:0};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[]};
   const $=id=>document.getElementById(id);
 
   function signalPublishReadyV936(reason){
@@ -728,13 +728,12 @@ button:disabled{filter:none;transform:none}
 
   let progressTimer=null;
   let progressValue=0;
-  /* V1117 Étape 6 — le verrou n'est plus global par utilisateur.
-     Il protège seulement CE formulaire pendant sa remise au moteur durable afin
-     qu'un double-tap ne crée jamais deux publications identiques. */
+  /* V1118 point 6 : le verrou est local à CETTE soumission seulement.
+     Le moteur durable conserve séparément chaque groupe actif dans la fenêtre principale. */
   let activePublicationIdV1067R1='';
-  let submissionBusyV1117=false;
+  let submissionBusyV1118=false;
   function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');}
-  function endPublicationV1067R1(){activePublicationIdV1067R1='';submissionBusyV1117=false;}
+  function endPublicationV1067R1(){activePublicationIdV1067R1='';submissionBusyV1118=false;}
   function simpleProgressMessage(text,value){var raw=String(text||'');if(/échec|echec|failed|erreur/i.test(raw))return 'Échec';if(/termin|publiée|publiee|published/i.test(raw))return 'Publication terminée';if(Number(value||0)<=45||/envoi|upload/i.test(raw))return 'Envoi du média';return 'Publication en cours';}
   /* V1082 : le moteur unique est la seule source globale de progression Story. */
   function setProgress(value,text){
@@ -845,9 +844,8 @@ button:disabled{filter:none;transform:none}
   }
 
   function resetPublishComposer(reason){
-    submissionBusyV1117=false;
+    submissionBusyV1118=false;
     activePublicationIdV1067R1='';
-    state.selectionToken=Number(state.selectionToken||0)+1;
     try{if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);}catch(_e){}
     state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];
     ['fileInput','cameraPhotoInput','cameraVideoInput'].forEach(function(id){try{var el=$(id);if(el)el.value='';}catch(_e){}});
@@ -1368,28 +1366,9 @@ button:disabled{filter:none;transform:none}
     else seekVideoPreviews();
   }
 
-  /* V1117R3 — aperçu Android restauré sur le chemin stable de la base fournie.
-     Aucun décodage, aucune attente et aucun Blob URL temporaire avant l'affichage.
-     La taille est la seule vérification faite avant createObjectURL(). La durée
-     est lue naturellement par le <video> d'aperçu; si Android ne la fournit pas,
-     FFprobe reste l'autorité définitive côté worker. */
-  function mediaSizeCheckV1117R3(files){
-    files=Array.from(files||[]).filter(Boolean);
-    if(!files.length)return {ok:false,error:'Média invalide'};
-    for(var i=0;i<files.length;i++){
-      var file=files[i];
-      if(!(file.type&&(/^(image|video)\//).test(file.type)))return {ok:false,error:'Cette publication accepte une photo ou une vidéo'};
-      var bytes=Number(file.size);
-      if(!Number.isFinite(bytes)||bytes<=0)return {ok:false,error:'Média invalide'};
-      if(bytes>FYBLIC_MAX_MEDIA_BYTES_V1112)return {ok:false,error:'Média trop lourd : maximum 4 Go'};
-    }
-    return {ok:true,error:''};
-  }
-
   function setSelectedFile(file,allFiles){
     if(!file)return;
     if(state.objectUrl){try{URL.revokeObjectURL(state.objectUrl);}catch(_e){}}
-    state.selectionToken=Number(state.selectionToken||0)+1;
     state.completed=false;
     state.file=file;
     state.files=(allFiles&&allFiles.length)?allFiles:[file];
@@ -1405,16 +1384,13 @@ button:disabled{filter:none;transform:none}
     const files=Array.from(fileList||[]).filter(function(f){return f&&f.type&&(f.type.startsWith('image/')||f.type.startsWith('video/'));}).slice(0,18);
     if(!files.length){toast('Choisis une photo ou une vidéo');return;}
     if((fileList||[]).length>18)toast('Maximum 18 médias dans une publication');
-    const check=mediaSizeCheckV1117R3(files);
-    if(!check.ok){toast(check.error||'Média invalide');return;}
     setSelectedFile(files[0],files);
     toast(files.length>1?(files.length+' médias sélectionnés'):(state.kind==='video'?'Vidéo affichée immédiatement':'Photo affichée immédiatement'));
   }
 
   function showFile(file){
     if(!file)return;
-    const check=mediaSizeCheckV1117R3([file]);
-    if(!check.ok){toast(check.error||'Média invalide');return;}
+    if(!(file.type&&(/^(image|video)\//).test(file.type))){toast('Cette publication accepte une photo ou une vidéo');return;}
     setSelectedFile(file,[file]);
     toast(state.kind==='video'?'Vidéo affichée immédiatement':'Photo affichée immédiatement');
   }
@@ -1987,10 +1963,13 @@ return {source:'story',id:storyId};
     addError(null,'Choisis d’abord une photo ou une vidéo',!state.file);
     if(state.file){
       const selectedFiles=(state.files&&state.files.length)?state.files:[state.file];
-      addError(null,'Média trop lourd : maximum 4 Go',selectedFiles.some(function(file){var bytes=Number(file&&file.size);return !Number.isFinite(bytes)||bytes<=0||bytes>FYBLIC_MAX_MEDIA_BYTES_V1112;}));
-      /* Ne jamais bloquer un média seulement parce qu'Android ne fournit pas la durée.
-         Si l'aperçu connaît la durée, on bloque >15 min ici; sinon FFprobe le fera. */
-      addError(null,'Vidéo trop longue : maximum 15 minutes',state.kind==='video'&&Number.isFinite(Number(state.videoDuration))&&Number(state.videoDuration)>FYBLIC_MAX_VIDEO_SECONDS_V1112+0.05);
+      addError(null,'Média trop lourd : maximum 4 Go',selectedFiles.some(function(file){
+        return !file||!Number.isSafeInteger(Number(file.size))||Number(file.size)<=0||Number(file.size)>FYBLIC_MAX_MEDIA_BYTES_V1118;
+      }));
+      /* La durée vient uniquement du <video> d'aperçu déjà existant. Aucun second
+         Blob URL / lecteur caché n'est créé : si Android ne fournit pas la durée,
+         FFprobe du worker reste la barrière définitive à 900 secondes. */
+      addError(null,'Vidéo trop longue : maximum 15 minutes',state.kind==='video'&&Number.isFinite(Number(state.videoDuration))&&Number(state.videoDuration)>FYBLIC_MAX_VIDEO_SECONDS_V1118+0.05);
     }
     if(state.mode==='publish'){
       // Publication sociale : les champs texte restent optionnels.
@@ -2065,7 +2044,7 @@ return {source:'story',id:storyId};
   }
 
   async function savePublish(){
-    if(submissionBusyV1117){
+    if(submissionBusyV1118){
       toast('Publication déjà lancée');
       return;
     }
@@ -2076,14 +2055,9 @@ return {source:'story',id:storyId};
       return;
     }
     if(!state.file){toast("Aucun média sélectionné");return;}
-    /* Verrou synchrone AVANT le premier await : même deux événements click dans
-       la même frame ne peuvent plus produire deux postId différents. */
-    submissionBusyV1117=true;
-    const submittedFileV1117R2=state.file;
-    const submittedFilesV1117R2=(state.files&&state.files.length)?state.files.slice(0,18):[state.file];
-    const submittedModeV1117R2=state.mode;
-    const submittedSelectionTokenV1117R2=Number(state.selectionToken||0);
-    function ownsComposerV1117R2(){return state.file===submittedFileV1117R2&&Number(state.selectionToken||0)===submittedSelectionTokenV1117R2;}
+    /* Verrou synchrone avant le premier await : bloque le double-tap du même
+       formulaire mais n'empêche jamais une autre publication déjà remise au moteur. */
+    submissionBusyV1118=true;
     $("publishBtn").disabled=true; $("publishBtnTop").disabled=true;
     startProgress("Préparation de la publication...");
     toast("Publication en cours");
@@ -2124,17 +2098,18 @@ return {source:'story',id:storyId};
       /* V1082 — moteur unique Normal + Story + albums.
          Le moteur est prioritairement pris dans la fenêtre principale afin que
          l'upload survive à la fermeture/masquage du module Publication. */
-      if(submittedModeV1117R2==='publish'||submittedModeV1117R2==='story'){
+      if(state.mode==='publish'||state.mode==='story'){
         var durable=null;
         try{durable=(window.parent&&window.parent!==window&&window.parent.FyblicPublicationEngineV1082)||window.FyblicPublicationEngineV1082;}catch(_master){durable=window.FyblicPublicationEngineV1082;}
-        if(!durable||typeof durable.available!=='function'||typeof durable.submitMany!=='function')throw new Error('Système de publication V1082 indisponible.');
+        if(!durable||typeof durable.available!=='function'||typeof durable.submitMany!=='function')throw new Error('Système de publication V1118 indisponible.');
         if(await durable.available(true)){
-          var publishFiles=submittedModeV1117R2==='publish'?submittedFilesV1117R2.slice(0,18):[submittedFileV1117R2];
-          var isAlbum=submittedModeV1117R2==='publish'&&publishFiles.length>1;
+          var publishFiles=(state.mode==='publish'&&state.files&&state.files.length)?state.files.slice(0,18):[state.file];
+          if(state.mode==='story')publishFiles=[state.file];
+          var isAlbum=state.mode==='publish'&&publishFiles.length>1;
           var batchId=isAlbum?('grp_'+Date.now()+'_'+String(id).slice(-10)):'';
           var returnedHome=returnedHomeForStoryV1067R1;
           var backgroundTask=durable.submitMany(publishFiles,{
-            publicationType:submittedModeV1117R2==='story'?'story':'normal',
+            publicationType:state.mode==='story'?'story':'normal',
             groupId:id,
             postId:id,
             uploadConcurrency:2,
@@ -2151,58 +2126,44 @@ return {source:'story',id:storyId};
             },
             onGroupCreated:function(group){
               window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1=String(group&&group.id||id);
-              if(ownsComposerV1117R2()){
-                beginPublicationV1067R1(group&&group.id||id,submittedModeV1117R2);
-                state.completed=true;
-                setProgress(1,'Envoi du média');
-              }
-              if(submittedModeV1117R2!=='story'&&!returnedHome&&ownsComposerV1117R2()){
-                returnedHome=true;
-                setTimeout(function(){if(ownsComposerV1117R2())returnHomeAfterPublish('engine-v1117r3-background',{preserveMedia:true});},120);
-              }
+              beginPublicationV1067R1(group&&group.id||id,state.mode);
+              state.completed=true;
+              setProgress(1,'Envoi du média');
+              /* V1083 ciblé Story : ne pas quitter Publication avant que Supabase
+                 ait confirmé les premiers octets. Le chemin Normal V1082 reste identique. */
+              if(state.mode!=='story'&&!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('engine-v1082-background',{preserveMedia:true});},120);}
             },
             onUploadAnchored:function(group,job,info){
-              if(submittedModeV1117R2!=='story'||returnedHome||!ownsComposerV1117R2())return;
+              if(state.mode!=='story'||returnedHome)return;
               returnedHome=true;
               try{setProgress(Math.max(1,Number(job&&job.progress||progressValue||1)),'Envoi du média');}catch(_p){}
-              setTimeout(function(){if(ownsComposerV1117R2())returnHomeAfterPublish('story-tus-anchor-v1117r3',{preserveMedia:true});},0);
+              setTimeout(function(){returnHomeAfterPublish('story-tus-anchor-v1083',{preserveMedia:true});},0);
             },
-            onProgress:function(detail){
-              /* Une ancienne publication ne doit jamais réinitialiser ou repeindre
-                 le composer d'une publication plus récente. */
-              if(!ownsComposerV1117R2())return;
-              setProgress(Number(detail&&detail.progress||progressValue),String(detail&&detail.stage||'Publication en cours'));
-            }
+            onProgress:function(detail){setProgress(Number(detail&&detail.progress||progressValue),String(detail&&detail.stage||'Publication en cours'));}
           });
           window.__FYBLIC_ACTIVE_PUBLICATION_V2=backgroundTask;
           backgroundTask.then(function(result){
-            if(!result||!result.used)throw new Error('Moteur V1082 indisponible');
+            if(!result||!result.used)throw new Error('Moteur V1118 indisponible');
             return result.visibleCompletion||result.completion;
           }).then(function(visibleJobs){
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
-            if(submittedModeV1117R2==='story')safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');
-            if(ownsComposerV1117R2()){
-              endPublicationV1067R1();
-              try{resetPublishComposer('engine-v1117r3-visible');}catch(_reset){}
-            }
+            if(state.mode==='story')safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');
+            // La qualité principale est réellement visible : libérer immédiatement
+            // le verrou utilisateur. Les variantes continuent sans bloquer un nouveau post.
+            endPublicationV1067R1();
+            try{resetPublishComposer('engine-v1082-visible');}catch(_reset){}
             return backgroundTask.then(function(result){return result&&result.completion;});
           }).then(function(){
             // Optimisation secondaire terminée en silence.
           }).catch(function(error){
-            console.error('Fyblic engine V1117R3',error);
-            try{clearHeavyPublicationCaches();}catch(_clean){}
-            /* Le callback d'une ancienne tâche ne touche jamais au nouveau média. */
-            if(!ownsComposerV1117R2())return;
+            console.error('Fyblic engine V1082',error);
             endPublicationV1067R1();
-            var canceled=error&&(/annul|cancel/i.test(String(error.message||error))||error.code==='PUBLICATION_CANCELED');
-            state.completed=false;
-            if(!canceled)failProgress('Échec : '+String(error&&error.message||error).slice(0,90));
-            try{resetPublishComposer(canceled?'canceled-engine-v1117r3':'failed-engine-v1117r3');}catch(_reset){}
-            updatePublishButtonsState();
+            try{clearHeavyPublicationCaches();}catch(_clean){}
+            state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));try{resetPublishComposer('failed-engine-v1082');}catch(_reset){}updatePublishButtonsState();
           });
           return;
         }
-        throw new Error(typeof durable.readinessMessage==='function'?durable.readinessMessage():'Mise à jour SQL V1082 requise avant de publier.');
+        throw new Error(typeof durable.readinessMessage==='function'?durable.readinessMessage():'Mise à jour SQL V1118 requise avant de publier.');
       }
       try{
         var uploadFile=state.file;
