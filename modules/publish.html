@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-engine-v1082.js?v=1117-multi-publication-handoff"></script>
+<script src="../core/publication-engine-v1082.js?v=1117r2-stability-preview-cancel"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -683,7 +683,7 @@ button:disabled{filter:none;transform:none}
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLimitsChecked:false,mediaValidationError:'',mediaDurations:[]};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLimitsChecked:false,mediaValidationError:'',mediaDurations:[],selectionToken:0};
   const $=id=>document.getElementById(id);
 
   function signalPublishReadyV936(reason){
@@ -847,6 +847,7 @@ button:disabled{filter:none;transform:none}
   function resetPublishComposer(reason){
     submissionBusyV1117=false;
     activePublicationIdV1067R1='';
+    state.selectionToken=Number(state.selectionToken||0)+1;
     try{if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);}catch(_e){}
     state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.mediaLimitsChecked=false;state.mediaValidationError='';state.mediaDurations=[];
     ['fileInput','cameraPhotoInput','cameraVideoInput'].forEach(function(id){try{var el=$(id);if(el)el.value='';}catch(_e){}});
@@ -1367,78 +1368,69 @@ button:disabled{filter:none;transform:none}
     else seekVideoPreviews();
   }
 
-  function inspectVideoLimitsV1112(file){
-    if(!file)return Promise.resolve({ok:false,error:'Média invalide'});
-    if(!Number.isSafeInteger(Number(file.size))||Number(file.size)<=0)return Promise.resolve({ok:false,error:'Média invalide'});
-    if(Number(file.size)>FYBLIC_MAX_MEDIA_BYTES_V1112)return Promise.resolve({ok:false,error:'Média trop lourd : maximum 4 Go'});
-    if(!(file.type&&file.type.startsWith('video/')))return Promise.resolve({ok:true,duration:0,durationVerified:true});
-    return new Promise(function(resolve){
-      var url='',done=false,timer=0,video=document.createElement('video');
-      function cleanup(){
-        clearTimeout(timer);
-        try{video.pause();video.removeAttribute('src');video.load();}catch(_e){}
-        try{if(url)URL.revokeObjectURL(url);}catch(_e){}
-        video.onloadedmetadata=null;video.ondurationchange=null;video.onloadeddata=null;video.oncanplay=null;video.onerror=null;
-      }
-      function finish(result){
-        if(done)return;done=true;cleanup();resolve(result);
-      }
-      function acceptUnknown(){
-        /* V1117R1 Android : certains sélecteurs/containers ne livrent pas
-           video.duration via un Blob URL. Ce n'est pas une preuve que le média
-           est invalide. On laisse donc le pipeline continuer ; FFprobe du worker
-           reste la barrière définitive à 900 s avant tout traitement. */
-        finish({ok:true,duration:0,durationVerified:false});
-      }
-      function readDuration(){
-        var duration=Number(video.duration);
-        if(Number.isFinite(duration)&&duration>0){
-          if(duration>FYBLIC_MAX_VIDEO_SECONDS_V1112+0.05){
-            finish({ok:false,error:'Vidéo trop longue : maximum 15 minutes',duration:duration,durationVerified:true});
-          }else{
-            finish({ok:true,duration:duration,durationVerified:true});
-          }
-          return true;
-        }
-        return false;
-      }
-      try{
-        video.preload='metadata';video.muted=true;video.playsInline=true;
-        url=URL.createObjectURL(file);
-        video.onloadedmetadata=function(){
-          if(readDuration())return;
-          /* Certains Android retournent d'abord Infinity/0 puis corrigent la
-             durée lors de durationchange/loadeddata. On attend ces événements
-             au lieu de refuser immédiatement. */
-          try{if(video.duration===Infinity)video.currentTime=1e10;}catch(_e){}
-        };
-        video.ondurationchange=readDuration;
-        video.onloadeddata=readDuration;
-        video.oncanplay=readDuration;
-        /* Un échec du décodeur navigateur ne doit pas bloquer un fichier que
-           FFmpeg sait traiter côté worker. */
-        video.onerror=acceptUnknown;
-        timer=setTimeout(acceptUnknown,10000);
-        video.src=url;
-        try{video.load();}catch(_e){}
-      }catch(_e){acceptUnknown();}
-    });
+  function mediaListPreflightV1117R2(files){
+    files=Array.from(files||[]).filter(Boolean);
+    if(!files.length)return {ok:false,error:'Média invalide',durations:[]};
+    for(var i=0;i<files.length;i++){
+      var file=files[i];
+      if(!(file.type&&(/^(image|video)\//).test(file.type)))return {ok:false,error:'Cette publication accepte une photo ou une vidéo',durations:[]};
+      if(!Number.isSafeInteger(Number(file.size))||Number(file.size)<=0)return {ok:false,error:'Média invalide',durations:[]};
+      if(Number(file.size)>FYBLIC_MAX_MEDIA_BYTES_V1112)return {ok:false,error:'Média trop lourd : maximum 4 Go',durations:[]};
+    }
+    return {ok:true,error:'',durations:new Array(files.length).fill(0)};
   }
 
-  async function validateSelectedMediaLimitsV1112(files){
-    files=Array.from(files||[]).filter(Boolean);
-    var durations=[];
-    for(var i=0;i<files.length;i++){
-      var result=await inspectVideoLimitsV1112(files[i]);
-      if(!result.ok)return {ok:false,error:result.error||'Média invalide',index:i,durations:durations};
-      durations[i]=Number(result.duration||0);
+  /* V1117R2 Android : l'aperçu doit être créé AVANT toute lecture asynchrone.
+     L'ancien contrôle V1112 créait puis révoquait un Blob URL temporaire avant
+     l'aperçu. Sur certains fournisseurs Galerie Android, cette séquence pouvait
+     invalider l'accès au média ou laisser un ancien callback révoquer le nouvel URL.
+     On lit donc la durée directement depuis le <video> déjà affiché. */
+  function verifyVisibleVideoDurationV1117R2(file,selectionToken){
+    if(!file||!(file.type&&file.type.startsWith('video/')))return;
+    var preview=$('preview'),video=preview&&preview.querySelector('video');
+    if(!video)return;
+    var done=false,timer=0;
+    function stillCurrent(){return state.file===file&&Number(state.selectionToken)===Number(selectionToken);}
+    function cleanup(){
+      clearTimeout(timer);
+      video.removeEventListener('loadedmetadata',check);
+      video.removeEventListener('durationchange',check);
+      video.removeEventListener('loadeddata',check);
+      video.removeEventListener('canplay',check);
     }
-    return {ok:true,error:'',durations:durations};
+    function check(){
+      if(done||!stillCurrent()){cleanup();return;}
+      var duration=Number(video.duration);
+      if(!Number.isFinite(duration)||duration<=0)return;
+      done=true;cleanup();
+      state.videoDuration=duration;
+      if(Array.isArray(state.mediaDurations))state.mediaDurations[0]=duration;
+      state.mediaLimitsChecked=true;state.mediaValidationError='';
+      try{var time=preview.querySelector('[data-preview-time-v892]');if(time)time.textContent='0:00 / '+formatPreviewTimeV892(duration);}catch(_e){}
+      if(duration>FYBLIC_MAX_VIDEO_SECONDS_V1112+0.05){
+        toast('Vidéo trop longue : maximum 15 minutes');
+        if(stillCurrent())resetPublishComposer('video-too-long-v1117r2');
+        return;
+      }
+      updateSummary();updatePublishButtonsState();
+    }
+    video.addEventListener('loadedmetadata',check);
+    video.addEventListener('durationchange',check);
+    video.addEventListener('loadeddata',check);
+    video.addEventListener('canplay',check);
+    timer=setTimeout(function(){
+      cleanup();
+      /* Une durée locale illisible n'est pas un échec : FFprobe reste la
+         barrière définitive à 900 s côté worker. */
+      if(stillCurrent()){state.mediaLimitsChecked=true;state.mediaValidationError='';updatePublishButtonsState();}
+    },10000);
+    check();
   }
 
   function setSelectedFile(file,allFiles,limitCheck){
     if(!file)return;
     if(state.objectUrl){try{URL.revokeObjectURL(state.objectUrl);}catch(_e){}}
+    state.selectionToken=Number(state.selectionToken||0)+1;
     state.completed=false;
     state.file=file;
     state.files=(allFiles&&allFiles.length)?allFiles:[file];
@@ -1447,27 +1439,28 @@ button:disabled{filter:none;transform:none}
     state.mediaLimitsChecked=!!(limitCheck&&limitCheck.ok);
     state.mediaValidationError=limitCheck&&limitCheck.error?String(limitCheck.error):'';
     state.mediaDurations=limitCheck&&Array.isArray(limitCheck.durations)?limitCheck.durations.slice():[];
-    if(state.kind==='video'&&Number(state.mediaDurations[0]||0)>0)state.videoDuration=Number(state.mediaDurations[0]);
     state.objectUrl=URL.createObjectURL(file);
     renderSelectionPreview();
     updateSummary();updatePublishButtonsState();
+    var token=state.selectionToken;
+    if(state.kind==='video')verifyVisibleVideoDurationV1117R2(file,token);
     requestAnimationFrame(function(){applyCardCrop();syncAdjustValues();});
   }
 
-  async function showFiles(fileList){
+  function showFiles(fileList){
     const files=Array.from(fileList||[]).filter(function(f){return f&&f.type&&(f.type.startsWith('image/')||f.type.startsWith('video/'));}).slice(0,18);
     if(!files.length){toast('Choisis une photo ou une vidéo');return;}
     if((fileList||[]).length>18)toast('Maximum 18 médias dans une publication');
-    const check=await validateSelectedMediaLimitsV1112(files);
+    const check=mediaListPreflightV1117R2(files);
     if(!check.ok){toast(check.error||'Média invalide');return;}
+    /* Important Android : aucune await avant createObjectURL(file). */
     setSelectedFile(files[0],files,check);
     toast(files.length>1?(files.length+' médias sélectionnés'):(state.kind==='video'?'Vidéo affichée immédiatement':'Photo affichée immédiatement'));
   }
 
-  async function showFile(file){
+  function showFile(file){
     if(!file)return;
-    if(!(file.type&&(/^(image|video)\//).test(file.type))){toast('Cette publication accepte une photo ou une vidéo');return;}
-    const check=await validateSelectedMediaLimitsV1112([file]);
+    const check=mediaListPreflightV1117R2([file]);
     if(!check.ok){toast(check.error||'Média invalide');return;}
     setSelectedFile(file,[file],check);
     toast(state.kind==='video'?'Vidéo affichée immédiatement':'Photo affichée immédiatement');
@@ -2132,6 +2125,11 @@ return {source:'story',id:storyId};
     /* Verrou synchrone AVANT le premier await : même deux événements click dans
        la même frame ne peuvent plus produire deux postId différents. */
     submissionBusyV1117=true;
+    const submittedFileV1117R2=state.file;
+    const submittedFilesV1117R2=(state.files&&state.files.length)?state.files.slice(0,18):[state.file];
+    const submittedModeV1117R2=state.mode;
+    const submittedSelectionTokenV1117R2=Number(state.selectionToken||0);
+    function ownsComposerV1117R2(){return state.file===submittedFileV1117R2&&Number(state.selectionToken||0)===submittedSelectionTokenV1117R2;}
     $("publishBtn").disabled=true; $("publishBtnTop").disabled=true;
     startProgress("Préparation de la publication...");
     toast("Publication en cours");
@@ -2172,18 +2170,17 @@ return {source:'story',id:storyId};
       /* V1082 — moteur unique Normal + Story + albums.
          Le moteur est prioritairement pris dans la fenêtre principale afin que
          l'upload survive à la fermeture/masquage du module Publication. */
-      if(state.mode==='publish'||state.mode==='story'){
+      if(submittedModeV1117R2==='publish'||submittedModeV1117R2==='story'){
         var durable=null;
         try{durable=(window.parent&&window.parent!==window&&window.parent.FyblicPublicationEngineV1082)||window.FyblicPublicationEngineV1082;}catch(_master){durable=window.FyblicPublicationEngineV1082;}
         if(!durable||typeof durable.available!=='function'||typeof durable.submitMany!=='function')throw new Error('Système de publication V1082 indisponible.');
         if(await durable.available(true)){
-          var publishFiles=(state.mode==='publish'&&state.files&&state.files.length)?state.files.slice(0,18):[state.file];
-          if(state.mode==='story')publishFiles=[state.file];
-          var isAlbum=state.mode==='publish'&&publishFiles.length>1;
+          var publishFiles=submittedModeV1117R2==='publish'?submittedFilesV1117R2.slice(0,18):[submittedFileV1117R2];
+          var isAlbum=submittedModeV1117R2==='publish'&&publishFiles.length>1;
           var batchId=isAlbum?('grp_'+Date.now()+'_'+String(id).slice(-10)):'';
           var returnedHome=returnedHomeForStoryV1067R1;
           var backgroundTask=durable.submitMany(publishFiles,{
-            publicationType:state.mode==='story'?'story':'normal',
+            publicationType:submittedModeV1117R2==='story'?'story':'normal',
             groupId:id,
             postId:id,
             uploadConcurrency:2,
@@ -2200,20 +2197,28 @@ return {source:'story',id:storyId};
             },
             onGroupCreated:function(group){
               window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1=String(group&&group.id||id);
-              beginPublicationV1067R1(group&&group.id||id,state.mode);
-              state.completed=true;
-              setProgress(1,'Envoi du média');
-              /* V1083 ciblé Story : ne pas quitter Publication avant que Supabase
-                 ait confirmé les premiers octets. Le chemin Normal V1082 reste identique. */
-              if(state.mode!=='story'&&!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('engine-v1082-background',{preserveMedia:true});},120);}
+              if(ownsComposerV1117R2()){
+                beginPublicationV1067R1(group&&group.id||id,submittedModeV1117R2);
+                state.completed=true;
+                setProgress(1,'Envoi du média');
+              }
+              if(submittedModeV1117R2!=='story'&&!returnedHome&&ownsComposerV1117R2()){
+                returnedHome=true;
+                setTimeout(function(){if(ownsComposerV1117R2())returnHomeAfterPublish('engine-v1117r2-background',{preserveMedia:true});},120);
+              }
             },
             onUploadAnchored:function(group,job,info){
-              if(state.mode!=='story'||returnedHome)return;
+              if(submittedModeV1117R2!=='story'||returnedHome||!ownsComposerV1117R2())return;
               returnedHome=true;
               try{setProgress(Math.max(1,Number(job&&job.progress||progressValue||1)),'Envoi du média');}catch(_p){}
-              setTimeout(function(){returnHomeAfterPublish('story-tus-anchor-v1083',{preserveMedia:true});},0);
+              setTimeout(function(){if(ownsComposerV1117R2())returnHomeAfterPublish('story-tus-anchor-v1117r2',{preserveMedia:true});},0);
             },
-            onProgress:function(detail){setProgress(Number(detail&&detail.progress||progressValue),String(detail&&detail.stage||'Publication en cours'));}
+            onProgress:function(detail){
+              /* Une ancienne publication ne doit jamais réinitialiser ou repeindre
+                 le composer d'une publication plus récente. */
+              if(!ownsComposerV1117R2())return;
+              setProgress(Number(detail&&detail.progress||progressValue),String(detail&&detail.stage||'Publication en cours'));
+            }
           });
           window.__FYBLIC_ACTIVE_PUBLICATION_V2=backgroundTask;
           backgroundTask.then(function(result){
@@ -2221,19 +2226,25 @@ return {source:'story',id:storyId};
             return result.visibleCompletion||result.completion;
           }).then(function(visibleJobs){
             safeLocalFlag('HAPPYAD_HOME_REFRESH_NEEDED','1');
-            if(state.mode==='story')safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');
-            // La qualité principale est réellement visible : libérer immédiatement
-            // le verrou utilisateur. Les variantes continuent sans bloquer un nouveau post.
-            endPublicationV1067R1();
-            try{resetPublishComposer('engine-v1082-visible');}catch(_reset){}
+            if(submittedModeV1117R2==='story')safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');
+            if(ownsComposerV1117R2()){
+              endPublicationV1067R1();
+              try{resetPublishComposer('engine-v1117r2-visible');}catch(_reset){}
+            }
             return backgroundTask.then(function(result){return result&&result.completion;});
           }).then(function(){
             // Optimisation secondaire terminée en silence.
           }).catch(function(error){
-            console.error('Fyblic engine V1082',error);
-            endPublicationV1067R1();
+            console.error('Fyblic engine V1117R2',error);
             try{clearHeavyPublicationCaches();}catch(_clean){}
-            state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));try{resetPublishComposer('failed-engine-v1082');}catch(_reset){}updatePublishButtonsState();
+            /* Le callback d'une ancienne tâche ne touche jamais au nouveau média. */
+            if(!ownsComposerV1117R2())return;
+            endPublicationV1067R1();
+            var canceled=error&&(/annul|cancel/i.test(String(error.message||error))||error.code==='PUBLICATION_CANCELED');
+            state.completed=false;
+            if(!canceled)failProgress('Échec : '+String(error&&error.message||error).slice(0,90));
+            try{resetPublishComposer(canceled?'canceled-engine-v1117r2':'failed-engine-v1117r2');}catch(_reset){}
+            updatePublishButtonsState();
           });
           return;
         }

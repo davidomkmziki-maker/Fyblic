@@ -1,0 +1,18 @@
+FYBLIC V1117R2 — Correctif stabilité avant le point 7
+
+1. Aperçu Android
+- Un seul Blob URL est créé immédiatement pour le média sélectionné.
+- Aucun lecteur temporaire de durée avant l'aperçu.
+- La durée vidéo est lue depuis le lecteur visible; si Android ne la fournit pas, FFprobe reste le contrôle définitif 15 min.
+
+2. Echec et cache
+- Les jobs/groupes failed ou canceled sont retirés des caches locaux.
+- Un nettoyage au démarrage supprime les états terminaux hérités qui pourraient rester bloqués.
+
+3. X de progression
+- Le X ne masque plus la ligne.
+- Il ouvre une confirmation d'annulation.
+- La ligne disparaît uniquement après confirmation du statut canceled.
+- L'ancienne mise en sourdine d'un job actif est neutralisée au chargement.
+
+Aucun SQL supplémentaire requis. Déployer Worker V1117R2 puis Site V1117R2.
