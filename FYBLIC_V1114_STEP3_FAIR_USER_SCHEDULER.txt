@@ -1,0 +1,9 @@
+FYBLIC V1114 — ÉTAPE 3 : SCHEDULER ÉQUITABLE PAR UTILISATEUR
+
+- Ajoute fyblic_publication_user_schedule pour mémoriser le dernier compte servi.
+- Nouveau claim fyblic_worker_claim_job_v1114 : round-robin persistant par user_id.
+- Plafond par défaut : 1 job parent actif par utilisateur (FYBLIC_MEDIA_MAX_ACTIVE_PER_USER=1).
+- Une nouvelle qualité principale du même compte passe avant ses optimisations secondaires.
+- Plusieurs utilisateurs peuvent être servis en parallèle si FYBLIC_MEDIA_WORKERS > 1.
+- Si un seul worker existe, l'équité empêche la famine mais ne peut pas exécuter deux comptes physiquement en même temps.
+- Les étapes 1 et 2 restent intactes : 4 Go, 15 min, TUS 6 Mio, parent + renditions.

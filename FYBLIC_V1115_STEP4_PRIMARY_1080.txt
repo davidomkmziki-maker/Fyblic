@@ -1,0 +1,6 @@
+FYBLIC V1115 STEP 4 — Qualité principale vidéo
+- 1080p devient la qualité principale lorsque la source permet 1080p ou plus.
+- 720p reste principale pour une source 720p/900p sur le chemin normal.
+- 540p/360p suivent la même règle sans upscaling.
+- Le fast-path V1082 reste inchangé volontairement; il sera corrigé au point 5.
+- Scheduler équitable V1114, 4 Go, 15 min et TUS 6 Mio conservés.

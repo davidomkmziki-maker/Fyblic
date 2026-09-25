@@ -1,0 +1,12 @@
+FYBLIC V1117 — ETAPE 6 — PUBLICATIONS MULTIPLES PAR UTILISATEUR
+Date: 2026-09-25
+
+- Suppression du verrou global « une publication à la fois » dans le module Publication.
+- Ajout d'un verrou synchrone local au formulaire contre le double-tap/double-submit.
+- Le moteur conserve jusqu'à 24 groupes actifs indépendants dans FYBLIC_ACTIVE_PUBLICATIONS_V1117.
+- Reprise après rechargement de plusieurs groupes actifs, et non plus seulement du dernier.
+- La barre d'accueil suit la publication active la plus récente; les autres continuent silencieusement.
+- Les fins/échecs d'anciennes publications ne masquent plus la progression de la plus récente.
+- Le site exige le protocole worker V1117 mais conserve le schéma SQL V1116.
+- Aucun changement des limites: 4 Go, 15 min, TUS 6 Mio.
+- Aucun changement du plafond CPU: scheduler V1114, max actif/utilisateur = 1 jusqu'à l'étape 7.

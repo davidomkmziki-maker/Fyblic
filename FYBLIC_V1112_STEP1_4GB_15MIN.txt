@@ -1,0 +1,10 @@
+FYBLIC V1112 — ÉTAPE 1 : LIMITES MÉDIA RÉELLES
+
+1. Vidéo : maximum 15 minutes.
+2. Média original : maximum 4 000 000 000 octets (4 Go).
+3. Le navigateur contrôle la taille avant tout upload.
+4. Pour chaque vidéo sélectionnée, le navigateur lit les métadonnées et refuse avant upload si la durée dépasse 15 minutes.
+5. Le moteur publication V1082 possède une seconde barrière à 4 Go.
+6. Le worker conserve la défense FFprobe à 900 secondes et passe MAX_BYTES à 4 Go.
+7. Le bucket Supabase et la contrainte original_bytes passent à 4 Go via FYBLIC_PUBLICATION_LIMITS_V1112_STEP1.sql.
+8. TUS reste à 6 Mio par morceau : aucun changement du protocole d’upload.

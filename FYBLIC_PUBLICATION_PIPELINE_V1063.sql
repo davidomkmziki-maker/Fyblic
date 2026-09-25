@@ -10,7 +10,7 @@ values (
   'fyblic-media-originals',
   'fyblic-media-originals',
   false,
-  1100000000,
+  4000000000,
   array['image/jpeg','image/png','image/webp','image/heic','image/heif','image/avif','video/mp4','video/quicktime','video/webm','video/x-m4v','video/3gpp','video/x-matroska']
 )
 on conflict (id) do update set
@@ -59,7 +59,7 @@ create table if not exists public.fyblic_publication_jobs (
   original_path text not null,
   original_name text not null,
   original_mime text not null,
-  original_bytes bigint not null check (original_bytes > 0 and original_bytes <= 1100000000),
+  original_bytes bigint not null check (original_bytes > 0 and original_bytes <= 4000000000),
   uploaded_bytes bigint not null default 0 check (uploaded_bytes >= 0),
   payload jsonb not null default '{}'::jsonb,
   result jsonb not null default '{}'::jsonb,

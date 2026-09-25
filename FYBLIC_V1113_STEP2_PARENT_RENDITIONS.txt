@@ -1,0 +1,5 @@
+FYBLIC V1113 — ÉTAPE 2 : PARENT + RENDITIONS
+
+Le site exige désormais le contrat SQL/worker V1113 et accepte dans le statut des publications vidéo le tableau renditions[].
+L’interface utilisateur visible n’est pas modifiée.
+Les limites 4 Go / 15 minutes et TUS 6 Mio restent inchangés.

@@ -1,0 +1,10 @@
+FYBLIC V1116 — ÉTAPE 5 : FAST PATH RENFORCÉ
+
+- Une vidéo H.264/AAC compatible peut publier sa qualité principale par remux sans réencodage.
+- Le remux n'est utilisé que si la hauteur source correspond exactement à la qualité principale standard prévue (1080/720/540/360 ou profil natif inférieur déjà standard).
+- Une source atypique, par exemple 900p, reste sur le transcodage normal afin de produire 720p comme qualité principale.
+- Les formats H.264 avec pix_fmt explicitement non 4:2:0 ne prennent pas le Fast Path.
+- Après le remux principal, les variantes 720/540/360 encore nécessaires restent planifiées et sont produites une par une en arrière-plan.
+- L'original n'est supprimé qu'après la fin des variantes, ou selon le mécanisme d'échec secondaire déjà protégé.
+- La publication principale reste visible même si une variante secondaire échoue.
+- Limites inchangées : 4 Go, 15 minutes, TUS direct 6 Mio, scheduler équitable V1114.
