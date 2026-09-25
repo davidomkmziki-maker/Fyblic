@@ -1,0 +1,19 @@
+FYBLIC V1122 — SESSION DE DÉPLOIEMENT RENOUVELÉE
+
+Base: Site V1121 54 % + aperçu Android durci.
+
+Objectif:
+- Forcer une nouvelle session/version de chargement côté site après une erreur de déploiement.
+- Conserver toutes les corrections V1121 sans modifier le worker ni le SQL.
+
+Renouvelé en V1122:
+- Version du service worker et nom de cache.
+- URL versionnée de Publication.
+- URL versionnée du Media Preview Controller.
+- URL versionnée du moteur Publication.
+- URL versionnée des routeurs navigation/main-tabs.
+- Garde singleton du contrôleur aperçu: 1122.
+- Garde singleton du moteur publication: 1122.
+
+Worker: conserver FYBLIC_MEDIA_WORKER_V1121_54_HARDENED déjà déployé.
+SQL: aucun nouveau SQL.

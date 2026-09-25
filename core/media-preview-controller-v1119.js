@@ -1,10 +1,10 @@
-/* Fyblic V1121 — Media Preview Controller
+/* Fyblic V1122 — Media Preview Controller
    Objectif: l'aperçu ne possède jamais le média original. Le File sélectionné reste
    intact; seules des URL blob temporaires (et, pour HEIC/HEIF, une copie JPEG
    d'aperçu) sont créées puis libérées de manière contrôlée. */
 (function(global){
   'use strict';
-  if(global.FyblicMediaPreviewV1119&&String(global.FyblicMediaPreviewV1119.version||'')==='1121')return;
+  if(global.FyblicMediaPreviewV1119&&String(global.FyblicMediaPreviewV1119.version||'')==='1122')return;
 
   var HEIF_BRANDS={heic:1,heix:1,hevc:1,hevx:1,heim:1,heis:1,heif:1,mif1:1,msf1:1};
   var HEIF_DECODER_URL='';
@@ -277,5 +277,5 @@
     return {select:select,bindElement:bindElement,recover:recover,release:release,snapshot:snapshot,fileIsHeif:fileIsHeif};
   }
 
-  global.FyblicMediaPreviewV1119={createController:createController,fileIsHeif:fileIsHeif,version:'1121'};
+  global.FyblicMediaPreviewV1119={createController:createController,fileIsHeif:fileIsHeif,version:'1122'};
 })(window);
