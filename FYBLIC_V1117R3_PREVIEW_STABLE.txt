@@ -1,0 +1,9 @@
+FYBLIC V1117R3 — APERÇU ANDROID STABLE
+
+- Restaure le chemin stable de sélection média de la base fournie.
+- Aucun décodage/await/Blob URL temporaire avant l’aperçu.
+- Un seul URL.createObjectURL(file), révoqué au changement/fermeture/reset.
+- Limite 4 Go vérifiée uniquement avec file.size avant aperçu.
+- Durée >15 min bloquée localement seulement si le <video> d’aperçu donne une durée fiable.
+- Si durée inconnue sur Android, FFprobe du worker garde la barrière définitive à 900 s.
+- Conserve V1117R2: nettoyage des échecs, multi-publication, annulation confirmée.
