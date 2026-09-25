@@ -1,0 +1,8 @@
+FYBLIC V1117R1 — ANDROID DURATION FALLBACK
+
+- Corrige le faux refus "Impossible de vérifier la durée de cette vidéo" sur certains Android.
+- 4 Go reste bloquant immédiatement côté navigateur.
+- Une durée locale connue > 15 min reste bloquée immédiatement.
+- Si video.duration est indisponible/0/Infinity ou que le décodeur navigateur échoue, la sélection n'est plus bloquée.
+- Le worker/FFprobe reste la validation définitive à 900 secondes avant traitement.
+- TUS 6 Mio, multi-publication V1117 et scheduler équitable restent inchangés.

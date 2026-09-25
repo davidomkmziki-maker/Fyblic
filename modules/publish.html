@@ -1371,30 +1371,57 @@ button:disabled{filter:none;transform:none}
     if(!file)return Promise.resolve({ok:false,error:'Média invalide'});
     if(!Number.isSafeInteger(Number(file.size))||Number(file.size)<=0)return Promise.resolve({ok:false,error:'Média invalide'});
     if(Number(file.size)>FYBLIC_MAX_MEDIA_BYTES_V1112)return Promise.resolve({ok:false,error:'Média trop lourd : maximum 4 Go'});
-    if(!(file.type&&file.type.startsWith('video/')))return Promise.resolve({ok:true,duration:0});
+    if(!(file.type&&file.type.startsWith('video/')))return Promise.resolve({ok:true,duration:0,durationVerified:true});
     return new Promise(function(resolve){
       var url='',done=false,timer=0,video=document.createElement('video');
-      function finish(result){
-        if(done)return;done=true;clearTimeout(timer);
+      function cleanup(){
+        clearTimeout(timer);
         try{video.pause();video.removeAttribute('src');video.load();}catch(_e){}
         try{if(url)URL.revokeObjectURL(url);}catch(_e){}
-        video.onloadedmetadata=null;video.onerror=null;
-        resolve(result);
+        video.onloadedmetadata=null;video.ondurationchange=null;video.onloadeddata=null;video.oncanplay=null;video.onerror=null;
+      }
+      function finish(result){
+        if(done)return;done=true;cleanup();resolve(result);
+      }
+      function acceptUnknown(){
+        /* V1117R1 Android : certains sélecteurs/containers ne livrent pas
+           video.duration via un Blob URL. Ce n'est pas une preuve que le média
+           est invalide. On laisse donc le pipeline continuer ; FFprobe du worker
+           reste la barrière définitive à 900 s avant tout traitement. */
+        finish({ok:true,duration:0,durationVerified:false});
+      }
+      function readDuration(){
+        var duration=Number(video.duration);
+        if(Number.isFinite(duration)&&duration>0){
+          if(duration>FYBLIC_MAX_VIDEO_SECONDS_V1112+0.05){
+            finish({ok:false,error:'Vidéo trop longue : maximum 15 minutes',duration:duration,durationVerified:true});
+          }else{
+            finish({ok:true,duration:duration,durationVerified:true});
+          }
+          return true;
+        }
+        return false;
       }
       try{
         video.preload='metadata';video.muted=true;video.playsInline=true;
         url=URL.createObjectURL(file);
         video.onloadedmetadata=function(){
-          var duration=Number(video.duration);
-          if(!Number.isFinite(duration)||duration<=0){finish({ok:false,error:'Durée de la vidéo illisible'});return;}
-          if(duration>FYBLIC_MAX_VIDEO_SECONDS_V1112+0.05){finish({ok:false,error:'Vidéo trop longue : maximum 15 minutes',duration:duration});return;}
-          finish({ok:true,duration:duration});
+          if(readDuration())return;
+          /* Certains Android retournent d'abord Infinity/0 puis corrigent la
+             durée lors de durationchange/loadeddata. On attend ces événements
+             au lieu de refuser immédiatement. */
+          try{if(video.duration===Infinity)video.currentTime=1e10;}catch(_e){}
         };
-        video.onerror=function(){finish({ok:false,error:'Impossible de vérifier la durée de cette vidéo'});};
-        timer=setTimeout(function(){finish({ok:false,error:'Impossible de vérifier la durée de cette vidéo'});},15000);
+        video.ondurationchange=readDuration;
+        video.onloadeddata=readDuration;
+        video.oncanplay=readDuration;
+        /* Un échec du décodeur navigateur ne doit pas bloquer un fichier que
+           FFmpeg sait traiter côté worker. */
+        video.onerror=acceptUnknown;
+        timer=setTimeout(acceptUnknown,10000);
         video.src=url;
         try{video.load();}catch(_e){}
-      }catch(_e){finish({ok:false,error:'Impossible de vérifier cette vidéo'});}
+      }catch(_e){acceptUnknown();}
     });
   }
 

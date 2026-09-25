@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1117-multi-publication-20260925';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1117r1-android-duration-fallback-20260925';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -70,7 +70,7 @@ var HAPPYAD_APP_SHELL = [
   './modules/video.html?v=1104-quality-clean',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
-  './modules/publish.html?v=1117-multi-publication-handoff',
+  './modules/publish.html?v=1117r1-android-duration-fallback',
   './core/media-compression-client-v1.js?v=1067-compression-lock',
   './core/publication-engine-v1082.js?v=1117-multi-publication-handoff',
   './core/publication-background-ui-v2.js?v=1117-multi-publication-handoff',
