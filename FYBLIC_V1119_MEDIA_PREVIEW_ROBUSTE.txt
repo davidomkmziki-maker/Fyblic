@@ -1,0 +1,69 @@
+FYBLIC V1119 — MEDIA PREVIEW ROBUSTE
+Date: 2026-09-25
+Base: FYBLIC_V1118_ARCHITECTURE_POINTS_1_A_6_STABLE
+
+OBJECTIF
+- Empêcher l'aperçu photo/vidéo de devenir cassé immédiatement après sélection.
+- Conserver le File original intact jusqu'à la prise en charge réelle de la publication.
+- Séparer complètement la durée de vie de l'aperçu de celle du pipeline publication/worker.
+
+CORRECTIONS
+1. Nouveau core/media-preview-controller-v1119.js
+   - session unique par sélection;
+   - File original canonique, jamais modifié;
+   - blob URL dédiée à l'aperçu;
+   - ancienne blob URL révoquée avec délai de sécurité, pas pendant que le navigateur la décode;
+   - récupération automatique après erreur de décodage;
+   - maximum 2 récupérations pour éviter les boucles;
+   - nettoyage total au reset;
+   - diagnostics locaux limités aux 40 derniers événements.
+
+2. Vidéos
+   - preload="auto" pour l'aperçu local;
+   - loadedmetadata sert uniquement aux métadonnées;
+   - la recherche de frame attend loadeddata/canplay;
+   - le média reste masqué tant qu'aucune vraie frame n'est décodée;
+   - en cas d'échec, nouvelle blob URL créée depuis le File original;
+   - si le codec reste illisible sur l'appareil, aucun pictogramme média cassé n'est affiché: fallback propre et File original conservé.
+
+3. Photos
+   - photo masquée jusqu'au chargement réel;
+   - récupération automatique sur erreur;
+   - HEIC/HEIF détecté par MIME, extension ou signature ftyp;
+   - conversion JPEG uniquement pour l'aperçu, jamais pour remplacer le File original;
+   - décodeur HEIC local chargé seulement si nécessaire.
+
+4. Android / fournisseurs Galerie
+   - MIME vide ou imparfait accepté avec fallback par extension connue;
+   - changement rapide de média crée une nouvelle session et n'annule pas prématurément la source précédente;
+   - reset centralisé par le contrôleur.
+
+5. Cache / versions
+   - route Publication passée de v1001 à v1119 dans navigation-master et main-tabs;
+   - service worker passé à fyblic-pwa-v1119-media-preview-robuste-20260925;
+   - URL d'enregistrement du service worker changée pour forcer la prise en compte du build;
+   - fichiers critiques Publication chargés network-first et installés depuis le réseau frais lorsque disponible;
+   - le nouveau contrôleur utilise un cache-buster v1119.
+
+FICHIERS MODIFIES
+- modules/publish.html
+- core/navigation-master-v668.js
+- core/main-tabs-master-v615.js
+- index.html
+- service-worker.js
+
+NOUVEAU FICHIER
+- core/media-preview-controller-v1119.js
+
+NON MODIFIE
+- Worker média V1118
+- SQL V1118
+- pipeline TUS/FFmpeg/publication-engine, sauf sa politique de cache côté service worker
+
+VERIFICATIONS EFFECTUEES
+- syntaxe JavaScript du contrôleur: OK
+- syntaxe du script principal de modules/publish.html: OK
+- syntaxe service-worker.js: OK
+- cycle sélection -> nouvelle sélection -> release: OK
+- détection HEIC mal déclaré image/jpeg par signature: OK
+- vérification routes v1119 et suppression de l'ancienne route Publication v1001: OK
