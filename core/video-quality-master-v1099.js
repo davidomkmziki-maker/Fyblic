@@ -60,7 +60,23 @@
     else if(typeof value==='object')Object.keys(value).forEach(function(k){put(k,value[k]);});
     return out;
   }
-  function autoDesired(){return '1080p';}
+  function autoDesired(){
+    try{
+      var c=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
+      var effective=clean(c.effectiveType).toLowerCase(),down=Number(c.downlink||0);
+      /* Auto reste volontairement conservateur : 1080p sauf reseau franchement faible. */
+      if(down>0){
+        if(down<0.30)return '360p';
+        if(down<0.55)return '540p';
+        if(down<0.95)return '720p';
+        return '1080p';
+      }
+      if(effective==='slow-2g')return '360p';
+      if(effective==='2g')return '540p';
+      if(effective==='3g')return '720p';
+      return '1080p';
+    }catch(_e){return '1080p';}
+  }
   function desired(options){
     options=options||{};
     var pref=get();

@@ -680,7 +680,7 @@ button:disabled{filter:none;transform:none}
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[]};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",previewBlob:null,kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[]};
   const $=id=>document.getElementById(id);
 
   function signalPublishReadyV936(reason){
@@ -841,10 +841,35 @@ button:disabled{filter:none;transform:none}
     }catch(_e){}
   }
 
+  function retirePreviewUrlV1126(url,delay){
+    url=String(url||'');if(!url)return;
+    setTimeout(function(){try{URL.revokeObjectURL(url);}catch(_e){}},Math.max(300,Number(delay)||1400));
+  }
+  function previewMimeForFileV1126(file){
+    var name=String(file&&file.name||'').toLowerCase(),type=String(file&&file.type||'').toLowerCase();
+    var generic=!type||type==='application/octet-stream'||type==='binary/octet-stream';
+    if(!generic&&/^(image|video)\//.test(type))return type;
+    if(/\.mp4$/i.test(name)||/\.m4v$/i.test(name))return 'video/mp4';
+    if(/\.mov$/i.test(name))return 'video/quicktime';
+    if(/\.webm$/i.test(name))return 'video/webm';
+    if(/\.mkv$/i.test(name))return 'video/x-matroska';
+    if(/\.3gp$/i.test(name))return 'video/3gpp';
+    if(/\.jpe?g$/i.test(name))return 'image/jpeg';
+    if(/\.png$/i.test(name))return 'image/png';
+    if(/\.webp$/i.test(name))return 'image/webp';
+    if(/\.avif$/i.test(name))return 'image/avif';
+    if(/\.hei[cf]$/i.test(name))return name.endsWith('.heif')?'image/heif':'image/heic';
+    return type||'';
+  }
+  function createPreviewBlobV1126(file){
+    if(!file)return null;
+    var wanted=previewMimeForFileV1126(file),current=String(file.type||'').toLowerCase();
+    if(!wanted||wanted===current)return file;
+    try{return file.slice(0,file.size,wanted);}catch(_e){return file;}
+  }
   function resetPublishComposer(reason){
-    disposePreviewV1125($('preview'));disposePreviewV1125($('detailPreview'));
-    try{if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);}catch(_e){}
-    state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];
+    try{if(state.objectUrl)retirePreviewUrlV1126(state.objectUrl,300);}catch(_e){}
+    state.file=null;state.files=[];state.objectUrl='';state.previewBlob=null;state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];
     ['fileInput','cameraPhotoInput','cameraVideoInput'].forEach(function(id){try{var el=$(id);if(el)el.value='';}catch(_e){}});
     try{var preview=$('preview');if(preview){preview.innerHTML='';preview.classList.add('empty');preview.classList.remove('hasMedia','isPlaying');}}catch(_e){}
     try{var tools=$('selectionTools');if(tools)tools.classList.remove('show');}catch(_e){}
@@ -1155,7 +1180,7 @@ button:disabled{filter:none;transform:none}
     if(!state.file||!state.objectUrl)return '';
     extraClass=extraClass||'';
     if(state.kind==='video'){
-      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="auto" '+(controls?'controls':'')+'></video>';
+      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="metadata" '+(controls?'controls':'')+'></video>';
     }
     if(state.kind==='photo')return '<img class="cardCropMedia '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" alt="Aperçu de la publication">';
     return '<div style="padding:24px;text-align:center;font-weight:1000">'+escapeHtml(state.file.name||'Média sélectionné')+'</div>';
@@ -1209,50 +1234,47 @@ button:disabled{filter:none;transform:none}
     previewFitResizeTimerV891=setTimeout(function(){document.querySelectorAll('#preview .selectionMedia').forEach(fitSelectionMediaV891);},60);
   },{passive:true});
 
-  function disposePreviewV1125(root){
-    if(!root)return;
-    root.querySelectorAll('video,img').forEach(function(media){
-      if(media.__previewDispose)media.__previewDispose();
-      if(media.tagName==='VIDEO'){try{media.pause();media.removeAttribute('src');media.load();}catch(_e){}}
-    });
+  function showStableVideoFallbackV1126(video){
+    if(!video||!video.isConnected||!state.file)return;
+    var host=video.closest('#preview,#detailPreview')||video.parentElement;if(!host)return;
+    try{video.pause();video.style.display='none';}catch(_e){}
+    host.querySelectorAll('.previewPlayBtn,.previewVideoTime,.mediaSoundBtn').forEach(function(el){el.style.display='none';});
+    if(host.querySelector('.fyblicPreviewFallbackV1126'))return;
+    var card=document.createElement('div');card.className='fyblicPreviewFallbackV1126';
+    card.style.cssText='position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:26px;background:linear-gradient(180deg,#0b0e13,#05070a);color:#fff;pointer-events:none';
+    var name=escapeHtml(String(state.file.name||'Vidéo sélectionnée'));
+    card.innerHTML='<div><div style="width:64px;height:64px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;background:rgba(255,255,255,.10)"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2z"/></svg></div><strong style="display:block;font-size:16px">Vidéo prête à publier</strong><span style="display:block;margin-top:7px;font-size:12px;color:#aeb6c2;word-break:break-word">'+name+'</span></div>';
+    host.appendChild(card);
+  }
+  function tryAlternatePreviewUrlV1126(video){
+    if(!video||video.dataset.fyblicPreviewRetryV1126==='1'||!state.file)return false;
+    video.dataset.fyblicPreviewRetryV1126='1';
+    try{
+      var currentBlob=state.previewBlob,alternate=(currentBlob===state.file)?createPreviewBlobV1126(state.file):state.file;
+      if(!alternate||alternate===currentBlob)return false;
+      var old=state.objectUrl,next=URL.createObjectURL(alternate);state.previewBlob=alternate;state.objectUrl=next;
+      document.querySelectorAll('#preview video,#detailPreview video').forEach(function(v){try{v.src=next;v.load();}catch(_e){}});
+      retirePreviewUrlV1126(old,1800);return true;
+    }catch(_e){return false;}
   }
   function bindPreviewVideo(video){
     if(!video)return;
-    var file=state.file,url=state.objectUrl,attempt=0,timer,done=false,listeners=[];
-    var box=video.parentElement;
-    var warning=document.createElement('div');warning.className='fyblicPreviewError';
-    warning.style.cssText='position:absolute;left:12px;right:12px;top:45%;padding:12px;border-radius:12px;background:rgba(0,0,0,.8);color:white;text-align:center;font-size:13px;pointer-events:none';
-    warning.textContent='Préparation de l’aperçu…';box.appendChild(warning);
-    function valid(){return video.isConnected&&state.file===file&&state.objectUrl===url;}
-    function listen(name,fn){video.addEventListener(name,fn);listeners.push([name,fn]);}
-    function dispose(){done=true;clearTimeout(timer);listeners.forEach(function(x){video.removeEventListener(x[0],x[1]);});listeners=[];warning.remove();}
-    video.__previewDispose=dispose;
     function ready(){
-      if(!valid()||done||video.readyState<2||!video.videoWidth)return;
-      clearTimeout(timer);warning.remove();
-      if(Number.isFinite(video.duration))state.videoDuration=video.duration;
-      fitSelectionMediaV891(video);syncAdjustValues();
-      var label=$('selectedMediaLabel');if(label)label.textContent='Vidéo sélectionnée · aperçu prêt';
+      try{
+        state.videoDuration=Number(video.duration||state.videoDuration||0);
+        if(state.videoFrame==null)state.videoFrame=0;
+        fitSelectionMediaV891(video);
+        syncAdjustValues();
+        var fallback=video.parentElement&&video.parentElement.querySelector('.fyblicPreviewFallbackV1126');if(fallback)fallback.remove();
+      }catch(_e){}
     }
-    function failed(){
-      if(!valid()||done)return;
-      clearTimeout(timer);
-      if(attempt++===0){
-        video.pause();video.removeAttribute('src');video.load();
-        video.src=url;video.preload='auto';video.load();timer=setTimeout(failed,15000);return;
-      }
-      warning.textContent='Aperçu indisponible sur cet appareil. Le fichier est conservé ; tu peux continuer pour le publier.';
-      if(!warning.isConnected)box.appendChild(warning);
-    }
-    listen('loadedmetadata',function(){
-      if(!valid())return;
-      if(Number.isFinite(video.duration))state.videoDuration=video.duration;
-      var target=Number(state.videoFrame)||0;
-      try{if(target>0)video.currentTime=Math.min(target,Math.max(0,video.duration-.01));}catch(_e){}
+    video.addEventListener('loadedmetadata',ready,{once:true});
+    video.addEventListener('error',function(){
+      if(!video.isConnected||!state.file)return;
+      if(tryAlternatePreviewUrlV1126(video))return;
+      showStableVideoFallbackV1126(video);
     });
-    listen('loadeddata',ready);listen('canplay',ready);listen('seeked',ready);listen('error',failed);
-    video.preload='auto';timer=setTimeout(failed,15000);
-    if(video.readyState>=2)ready();else video.load();
+    if(video.readyState>=1)ready();
   }
 
   function formatPreviewTimeV892(seconds){
@@ -1322,18 +1344,9 @@ button:disabled{filter:none;transform:none}
     preview.classList.remove('empty');
     preview.classList.add('hasMedia');
     /* Pas de controls natifs : on garde seulement lecture, durée, son et Changer. */
-    disposePreviewV1125(preview);
     preview.innerHTML=mediaPreviewHTML('selectionMedia',false)+previewChangeButtonHTMLV892()+previewSoundButtonHTMLV889()+previewVideoControlsHTMLV892();
     var video=preview.querySelector('video');if(video)bindPreviewVideo(video);
     var image=preview.querySelector('img');if(image){
-      image.addEventListener('error',function(){
-        if(!image.isConnected)return;
-        image.style.visibility='hidden';
-        var msg=document.createElement('div');msg.className='fyblicPreviewError';
-        msg.style.cssText='position:absolute;padding:20px;text-align:center;color:white';
-        msg.textContent='Aperçu photo indisponible. Le fichier est conservé ; tu peux continuer pour le publier.';preview.appendChild(msg);
-      },{once:true});
-
       if(image.complete)fitSelectionMediaV891(image);
       else image.addEventListener('load',function(){fitSelectionMediaV891(image);},{once:true});
     }
@@ -1387,7 +1400,6 @@ button:disabled{filter:none;transform:none}
 
   function renderDetailsPreview(){
     var box=$('detailPreview');if(!box||!state.file)return;
-    disposePreviewV1125(box);
     box.innerHTML=mediaPreviewHTML('detailMedia',false)+detailInlineControlsHTMLV894();
     var preparedVideo=box.querySelector('video');
     if(preparedVideo&&state.detailPoster){try{preparedVideo.setAttribute('poster',state.detailPoster);}catch(_e){}}
@@ -1406,17 +1418,19 @@ button:disabled{filter:none;transform:none}
 
   function setSelectedFile(file,allFiles){
     if(!file)return;
-    // Retirer les lecteurs avant de libérer leur URL : Android conserve parfois
-    // un décodeur sur l'ancien blob et refuse alors de dessiner le nouveau.
-    ['preview','detailPreview'].forEach(function(id){var el=$(id);if(el){disposePreviewV1125(el);el.replaceChildren();}});
-    if(state.objectUrl){try{URL.revokeObjectURL(state.objectUrl);}catch(_e){}}
+    // V1126 : le File original reste intact pour l'upload. L'aperçu possède son Blob
+    // local indépendant et l'ancienne URL n'est révoquée qu'après le montage du nouveau lecteur.
+    ['preview','detailPreview'].forEach(function(id){var el=$(id);if(el)el.replaceChildren();});
+    var oldUrl=state.objectUrl;
     state.completed=false;
     state.file=file;
     state.files=(allFiles&&allFiles.length)?allFiles:[file];
     state.kind=(file.type&&file.type.startsWith('video/'))||/\.(mp4|mov|m4v|webm|mkv|avi|3gp)$/i.test(file.name||'')?'video':'photo';
     state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';
-    state.objectUrl=URL.createObjectURL(file);
+    state.previewBlob=createPreviewBlobV1126(file)||file;
+    state.objectUrl=URL.createObjectURL(state.previewBlob);
     renderSelectionPreview();
+    if(oldUrl)retirePreviewUrlV1126(oldUrl,1800);
     updateSummary();updatePublishButtonsState();
     requestAnimationFrame(function(){applyCardCrop();syncAdjustValues();});
   }
@@ -1427,7 +1441,7 @@ button:disabled{filter:none;transform:none}
     if(files.some(function(f){return !f.size||f.size>5000000000;})){toast('Chaque média doit faire entre 1 octet et 5 Go');return;}
     if((fileList||[]).length>18)toast('Maximum 18 médias dans une publication');
     setSelectedFile(files[0],files);
-    toast(files.length>1?(files.length+' médias sélectionnés'):(state.kind==='video'?'Vidéo sélectionnée':'Photo sélectionnée'));
+    toast(files.length>1?(files.length+' médias sélectionnés'):(state.kind==='video'?'Vidéo affichée immédiatement':'Photo affichée immédiatement'));
   }
 
   function showFile(file){
@@ -1435,7 +1449,7 @@ button:disabled{filter:none;transform:none}
     if(!file.size||file.size>5000000000){toast('Chaque média doit faire entre 1 octet et 5 Go');return;}
     if(!(file.type&&(/^(image|video)\//).test(file.type))&&!/\.(jpe?g|png|webp|avif|heic|heif|gif|bmp|mp4|mov|m4v|webm|mkv|avi|3gp)$/i.test(file.name||'')){toast('Cette publication accepte une photo ou une vidéo');return;}
     setSelectedFile(file,[file]);
-    toast(state.kind==='video'?'Vidéo sélectionnée':'Photo sélectionnée');
+    toast(state.kind==='video'?'Vidéo affichée immédiatement':'Photo affichée immédiatement');
   }
 
   function loadLocations(){
@@ -2067,7 +2081,7 @@ return {source:'story',id:storyId};
     captureSelectionFrameForDetailsV897();
     captureSelectionPosterForDetailsV902();
     // Un seul décodeur vidéo actif à la fois, surtout pour les gros blobs Android.
-    if(state.kind==='video'){var selectionVideo=$('preview')&&$('preview').querySelector('video');if(selectionVideo){if(selectionVideo.__previewDispose)selectionVideo.__previewDispose();selectionVideo.pause();selectionVideo.removeAttribute('src');selectionVideo.load();}}
+    if(state.kind==='video'){var selectionVideo=$('preview')&&$('preview').querySelector('video');if(selectionVideo){selectionVideo.pause();selectionVideo.removeAttribute('src');selectionVideo.load();}}
     loadLocations();
     renderPublishModeUI();
     syncDetailPreviewGeometryV894();
@@ -2304,7 +2318,7 @@ return {source:'story',id:storyId};
       if(detailVideo){
         var t=Number(detailVideo.currentTime);
         if(Number.isFinite(t)&&t>=0)state.videoFrame=t;
-        try{if(detailVideo.__previewDispose)detailVideo.__previewDispose();detailVideo.pause();detailVideo.removeAttribute('src');detailVideo.load();}catch(_pause){}
+        try{detailVideo.pause();}catch(_pause){}
       }
     }catch(_e){}
     var step=$('step2');
@@ -2315,7 +2329,7 @@ return {source:'story',id:storyId};
       try{
         var source=$('preview'),sourceVideo=source&&source.querySelector('video');
         if(sourceVideo&&state.kind==='video'){
-          if(!sourceVideo.getAttribute('src')&&state.objectUrl){sourceVideo.src=state.objectUrl;bindPreviewVideo(sourceVideo);}
+          if(!sourceVideo.getAttribute('src')&&state.objectUrl){sourceVideo.src=state.objectUrl;sourceVideo.load();}
           var target=Number(state.videoFrame);
           if(Number.isFinite(target)&&target>=0){
             var d=Number(sourceVideo.duration||state.videoDuration||0);

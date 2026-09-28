@@ -142,12 +142,19 @@
      L'option saveData ne force plus à elle seule une basse qualité : la connexion réelle prime. */
   function adaptiveWantedQualityV1088(){
     try{
+      /* V1126 : Accueil et Centrale utilisent exactement la même préférence par utilisateur. */
+      var master=window.HappyVideoQualityMasterV1099;
+      if(master&&typeof master.get==='function'){
+        var pref=master.get();
+        if(pref&&pref!=='auto')return pref;
+        if(typeof master.desired==='function')return master.desired({initialCard:false});
+      }
       var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
       var effective=String(connection.effectiveType||'').toLowerCase(),down=Number(connection.downlink||0);
       if(down>0){
-        if(down<0.45)return '360p';
-        if(down<1.15)return '540p';
-        if(down<2.60)return '720p';
+        if(down<0.30)return '360p';
+        if(down<0.55)return '540p';
+        if(down<0.95)return '720p';
         return '1080p';
       }
       if(effective==='slow-2g')return '360p';

@@ -1,0 +1,7 @@
+FYBLIC V1126 — corrections media
+
+1. Aperçu local vidéo renforcé : fichier original conservé pour l'envoi, blob d'aperçu séparé, normalisation MIME et fallback propre si le navigateur Android ne sait pas décoder le codec.
+2. Qualité 1080p : une préférence 1080p vérifie maintenant le serveur même si 720p est déjà connu, puis bascule dès que 1080p devient disponible.
+3. Actualisation durable : surveillance persistante + Realtime happyad_posts dans la centrale vidéo; plus de limite à cinq vérifications / 36 secondes.
+4. Accueil : la préférence manuelle de qualité utilise le même maître de qualité que la centrale vidéo.
+5. Cache PWA : versions V1126 forcées pour éviter de conserver l'ancien module 720p.
