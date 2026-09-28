@@ -275,7 +275,7 @@
 <script src="../core/like-direct-master-v876.js?v=995-like-network-stable"></script>
 <script id="happyad-auth-storage-quota-master-v752" src="../core/auth-storage-quota-master-v752.js?v=757-quota-audit-stable"></script>
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
-<script src="../core/video-quality-master-v1099.js?v=1099-user-global-quality"></script>
+<script src="../core/video-quality-master-v1099.js?v=1127-live-1080"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script src="../core/interaction-privacy-master-v855r52.js?v=972-p1-single-client"></script>
 <script src="../core/filtering-privacy-master-v855r55.js?v=855r55-filtering"></script>
@@ -637,14 +637,6 @@ function happyadVideoNormalizeVariantsV1087(value){
   if(value&&typeof value==='object')Object.keys(value).forEach(function(key){put(key,value[key]);});
   return out;
 }
-function happyadVideoVariantsForPostV1126(p){
-  p=p||{};const out={};
-  function merge(value){const map=happyadVideoNormalizeVariantsV1087(value);Object.keys(map||{}).forEach(function(key){out[key]=map[key];});}
-  try{merge(p.adaptiveVariantsV1087||p.adaptive_variants||p.video_variants);}catch(_e){}
-  try{const crop=(p.imageCrop&&typeof p.imageCrop==='object')?p.imageCrop:((p.image_crop&&typeof p.image_crop==='object')?p.image_crop:{});merge(crop&&crop.adaptive&&crop.adaptive.variants);}catch(_e){}
-  try{const media=Array.isArray(p.marketplaceMedia)?p.marketplaceMedia:(Array.isArray(p.marketplace_media)?p.marketplace_media:[]);const idx=Math.max(0,Math.min(Number(p.marketplaceCoverIndex!=null?p.marketplaceCoverIndex:p.marketplace_cover_index)||0,Math.max(0,media.length-1)));const cover=media[idx]||media[0]||{};merge(cover&&cover.variants);}catch(_e){}
-  return out;
-}
 /* V1088 — 1080p est la qualité normale. La baisse est locale à cet utilisateur
    et n'arrive que lorsque son débit est réellement faible. */
 function happyadVideoDesiredQualityV1088(){
@@ -799,6 +791,48 @@ function happyadVideoSetActivePreload(v,eager){
     }
   }catch(_e){}
 }
+function happyadVideoVariantsForPostV1127(p){
+  p=p||{};var out={};
+  function merge(v){var n=happyadVideoNormalizeVariantsV1087(v);Object.keys(n||{}).forEach(function(k){out[k]=n[k];});}
+  try{merge(p.adaptiveVariantsV1087||p.adaptive_variants||p.video_variants);}catch(_e){}
+  try{var crop=(p.imageCrop&&typeof p.imageCrop==='object')?p.imageCrop:((p.image_crop&&typeof p.image_crop==='object')?p.image_crop:{});merge(crop&&crop.adaptive&&crop.adaptive.variants);}catch(_e){}
+  try{var media=Array.isArray(p.marketplaceMedia)?p.marketplaceMedia:(Array.isArray(p.marketplace_media)?p.marketplace_media:[]),idx=Math.max(0,Math.min(Number(p.marketplaceCoverIndex!=null?p.marketplaceCoverIndex:p.marketplace_cover_index)||0,Math.max(0,media.length-1))),cover=media[idx]||media[0]||{};merge(cover&&cover.variants);}catch(_e){}
+  return out;
+}
+function happyadVideoHotSwapSourceV1127(reel,p,src){
+  try{
+    src=happyadVideoNormalizeMediaSrc(src,p);if(!reel||!src)return false;
+    var v=reel.querySelector('video');
+    if(!v){p.mediaUrl=src;p.media_url=src;reel.__happyadPost=p;reel.__happyadPostV613E=p;reel.dataset.videoAttached='';attachVideo(reel,p).catch(function(){});return true;}
+    var current=String(v.dataset.src||v.currentSrc||v.src||'');if(current===src)return true;
+    var keep=Number(v.currentTime||0),wasPlaying=!v.paused,muted=v.muted,volume=v.volume,rate=v.playbackRate,manualPause=String(v.dataset.happyadManualPause||'0');
+    p.mediaUrl=src;p.media_url=src;reel.__happyadPost=p;reel.__happyadPostV613E=p;
+    function commit(){
+      try{
+        if(String(v.dataset.src||v.currentSrc||v.src||'')===src){reel.__happyadHotSwapV1127='';return;}
+        reel.__happyadPendingSrc='';
+        try{v.pause();}catch(_p){}
+        v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';v.muted=muted;v.volume=volume;v.playbackRate=rate;
+        var seek=function(){try{if(keep>0&&Number.isFinite(v.duration)&&v.duration>0)v.currentTime=Math.min(keep,Math.max(0,v.duration-.15));}catch(_e){}};
+        v.addEventListener('loadedmetadata',seek,{once:true});
+        if(wasPlaying&&manualPause!=='1')v.addEventListener('canplay',function(){try{happyadVideoSetActivePreload(v,true);happyadPlayVideo(v,false);}catch(_e){}},{once:true});
+        try{v.load();}catch(_l){}
+      }finally{reel.__happyadHotSwapV1127='';}
+    }
+    if(!wasPlaying){commit();return true;}
+    if(reel.__happyadHotSwapV1127===src)return true;
+    reel.__happyadHotSwapV1127=src;
+    var warm=document.createElement('video'),finished=false,timer=0;
+    warm.preload='auto';warm.muted=true;warm.playsInline=true;warm.src=src;
+    function done(ok){if(finished)return;finished=true;clearTimeout(timer);try{warm.pause();warm.removeAttribute('src');warm.load();}catch(_e){}if(ok)commit();else reel.__happyadHotSwapV1127='';}
+    warm.addEventListener('loadedmetadata',function(){try{if(keep>0&&Number.isFinite(warm.duration)&&warm.duration>0)warm.currentTime=Math.min(keep,Math.max(0,warm.duration-.15));}catch(_e){}},{once:true});
+    warm.addEventListener('canplay',function(){done(true);},{once:true});
+    warm.addEventListener('error',function(){done(false);},{once:true});
+    timer=setTimeout(function(){done(warm.readyState>=2);},6500);
+    try{warm.load();}catch(_e){done(false);}
+    return true;
+  }catch(_e){try{if(reel)reel.__happyadHotSwapV1127='';}catch(_x){}return false;}
+}
 function happyadVideoUpgradeReelMediaAsync(reel,p){
   try{
     if(!reel||!p)return;
@@ -810,27 +844,17 @@ function happyadVideoUpgradeReelMediaAsync(reel,p){
         reel.dataset.happyadMediaUpgrade='';
         if(!fresh)return;
         var merged=happyadVideoMergePostKeepRich(reel.__happyadPost||p,fresh);
-        var variants=happyadVideoVariantsForPostV1126(merged);
-        var fallback=happyadVideoPostMediaUrl(merged);
-        var src=happyadVideoAdaptiveSrcV1087(variants,fallback,merged)||fallback;
-        if(!src)return;
         reel.__happyadPost=merged;reel.__happyadPostV613E=merged;
         happyadApplyVideoPosterLoader(reel,merged);
+        var variants=happyadVideoVariantsForPostV1127(merged);
+        var fallback=happyadVideoPostMediaUrl(merged);
+        var src=happyadVideoAdaptiveSrcV1087(variants,fallback,merged);
+        if(!src)return;
         var v=reel.querySelector('video');
         if(v){
-          src=happyadVideoNormalizeMediaSrc(src,merged);
-          if(String(v.dataset.src||v.currentSrc||v.src||'')!==src){
-            var keep=Number(v.currentTime||0),wasPlaying=!v.paused,muted=v.muted,manualPause=String(v.dataset.happyadManualPause||'0');
-            var master=window.HappyVideoQualityMasterV1099,pref=master&&typeof master.get==='function'?master.get():'auto';
-            /* V1126 : un choix manuel doit s'appliquer dès que la variante existe. En Auto,
-               une vidéo active bascule à la frontière de boucle pour éviter une coupure visible. */
-            if(v===activeVideo&&!v.paused&&pref==='auto'){reel.__happyadPendingSrc=src;return;}
-            try{v.pause();}catch(_p){}
-            v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';v.muted=muted;reel.__happyadPendingSrc='';
-            v.addEventListener('loadedmetadata',function(){try{if(keep>0&&Number.isFinite(v.duration)&&v.duration>0)v.currentTime=Math.min(keep,Math.max(0,v.duration-.15));}catch(_e){}},{once:true});
-            if(wasPlaying&&manualPause!=='1')v.addEventListener('canplay',function(){try{happyadVideoSetActivePreload(v,true);happyadPlayVideo(v,false);}catch(_e){}},{once:true});
-            try{v.load();}catch(_l){}
-          }
+          /* V1127 : la nouvelle qualité peut remplacer 720p pendant la lecture.
+             Le switch préchauffe la nouvelle source puis restaure le timecode. */
+          if(String(v.dataset.src||v.currentSrc||v.src||'')!==src)happyadVideoHotSwapSourceV1127(reel,merged,src);
           return;
         }
         reel.dataset.videoAttached='';
@@ -840,6 +864,7 @@ function happyadVideoUpgradeReelMediaAsync(reel,p){
     }).catch(function(){try{reel.dataset.happyadMediaUpgrade='';}catch(_e){}});
   }catch(_e){}
 }
+
 function happyadVideoApplyPendingUpgradeV1087(reel,v){
   try{
     if(!reel||!v||!v.paused)return false;
@@ -866,28 +891,32 @@ function happyadVideoQualityFromUrlV1088(src){
 function happyadVideoScheduleAuto1080V1087(reel,p){
   try{
     if(!reel||!p)return;
-    if(reel.__happyadQualityTimerV1126)clearTimeout(reel.__happyadQualityTimerV1126);
-    var token=(Number(reel.__happyadQualityTokenV1126||0)+1);reel.__happyadQualityTokenV1126=token;
-    var started=Date.now(),attempt=0;
-    function stop(){if(reel.__happyadQualityTimerV1126){clearTimeout(reel.__happyadQualityTimerV1126);reel.__happyadQualityTimerV1126=0;}}
-    function nextDelay(){var seq=[1400,2600,4500,7000,11000,17000,25000,30000];return seq[Math.min(attempt,seq.length-1)];}
-    function tick(){
-      try{
-        if(token!==reel.__happyadQualityTokenV1126)return;
-        if(!reel.isConnected){stop();return;}
-        var post=reel.__happyadPost||reel.__happyadPostV613E||p;
-        var wanted=happyadVideoDesiredQualityForPostV1095(post),variants=happyadVideoVariantsForPostV1126(post);
-        var v=reel.querySelector('video'),current=happyadVideoQualityFromUrlV1088(v&&(v.dataset.src||v.currentSrc||v.src)||happyadVideoPostMediaUrl(post));
-        if(variants[wanted]&&current===wanted){stop();return;}
-        happyadVideoUpgradeReelMediaAsync(reel,post);
-        attempt++;
-        /* Continuer tant que le reel existe : 30 min couvrent les longues files sans actualisation. */
-        if(Date.now()-started<30*60*1000)reel.__happyadQualityTimerV1126=setTimeout(tick,nextDelay());else stop();
-      }catch(_e){attempt++;reel.__happyadQualityTimerV1126=setTimeout(tick,nextDelay());}
+    if(Array.isArray(reel.__happyad1080Timers))reel.__happyad1080Timers.forEach(clearTimeout);
+    reel.__happyad1080Timers=[];
+    reel.__happyad1080UntilV1127=Date.now()+30*60*1000;
+    var attempt=0;
+    function schedule(delay){
+      var timer=setTimeout(function(){
+        try{
+          if(!reel.isConnected||Date.now()>Number(reel.__happyad1080UntilV1127||0))return;
+          const wanted=happyadVideoDesiredQualityForPostV1095(reel.__happyadPost||p);
+          const v=reel.querySelector('video');
+          const currentQuality=happyadVideoQualityFromUrlV1088(v&&(v.dataset.src||v.currentSrc||v.src)||happyadVideoPostMediaUrl(reel.__happyadPost||p));
+          if(currentQuality===wanted)return;
+          happyadVideoUpgradeReelMediaAsync(reel,reel.__happyadPost||p);
+          attempt+=1;
+          /* Realtime est le chemin principal. Ce polling léger reste un filet de sécurité
+             pendant 30 minutes si le websocket est coupé ou mis en veille par Android. */
+          var next=attempt<4?[4500,9000,18000,30000][attempt-1]:(attempt<10?60000:120000);
+          schedule(next);
+        }catch(_e){}
+      },delay);
+      reel.__happyad1080Timers.push(timer);
     }
-    reel.__happyadQualityTimerV1126=setTimeout(tick,900);
+    schedule(1800);
   }catch(_e){}
 }
+
 var happyadVideoAdaptiveNetworkBoundV1088=false;
 function happyadVideoRecheckAdaptiveNetworkV1088(){
   try{
@@ -907,6 +936,43 @@ function happyadVideoBindAdaptiveNetworkV1088(){
   }catch(_e){}
 }
 happyadVideoBindAdaptiveNetworkV1088();
+
+/* Fyblic V1127 — abonnement uniquement à la publication réellement lue.
+   On évite un abonnement global à tous les posts et on reçoit immédiatement l'arrivée 1080p. */
+var happyadVideoQualityRealtimeChannelV1127=null;
+var happyadVideoQualityRealtimePostIdV1127='';
+function happyadVideoApplyRealtimeRowV1127(reel,row){
+  try{
+    if(!reel||!row)return;
+    var fresh=mapHappyPost(row),current=reel.__happyadPost||reel.__happyadPostV613E||{};
+    if(String(fresh.id||'')!==String((current&&current.id)||reel.dataset.id||''))return;
+    var merged=happyadVideoMergePostKeepRich(current,fresh);
+    reel.__happyadPost=merged;reel.__happyadPostV613E=merged;
+    happyadVideoPatchPostEverywhere(merged);
+    happyadApplyVideoPosterLoader(reel,merged);
+    var variants=happyadVideoVariantsForPostV1127(merged),fallback=happyadVideoPostMediaUrl(merged);
+    var src=happyadVideoAdaptiveSrcV1087(variants,fallback,merged);
+    if(src)happyadVideoHotSwapSourceV1127(reel,merged,src);
+  }catch(_e){}
+}
+function happyadVideoSubscribeQualityV1127(reel){
+  try{
+    var id=String(reel&&reel.dataset&&reel.dataset.id||reel&&reel.__happyadPost&&reel.__happyadPost.id||'').trim();
+    if(!id||id===happyadVideoQualityRealtimePostIdV1127)return;
+    var c=happyadSb();if(!c||typeof c.channel!=='function')return;
+    if(happyadVideoQualityRealtimeChannelV1127){try{c.removeChannel(happyadVideoQualityRealtimeChannelV1127);}catch(_r){}}
+    happyadVideoQualityRealtimePostIdV1127=id;
+    var channel=c.channel('fyblic-video-quality-v1127-'+id.replace(/[^a-z0-9-]/gi,'').slice(0,48));
+    channel.on('postgres_changes',{event:'UPDATE',schema:'public',table:'happyad_posts',filter:'id=eq.'+id},function(payload){
+      try{
+        var activeReel=activeVideo&&activeVideo.closest&&activeVideo.closest('.reel');
+        var target=(activeReel&&String(activeReel.dataset.id||'')===id)?activeReel:document.querySelector('.reel[data-id="'+CSS.escape(id)+'"]');
+        if(target&&payload&&payload.new)happyadVideoApplyRealtimeRowV1127(target,payload.new);
+      }catch(_e){}
+    }).subscribe();
+    happyadVideoQualityRealtimeChannelV1127=channel;
+  }catch(_e){}
+}
 function happyadVideoPatchPostEverywhere(fresh){
   try{
     if(!fresh||!fresh.id)return fresh;
@@ -1476,7 +1542,7 @@ function refreshVideoLikeFromSupabase(postId){try{return Promise.resolve(loadVid
 window.addEventListener('storage',function(e){try{if(!happyadVideoFrameVisibleV869())return;if(e.key==='HAPPYAD_ACTION_FAST_SYNC_V1'&&e.newValue){var r=JSON.parse(e.newValue||'{}');if(r&&r.id)happyadScheduleVideoRemoteRefreshV68(r.id,140);}}catch(_e){}});
 let HAPPYAD_VIDEO_RT_STARTED=false,HAPPYAD_VIDEO_RT_CHANNEL_V869=null;
 function stopVideoRealtimeActionsV869(){var old=HAPPYAD_VIDEO_RT_CHANNEL_V869;HAPPYAD_VIDEO_RT_CHANNEL_V869=null;HAPPYAD_VIDEO_RT_STARTED=false;Object.keys(HAPPYAD_VIDEO_REMOTE_TIMER_V68).forEach(function(id){clearTimeout(HAPPYAD_VIDEO_REMOTE_TIMER_V68[id]);delete HAPPYAD_VIDEO_REMOTE_TIMER_V68[id];});if(old){try{var c=happyadSb();if(c&&typeof c.removeChannel==='function')c.removeChannel(old);else if(typeof old.unsubscribe==='function')old.unsubscribe();}catch(_e){}}}
-function startVideoRealtimeActions(){const c=happyadSb();if(!happyadVideoFrameVisibleV869()||!c||HAPPYAD_VIDEO_RT_STARTED)return;HAPPYAD_VIDEO_RT_STARTED=true;try{HAPPYAD_VIDEO_RT_CHANNEL_V869=c.channel('happyad-video-actions-v869').on('postgres_changes',{event:'*',schema:'public',table:'happyad_content_actions'},p=>{const r=(p&&p.new)||p.old;if(r&&r.content_type==='video'&&happyadVideoRealtimeTrackedV869(r.post_id)&&!happyadVideoMutationRecentV68(r.post_id,'actions'))happyadScheduleVideoRemoteRefreshV68(r.post_id,120);}).on('postgres_changes',{event:'*',schema:'public',table:'happyad_content_comments'},p=>{const r=(p&&p.new)||p.old;if(r&&happyadVideoRealtimeTrackedV869(r.post_id)&&!happyadVideoMutationRecentV68(r.post_id,'comments'))happyadScheduleVideoRemoteRefreshV68(r.post_id,140);}).on('postgres_changes',{event:'*',schema:'public',table:'happyad_video_views'},p=>{const r=(p&&p.new)||p.old;if(r&&happyadVideoRealtimeTrackedV869(r.post_id)&&!happyadVideoMutationRecentV68(r.post_id,'views'))happyadScheduleVideoRemoteRefreshV68(r.post_id,160);}).on('postgres_changes',{event:'UPDATE',schema:'public',table:'happyad_posts'},p=>{const r=(p&&p.new)||{};const id=String(r.id||r.post_id||'');if(!id||!happyadVideoRealtimeTrackedV869(id))return;document.querySelectorAll('.reel[data-id="'+CSS.escape(id)+'"]').forEach(function(reel){var post=reel.__happyadPost||reel.__happyadPostV613E||{id:id};happyadVideoUpgradeReelMediaAsync(reel,post);});}).subscribe();}catch(e){HAPPYAD_VIDEO_RT_STARTED=false;HAPPYAD_VIDEO_RT_CHANNEL_V869=null;console.warn('video realtime',e)}}
+function startVideoRealtimeActions(){const c=happyadSb();if(!happyadVideoFrameVisibleV869()||!c||HAPPYAD_VIDEO_RT_STARTED)return;HAPPYAD_VIDEO_RT_STARTED=true;try{HAPPYAD_VIDEO_RT_CHANNEL_V869=c.channel('happyad-video-actions-v869').on('postgres_changes',{event:'*',schema:'public',table:'happyad_content_actions'},p=>{const r=(p&&p.new)||p.old;if(r&&r.content_type==='video'&&happyadVideoRealtimeTrackedV869(r.post_id)&&!happyadVideoMutationRecentV68(r.post_id,'actions'))happyadScheduleVideoRemoteRefreshV68(r.post_id,120);}).on('postgres_changes',{event:'*',schema:'public',table:'happyad_content_comments'},p=>{const r=(p&&p.new)||p.old;if(r&&happyadVideoRealtimeTrackedV869(r.post_id)&&!happyadVideoMutationRecentV68(r.post_id,'comments'))happyadScheduleVideoRemoteRefreshV68(r.post_id,140);}).on('postgres_changes',{event:'*',schema:'public',table:'happyad_video_views'},p=>{const r=(p&&p.new)||p.old;if(r&&happyadVideoRealtimeTrackedV869(r.post_id)&&!happyadVideoMutationRecentV68(r.post_id,'views'))happyadScheduleVideoRemoteRefreshV68(r.post_id,160);}).subscribe();}catch(e){HAPPYAD_VIDEO_RT_STARTED=false;HAPPYAD_VIDEO_RT_CHANNEL_V869=null;console.warn('video realtime',e)}}
 window.addEventListener('HAPPYAD_MODULE_SUSPEND_V614',stopVideoRealtimeActionsV869,true);
 window.addEventListener('HAPPYAD_MODULE_RESUME_V614',function(){setTimeout(startVideoRealtimeActions,180);},true);
 document.addEventListener('visibilitychange',function(){if(document.hidden)stopVideoRealtimeActionsV869();else if(happyadVideoFrameVisibleV869())setTimeout(startVideoRealtimeActions,180);},true);
@@ -1775,7 +1841,7 @@ async function attachVideo(reel,p){
     if(seek){seek.addEventListener('input',e=>{e.stopPropagation();seek.dragging=true;const d=v.duration||0;const pct=Math.max(0,Math.min(100,Number(seek.value||0)/10));if(controls)controls.style.setProperty('--haVideoProgress',String(pct));if(d)v.currentTime=(seek.value/1000)*d});seek.addEventListener('change',()=>{seek.dragging=false;happyadSetVideoProgress();});}
     if(hot)hot.onclick=e=>{e.stopPropagation();reel.classList.add('showTime');clearTimeout(reel.timer);reel.timer=setTimeout(()=>reel.classList.remove('showTime'),4200)};
     if(controls)controls.onclick=e=>e.stopPropagation();
-    v.addEventListener('play',()=>{revealVideo();setPausedUI(v);try{happyadMarkVideoViewSupabase(p.id).then(()=>refreshVideoLikeFromSupabase(p.id))}catch(e){}try{happyadRecordListingVideoViewV820(p)}catch(e){}});
+    v.addEventListener('play',()=>{revealVideo();setPausedUI(v);try{happyadVideoSubscribeQualityV1127(reel);happyadVideoUpgradeReelMediaAsync(reel,reel.__happyadPost||p);}catch(_q){}try{happyadMarkVideoViewSupabase(p.id).then(()=>refreshVideoLikeFromSupabase(p.id))}catch(e){}try{happyadRecordListingVideoViewV820(p)}catch(e){}});
 v.addEventListener('ended',()=>{try{v.currentTime=0;happyadPlayVideo(v,true);}catch(e){}});
 v.addEventListener('pause',()=>{setPausedUI(v);happyadVideoApplyPendingUpgradeV1087(reel,v)});
     happyadVideoScheduleAuto1080V1087(reel,p);
@@ -2254,32 +2320,15 @@ async function loadVideos(){
     return out;
   }
   function happyadVideoSwitchSourceV1099(reel,p,src){
-    try{
-      src=happyadVideoNormalizeMediaSrc(src,p);if(!reel||!src)return false;
-      var v=reel.querySelector('video');
-      if(!v){p.mediaUrl=src;p.media_url=src;reel.__happyadPost=p;reel.__happyadPostV613E=p;reel.dataset.videoAttached='';attachVideo(reel,p).catch(function(){});return true;}
-      var current=String(v.dataset.src||v.currentSrc||v.src||'');if(current===src)return true;
-      var keep=Number(v.currentTime||0),wasPlaying=!v.paused,muted=v.muted,manualPause=String(v.dataset.happyadManualPause||'0');
-      reel.__happyadPendingSrc='';
-      p.mediaUrl=src;p.media_url=src;reel.__happyadPost=p;reel.__happyadPostV613E=p;
-      try{v.pause();}catch(_p){}
-      v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';v.muted=muted;
-      var seek=function(){try{if(keep>0&&Number.isFinite(v.duration)&&v.duration>0)v.currentTime=Math.min(keep,Math.max(0,v.duration-.15));}catch(_e){}};
-      v.addEventListener('loadedmetadata',seek,{once:true});
-      if(wasPlaying&&manualPause!=='1')v.addEventListener('canplay',function(){try{happyadVideoSetActivePreload(v,true);happyadPlayVideo(v,false);}catch(_e){}},{once:true});
-      try{v.load();}catch(_l){}
-      return true;
-    }catch(_e){return false;}
+    return happyadVideoHotSwapSourceV1127(reel,p,src);
   }
+
   function happyadVideoApplyQualityToReelV1099(reel){
     try{
       if(!reel)return false;var p=reel.__happyadPost||reel.__happyadPostV613E;if(!p)return false;
       var variants=happyadVideoVariantsForPostV1099(p),fallback=happyadVideoPostMediaUrl(p),src=happyadVideoAdaptiveSrcV1087(variants,fallback,p);
-      var wanted=happyadVideoDesiredQualityForPostV1095(p),hasWanted=!!variants[wanted],switched=false;
-      if(src&&Object.keys(variants).length)switched=happyadVideoSwitchSourceV1099(reel,p,src);
-      /* V1126 : avoir déjà 720p n'empêche plus la recherche du 1080p demandé. */
-      if(!hasWanted){happyadVideoUpgradeReelMediaAsync(reel,p);happyadVideoScheduleAuto1080V1087(reel,p);}
-      return switched;
+      if(src&&Object.keys(variants).length)return happyadVideoSwitchSourceV1099(reel,p,src);
+      happyadVideoUpgradeReelMediaAsync(reel,p);return false;
     }catch(_e){return false;}
   }
   function happyadVideoApplyQualityEverywhereV1099(){

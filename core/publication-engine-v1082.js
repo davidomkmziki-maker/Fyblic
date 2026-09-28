@@ -1,4 +1,4 @@
-/* Fyblic V1083 Story TUS Anchor — correctif ciblé sur Story, base moteur V1082 inchangée pour Normal/Boutique.
+/* Fyblic V1127 Publication Engine — lanes primaire/optimisation et équité multi-utilisateurs.
    - Un seul protocole TUS direct pour tous les médias.
    - Les fichiers restent détenus par la fenêtre principale quand le module Publication se ferme.
    - Les publications multi-médias sont orchestrées comme un groupe unique avec progression agrégée.
@@ -11,8 +11,8 @@
   var JOBS_KEY='FYBLIC_PUBLICATION_JOBS_V1080';
   var GROUPS_KEY='FYBLIC_PUBLICATION_GROUPS_V1080';
   var ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
-  var REQUIRED_SCHEMA_VERSION=1082;
-  var REQUIRED_PROTOCOL_VERSION=1082;
+  var REQUIRED_SCHEMA_VERSION=1127;
+  var REQUIRED_PROTOCOL_VERSION=1127;
   var DIRECT_TUS_CHUNK=6*1024*1024;
   var STORY_FIRST_TUS_CHUNK=1*1024*1024;
   var healthCache={at:0,value:false,detail:null};
@@ -73,11 +73,11 @@
     try{
       var r=await request('/health',{},'',10000),p=r.body&&r.body.pipelineV2||{};
       var caps=p.capabilities||{};
-      var ok=!!(r.body&&r.body.ok&&p.enabled&&p.ready&&p.schemaReady&&Number(p.schemaVersion||0)>=REQUIRED_SCHEMA_VERSION&&Number(p.protocolVersion||0)>=REQUIRED_PROTOCOL_VERSION&&p.uploadMode==='direct-tus-binary'&&caps.normal===true&&caps.story===true&&caps.boutique===true&&caps.album===true&&caps.groupAssets===true&&caps.groupFinalize===true&&caps.postMediaSafe===true&&caps.yieldingOptimization===true&&caps.posterBeforePrimary===true);
+      var ok=!!(r.body&&r.body.ok&&p.enabled&&p.ready&&p.schemaReady&&Number(p.schemaVersion||0)>=REQUIRED_SCHEMA_VERSION&&Number(p.protocolVersion||0)>=REQUIRED_PROTOCOL_VERSION&&p.uploadMode==='direct-tus-binary'&&caps.normal===true&&caps.story===true&&caps.boutique===true&&caps.album===true&&caps.groupAssets===true&&caps.groupFinalize===true&&caps.postMediaSafe===true&&caps.yieldingOptimization===true&&caps.posterBeforePrimary===true&&caps.laneIsolation===true&&caps.userFairness===true);
       healthCache={at:Date.now(),value:ok,detail:p};return ok;
     }catch(error){healthCache={at:Date.now(),value:false,detail:{schemaError:error&&error.message||'Service média indisponible'}};return false;}
   }
-  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1082 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1082 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
+  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1127|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1127 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1127 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
   function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0',apikey:clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY)},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
   async function directFetch(url,options,timeoutMs){var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}}
   async function tusOffset(upload,token){var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000);if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}var offset=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');return offset;}
@@ -187,6 +187,6 @@
     group.children.forEach(function(id,index){watch(id,session.token,function(job){states[index]=mergeJobState(states[index],job);dispatch(aggregate(group,states));},false).catch(function(error){states[index]={status:'failed',progress:Number(states[index]&&states[index].progress||45),error_message:error.message};dispatch(aggregate(group,states));});});
   }
 
-  var api={version:'1082.1-story-tus-anchor',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
+  var api={version:'1127.0-parallel-lanes',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

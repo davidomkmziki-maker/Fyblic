@@ -1,0 +1,36 @@
+FYBLIC SITE V1127 — APERÇU LOCAL ROBUSTE + 1080P LIVE
+Date: 2026-09-28
+
+1. SELECTION / APERÇU AVANT PUBLICATION
+- Le fichier original sélectionné reste intact et reste la source d'upload.
+- L'aperçu utilise un Blob local dédié avec MIME normalisé lorsque nécessaire.
+- Les anciennes blob URLs ne sont plus révoquées brutalement pendant qu'Android/Chrome les lit.
+- Le lecteur attend une frame décodée (loadeddata/canplay), pas seulement metadata.
+- En cas d'échec du premier blob URL, un deuxième objectURL est créé depuis le fichier original.
+- Les photos HEIC/HEIF utilisent heic2any uniquement pour l'aperçu; l'original n'est pas remplacé.
+- preload=auto pour les vidéos sélectionnées.
+
+2. 1080P PRIORITAIRE ET MISE A JOUR PENDANT LA LECTURE
+- En Auto, 1080p est la cible prioritaire dès qu'elle existe.
+- Tant que 1080p n'existe pas, la meilleure variante disponible est affichée.
+- Subscription Supabase Realtime uniquement sur le post actif: détection de l'arrivée de nouvelles variantes.
+- Backup polling prolongé jusqu'à 30 minutes pour les cas de websocket Android suspendu.
+- Hot-swap de la source vidéo pendant la lecture: préchargement de la nouvelle source, conservation du temps,
+  état lecture/pause, volume, mute et playbackRate, puis reprise au même endroit.
+- La restriction ancienne qui interdisait de changer la source pendant qu'une vidéo active jouait est supprimée.
+
+3. COMPATIBILITE WORKER
+- publication-engine exige schema/protocol V1127 + laneIsolation + userFairness.
+- Le service worker utilise un nouveau cache V1127 pour ne pas réutiliser l'ancien JS V1124/V1126.
+
+ORDRE DE DEPLOIEMENT
+1. Exécuter FYBLIC_PUBLICATION_PARALLEL_LANES_V1127.sql dans Supabase.
+2. Déployer le WORKER V1127.
+3. Déployer le SITE V1127.
+
+VALIDATION STATIQUE
+- service-worker.js: syntaxe OK
+- publication-engine-v1082.js: syntaxe OK
+- video-quality-master-v1099.js: syntaxe OK
+- modules/publish.html: tous les scripts inline passent node --check
+- modules/video.html: tous les scripts inline passent node --check
