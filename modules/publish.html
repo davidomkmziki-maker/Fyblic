@@ -842,18 +842,22 @@ button:disabled{filter:none;transform:none}
     }catch(_e){}
   }
 
-  /* Fyblic V1127 — aperçu local robuste.
-     Le File original n'est jamais modifié : il reste la source unique de l'upload.
-     L'aperçu utilise son propre Blob avec un MIME fiable et les anciennes URLs sont
-     libérées après détachement pour éviter la course du décodeur Android/Chrome. */
+  /* Fyblic V1128 — moteur de sélection local.
+     Règle principale : le File Android choisi reste intact et est ouvert directement.
+     On ne change jamais artificiellement son MIME avant le premier essai. Une vue
+     typée par extension n'est qu'un secours si le navigateur a reçu un MIME vide ou
+     générique. Cela évite de transformer un problème transitoire du picker en faux
+     « format non décodable ». */
   function normalizedPreviewMimeV1127(file,kind){
     var type=String(file&&file.type||'').toLowerCase().trim();
     var name=String(file&&file.name||'').toLowerCase();
     if(kind==='video'){
-      if(/video\/(mp4|webm|ogg|quicktime|3gpp)/.test(type))return type;
+      if(/^video\//.test(type)&&type!=='video/*')return type;
       if(/\.webm$/i.test(name))return 'video/webm';
-      if(/\.(mov)$/i.test(name))return 'video/quicktime';
-      if(/\.(3gp)$/i.test(name))return 'video/3gpp';
+      if(/\.(mov|qt)$/i.test(name))return 'video/quicktime';
+      if(/\.(3gp|3gpp)$/i.test(name))return 'video/3gpp';
+      if(/\.m4v$/i.test(name))return 'video/x-m4v';
+      if(/\.og[gv]$/i.test(name))return 'video/ogg';
       return 'video/mp4';
     }
     if(kind==='photo'){
@@ -870,10 +874,12 @@ button:disabled{filter:none;transform:none}
   function buildPreviewUrlV1127(file,kind,useOriginal){
     if(!file)return '';
     try{
+      if(useOriginal!==false)return URL.createObjectURL(file);
+      var mime=normalizedPreviewMimeV1127(file,kind);
       var source=file;
-      if(!useOriginal){
-        var mime=normalizedPreviewMimeV1127(file,kind);
-        if(mime&&String(file.type||'').toLowerCase()!==mime)source=new Blob([file],{type:mime});
+      if(mime&&String(file.type||'').toLowerCase()!==mime){
+        // slice() référence les mêmes octets sans recopier plusieurs Go en mémoire.
+        source=(typeof file.slice==='function')?file.slice(0,file.size,mime):new Blob([file],{type:mime});
       }
       return URL.createObjectURL(source);
     }catch(_e){
@@ -1226,7 +1232,9 @@ button:disabled{filter:none;transform:none}
     if(!state.file||!state.objectUrl)return '';
     extraClass=extraClass||'';
     if(state.kind==='video'){
-      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="auto" '+(controls?'controls':'')+'></video>';
+      /* V1128 : aucun src dans le HTML. Les listeners sont branchés AVANT la source
+         pour ne perdre ni loadedmetadata ni error sur les fichiers locaux très rapides. */
+      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" data-fyblic-preview-src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="auto" '+(controls?'controls':'')+'></video>';
     }
     if(state.kind==='photo')return '<img class="cardCropMedia '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" alt="Aperçu de la publication">';
     return '<div style="padding:24px;text-align:center;font-weight:1000">'+escapeHtml(state.file.name||'Média sélectionné')+'</div>';
@@ -1281,53 +1289,114 @@ button:disabled{filter:none;transform:none}
   },{passive:true});
 
   function bindPreviewVideo(video){
-    if(!video)return;
+    if(!video||!state.file)return;
     var generation=Number(state.previewGeneration||0);
-    var decoded=false;
-    function clearWarning(){try{var preview=$('preview'),w=preview&&preview.querySelector('.fyblicPreviewError');if(w)w.remove();}catch(_e){}}
+    var decoded=false,finished=false,attempt=0,sourceSerial=0;
+    var initialUrl=String(video.getAttribute('data-fyblic-preview-src')||state.objectUrl||'');
+    var ownedRetryUrls=[];
+    var startupTimer=0,longTimer=0,retryTimer=0;
+
+    function active(){return generation===Number(state.previewGeneration||0)&&video.isConnected&&state.file;}
+    function previewRoot(){return video.closest('.preview')||$('preview');}
+    function clearOverlay(){
+      try{var root=previewRoot();if(!root)return;root.querySelectorAll('.fyblicPreviewError,.fyblicPreviewLoading').forEach(function(x){x.remove();});}catch(_e){}
+    }
+    function showLoading(text){
+      try{
+        if(!active()||decoded)return;var root=previewRoot();if(!root)return;
+        var box=root.querySelector('.fyblicPreviewLoading');
+        if(!box){box=document.createElement('div');box.className='fyblicPreviewLoading';root.appendChild(box);}
+        box.textContent=String(text||'Préparation de l’aperçu…');
+        box.style.cssText='position:absolute;left:12px;right:12px;top:46%;padding:12px;border-radius:14px;background:rgba(0,0,0,.62);color:white;text-align:center;font-size:13px;font-weight:800;line-height:1.35;pointer-events:none';
+      }catch(_e){}
+    }
     function ready(){
       try{
-        if(generation!==Number(state.previewGeneration||0))return;
-        state.videoDuration=Number(video.duration||state.videoDuration||0);
+        if(!active())return;
+        var d=Number(video.duration||0);if(Number.isFinite(d)&&d>0)state.videoDuration=d;
         if(state.videoFrame==null)state.videoFrame=0;
-        fitSelectionMediaV891(video);syncAdjustValues();clearWarning();
+        fitSelectionMediaV891(video);syncAdjustValues();
+        // Demander une image réelle sans démarrer la lecture : sur certains Android,
+        // un très petit seek déclenche le décodeur alors que currentTime=0 reste noir.
+        if(!decoded&&video.readyState<2&&d>0&&Number(video.currentTime||0)===0){
+          try{video.currentTime=Math.min(.04,Math.max(.001,d/10000));}catch(_e){}
+        }
       }catch(_e){}
     }
     function decodedFrame(){
-      decoded=true;ready();
+      if(!active()||decoded)return;
+      decoded=true;finished=true;clearTimeout(startupTimer);clearTimeout(longTimer);clearTimeout(retryTimer);
+      ready();clearOverlay();
       try{video.style.visibility='visible';video.style.opacity='1';}catch(_e){}
+      var good=String(video.currentSrc||video.src||'');
+      if(good&&good!==String(state.objectUrl||''))replacePreviewObjectUrlV1127(good);
+      ownedRetryUrls.forEach(function(u){if(u&&u!==good)delayedRevokePreviewUrlV1127(u,5000);});
+      ownedRetryUrls=[];
     }
-    function retryWithFreshOriginalUrl(){
-      if(video.dataset.fyblicPreviewRetryV1127==='1'||generation!==Number(state.previewGeneration||0)||!state.file)return false;
-      video.dataset.fyblicPreviewRetryV1127='1';
-      var retry=buildPreviewUrlV1127(state.file,state.kind,true);if(!retry)return false;
-      replacePreviewObjectUrlV1127(retry);
-      try{video.src=retry;video.preload='auto';video.load();}catch(_e){}
-      return true;
+    function finalUnsupported(code){
+      if(!active()||decoded||finished)return;
+      finished=true;clearTimeout(startupTimer);clearTimeout(longTimer);clearTimeout(retryTimer);
+      var root=previewRoot();if(!root)return;
+      clearOverlay();
+      try{video.style.visibility='hidden';}catch(_e){}
+      var warning=document.createElement('div');warning.className='fyblicPreviewError';root.appendChild(warning);
+      warning.innerHTML='<b>Aperçu local indisponible</b><br><span>'+escapeHtml(state.file.name||'Vidéo')+'</span><br><small>Le fichier original est conservé et reste publiable. Fyblic n’a déclaré cette incompatibilité qu’après plusieurs essais réels du décodeur.</small>'+(code?'<br><small style="opacity:.65">Code média '+escapeHtml(String(code))+'</small>':'');
+      warning.style.cssText='position:absolute;left:12px;right:12px;top:41%;padding:14px;border-radius:14px;background:rgba(0,0,0,.82);color:white;text-align:center;font-size:13px;line-height:1.35;pointer-events:none';
     }
-    function finalUnsupported(){
-      if(generation!==Number(state.previewGeneration||0)||decoded||!video.isConnected||!state.file)return;
-      var preview=$('preview');if(!preview)return;
-      video.style.visibility='hidden';
-      var warning=preview.querySelector('.fyblicPreviewError');
-      if(!warning){warning=document.createElement('div');warning.className='fyblicPreviewError';preview.appendChild(warning);}
-      warning.innerHTML='<b>Fichier sélectionné</b><br><span>'+escapeHtml(state.file.name||'Vidéo')+'</span><br><small>Le fichier original est intact. Ce navigateur ne sait pas décoder son format localement.</small>';
-      warning.style.cssText='position:absolute;left:12px;right:12px;top:43%;padding:14px;border-radius:14px;background:rgba(0,0,0,.82);color:white;text-align:center;font-size:13px;line-height:1.35;pointer-events:none';
+    function makeCandidate(index){
+      if(index===0&&initialUrl)return initialUrl;
+      if(index===1)return buildPreviewUrlV1127(state.file,state.kind,true);
+      if(index===2)return buildPreviewUrlV1127(state.file,state.kind,false);
+      return '';
     }
-    video.addEventListener('loadedmetadata',ready);
-    video.addEventListener('loadeddata',decodedFrame,{once:true});
-    video.addEventListener('canplay',decodedFrame,{once:true});
-    video.addEventListener('error',function(){if(!retryWithFreshOriginalUrl())setTimeout(finalUnsupported,80);});
-    if(video.readyState>=2)decodedFrame();
-    else if(video.readyState>=1)ready();
-    try{video.preload='auto';video.playsInline=true;video.load();}catch(_e){}
-    setTimeout(function(){
+    function startAttempt(index){
+      if(!active()||decoded||finished)return;
+      attempt=index;sourceSerial+=1;var serial=sourceSerial;
+      var url=makeCandidate(index);
+      if(!url){if(index<2){startAttempt(index+1);return;}finalUnsupported('SRC');return;}
+      if(index>0)ownedRetryUrls.push(url);
+      showLoading(index===0?'Préparation de l’aperçu…':'Nouvel essai de l’aperçu…');
       try{
-        if(generation!==Number(state.previewGeneration||0)||decoded||!video.isConnected)return;
-        if(video.error){if(!retryWithFreshOriginalUrl())finalUnsupported();}
-        else if(video.readyState<1&&video.dataset.fyblicPreviewRetryV1127!=='1')retryWithFreshOriginalUrl();
-      }catch(_e){}
-    },2200);
+        video.pause();video.removeAttribute('src');video.load();
+        video.preload='auto';video.playsInline=true;video.muted=!!state.videoMuted;
+        video.src=url;video.load();
+      }catch(_e){
+        if(index<2){setTimeout(function(){startAttempt(index+1);},180);return;}finalUnsupported('LOAD');return;
+      }
+      clearTimeout(startupTimer);
+      startupTimer=setTimeout(function(){
+        if(!active()||decoded||finished||serial!==sourceSerial)return;
+        // Un gros fichier peut mettre plusieurs secondes à exposer son moov atom.
+        // Une absence de metadata n'est PAS une incompatibilité : on retente une URL
+        // fraîche, puis on continue d'attendre au lieu d'afficher une fausse erreur.
+        if(video.readyState<1&&index<1){startAttempt(index+1);}
+        else showLoading('Préparation de l’aperçu…');
+      },8000);
+    }
+
+    video.addEventListener('loadedmetadata',ready);
+    video.addEventListener('loadeddata',decodedFrame);
+    video.addEventListener('canplay',decodedFrame);
+    if(typeof video.requestVideoFrameCallback==='function'){
+      try{video.requestVideoFrameCallback(function(){decodedFrame();});}catch(_e){}
+    }
+    video.addEventListener('error',function(){
+      if(!active()||decoded||finished)return;
+      var code=video.error&&video.error.code?video.error.code:'';
+      clearTimeout(retryTimer);
+      if(attempt<2){
+        retryTimer=setTimeout(function(){startAttempt(attempt+1);},350);
+      }else{
+        // MEDIA_ERR_SRC_NOT_SUPPORTED (4) après trois sources distinctes est le seul
+        // cas où l'on conclut réellement que le navigateur local ne décode pas.
+        setTimeout(function(){finalUnsupported(code||4);},350);
+      }
+    });
+    video.addEventListener('stalled',function(){if(active()&&!decoded)showLoading('Préparation de l’aperçu…');});
+    video.addEventListener('suspend',function(){if(active()&&!decoded&&video.readyState<2)showLoading('Préparation de l’aperçu…');});
+
+    startAttempt(0);
+    longTimer=setTimeout(function(){if(active()&&!decoded&&!finished)showLoading('Le média est intact. Fyblic prépare toujours l’aperçu…');},20000);
   }
 
   function formatPreviewTimeV892(seconds){
@@ -1481,7 +1550,7 @@ button:disabled{filter:none;transform:none}
     state.files=(allFiles&&allFiles.length)?allFiles:[file];
     state.kind=(file.type&&file.type.startsWith('video/'))||/\.(mp4|mov|m4v|webm|mkv|avi|3gp)$/i.test(file.name||'')?'video':'photo';
     state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';
-    state.objectUrl=buildPreviewUrlV1127(file,state.kind,false);
+    state.objectUrl=buildPreviewUrlV1127(file,state.kind,true);
     if(oldPreviewUrl&&oldPreviewUrl!==state.objectUrl)delayedRevokePreviewUrlV1127(oldPreviewUrl,3200);
     renderSelectionPreview();
     preparePhotoPreviewV1127(file,Number(state.previewGeneration||0));

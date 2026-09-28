@@ -1,0 +1,21 @@
+FYBLIC V1128 — SELECTION MEDIA ENGINE
+Date: 2026-09-28
+
+Objectif
+- Corriger les aperçus vidéo cassés avant publication sur Android/PWA.
+- Le fichier original reste strictement intact et reste la seule source d’upload.
+
+Corrections
+1. Le premier aperçu utilise maintenant directement le File retourné par Android.
+2. Suppression du re-wrapping MIME avant le premier essai.
+3. Les événements vidéo sont installés avant l’affectation du src pour supprimer la course de chargement.
+4. Trois essais distincts sont possibles : URL directe, URL directe fraîche, Blob typé par extension en dernier secours.
+5. Le Blob typé est créé avec slice() afin de ne pas recopier plusieurs Go en mémoire.
+6. Suppression du verdict d’échec après 2,2 s. Un gros fichier lent à exposer ses metadata reste en préparation.
+7. Une incompatibilité n’est affichée qu’après de vrais événements error et plusieurs sources.
+8. loadeddata/canplay/requestVideoFrameCallback confirment une vraie image décodée.
+9. Petit seek initial pour déclencher le premier frame sur certains décodeurs Android sans lancer la lecture.
+10. Cache PWA incrémenté afin que la correction soit réellement chargée après déploiement.
+
+Limite plateforme
+- Si le codec vidéo n’est réellement pas pris en charge par Chrome/WebView, JavaScript ne peut pas créer un décodeur matériel natif. L’APK Fyblic devra utiliser la couche média Android native pour garantir le comportement TikTok sur tous les codecs pris en charge par le téléphone.
