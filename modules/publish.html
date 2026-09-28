@@ -82,6 +82,8 @@ button,input,textarea,select{font-family:inherit}
 .preview{height:42dvh;min-height:260px;background:#07080c;display:grid;place-items:center;position:relative;overflow:hidden}
 .preview.empty:before{content:"";width:74px;height:74px;border-radius:24px;background:linear-gradient(135deg,var(--orange),var(--orange2));display:grid;place-items:center;color:#111;font-size:35px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.14)}
 .preview.empty:after{content:"Prendre ou choisir une photo/vidéo";position:absolute;top:calc(50% + 55px);color:#cfd3dc;font-weight:900}
+.preview.empty.fyNativeRecentV1134:after{content:""!important}
+.preview.empty.fyNativeRecentV1134{background-color:#080b10!important;background-repeat:no-repeat!important}
 .preview img,.preview video{max-width:100%;max-height:100%;object-fit:contain}
 .modeBar{margin:0 16px 10px;display:flex;gap:6px;background:rgba(12,14,20,.96);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:6px;z-index:5;box-shadow:0 10px 26px rgba(0,0,0,.24)}
 .preview .modeBar{position:absolute;bottom:10px;left:12px;right:12px;margin:0}
@@ -723,7 +725,7 @@ button:disabled{filter:none;transform:none}
 
 <input id="fileInput" type="file" accept="image/*,video/*,.heic,.heif,.avif,.mov,.m4v,.3gp,.webm,.mkv" multiple hidden>
 <input id="cameraPhotoInput" type="file" accept="image/*" capture="environment" hidden>
-<input id="cameraVideoInput" type="file" accept="video/*" capture="environment" hidden>
+<input id="cameraVideoInput" type="file" accept="image/*,video/*" capture="environment" hidden>
 
 <script>
 (function(){
@@ -1260,6 +1262,7 @@ button:disabled{filter:none;transform:none}
     }else media.addEventListener('load',function(){state.previewIssue='';},{once:true});
   }
 
+  const FYBLIC_NATIVE_ANDROID_V1134=/FyblicAndroid\/\d+/i.test(String(navigator.userAgent||''));
   let cameraStreamV1126=null,cameraRecorderV1126=null,cameraChunksV1126=[],cameraFacingV1126='environment',cameraStartedAtV1126=0,cameraTimerHandleV1126=null,cameraAutoStopV1126=null;
   function cameraStatusV1126(text,show){var el=$('fyCamStatusV1126');if(!el)return;el.textContent=String(text||'');el.classList.toggle('show',show!==false&&!!text);}
   function cameraTimerTextV1126(seconds){seconds=Math.max(0,Math.floor(Number(seconds)||0));return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');}
@@ -1274,6 +1277,14 @@ button:disabled{filter:none;transform:none}
   function cameraConstraintsV1126(){return {audio:true,video:{facingMode:{ideal:cameraFacingV1126},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30,max:60}}};}
   async function startCameraV1126(){
     if(activePublicationV1067R1()){toast('Une publication est déjà en cours');return;}
+    if(FYBLIC_NATIVE_ANDROID_V1134){
+      if(state.file)return;
+      stopCameraV1126();
+      var nativeInput=$('cameraVideoInput');
+      if(!nativeInput){toast('Caméra Fyblic indisponible');return;}
+      try{nativeInput.click();}catch(_e){toast('Impossible d’ouvrir la caméra Fyblic');}
+      return;
+    }
     var box=$('fyCameraV1126');if(!box||state.file)return;
     box.classList.add('show');box.setAttribute('aria-hidden','false');syncCameraModeV1126(state.cameraMode||'video');cameraStatusV1126('Ouverture de la caméra…',true);
     stopCameraTracksV1126();
@@ -1314,7 +1325,7 @@ button:disabled{filter:none;transform:none}
     if(!state.file||!state.objectUrl)return '';
     extraClass=extraClass||'';
     if(state.kind==='video'){
-      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="metadata" '+(controls?'controls':'')+'></video>';
+      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="auto" style="background:#080b10;opacity:0" '+(controls?'controls':'')+'></video>';
     }
     if(state.kind==='photo')return '<img class="cardCropMedia '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" alt="Aperçu de la publication">';
     return '<div style="padding:24px;text-align:center;font-weight:1000">'+escapeHtml(state.file.name||'Média sélectionné')+'</div>';
@@ -1379,6 +1390,10 @@ button:disabled{filter:none;transform:none}
       }catch(_e){}
     }
     video.addEventListener('loadedmetadata',ready,{once:true});
+    function reveal(){try{video.style.opacity='1';}catch(_e){}}
+    video.addEventListener('loadeddata',reveal,{once:true});
+    video.addEventListener('canplay',reveal,{once:true});
+    if(video.readyState>=2)reveal();
     video.addEventListener('seeked',function(){try{video.pause();}catch(_e){}},false);
     if(video.readyState>=1)ready();
   }
@@ -1447,7 +1462,10 @@ button:disabled{filter:none;transform:none}
   function renderSelectionPreview(){
     var preview=$('preview');
     if(!preview||!state.file)return;
-    preview.classList.remove('empty');
+    preview.classList.remove('empty','fyNativeRecentV1134');
+    preview.style.removeProperty('background-image');
+    preview.style.removeProperty('background-size');
+    preview.style.removeProperty('background-position');
     preview.classList.add('hasMedia');
     /* Pas de controls natifs : on garde seulement lecture, durée, son et Changer. */
     preview.innerHTML=mediaPreviewHTML('selectionMedia',false)+previewChangeButtonHTMLV892()+previewSoundButtonHTMLV889()+previewVideoControlsHTMLV892();
@@ -2489,7 +2507,7 @@ return {source:'story',id:storyId};
       if(!state.sessionOpen){if(!activeV1126)resetPublishComposer('frame-visible-fresh');state.sessionOpen=true;}
       setPublishModeV885(d.publishMode||d.mode||state.mode||'publish',d.source||'frame-visible-v885');
       if(activeV1126){toast('Une publication est déjà en cours');return;}
-      if(!state.file)setTimeout(function(){startCameraV1126();},0);
+      if(!state.file&&!FYBLIC_NATIVE_ANDROID_V1134)setTimeout(function(){startCameraV1126();},0);
     }catch(_e){}
   });
   window.addEventListener('HAPPYAD_PROFILE_AVATAR_UPDATED_V855R32',function(ev){var d=ev&&ev.detail||{},id=String(d.userId||d.uid||d.id||'').trim(),url=String(d.url||d.avatarUrl||d.avatar_url||'').trim();if(!id)return;storyMentionResults.forEach(function(p){if(p&&p.id===id)p.avatar=url;});state.mentions.forEach(function(p){if(p&&p.id===id)p.avatar=url;});if(activeMentionToken)renderMentionResults(storyMentionResults);});

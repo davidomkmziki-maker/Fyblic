@@ -1,0 +1,7 @@
+FYBLIC SITE V1134 - COMPOSER CAMERA
+
+- Dans l’APK Fyblic, Nouvelle publication n’ouvre plus automatiquement la caméra.
+- Prendre photo/vidéo délègue à la caméra native de l’APK.
+- Le vieux shell Web camera reste désactivé dans l’application.
+- Aperçu vidéo : aucun placeholder gris visible avant loadeddata/canplay.
+- Le comportement PWA/navigateur reste inchangé.
