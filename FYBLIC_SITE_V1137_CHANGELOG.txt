@@ -1,0 +1,4 @@
+FYBLIC Site V1137
+- Video details screen waits for a real decoded frame before opening.
+- First decoded frame is captured as a poster before Step 2 is revealed.
+- Removes the visible temporary video skeleton/placeholder between selection and real preview.

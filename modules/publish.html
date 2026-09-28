@@ -1508,7 +1508,8 @@ button:disabled{filter:none;transform:none}
     function seekTarget(){
       try{
         var target=targetTime();
-        video.style.display='block';video.style.visibility='visible';video.style.opacity='1';
+        if(state.detailPoster){video.style.display='block';video.style.visibility='visible';video.style.opacity='1';}
+        else{video.style.display='block';video.style.visibility='hidden';video.style.opacity='0';}
         if(Number.isFinite(target)&&Math.abs((video.currentTime||0)-target)>.025){video.currentTime=target;}
         else if(video.readyState>=2){revealDecodedFrame();}
       }catch(_e){}
@@ -1526,7 +1527,7 @@ button:disabled{filter:none;transform:none}
     var box=$('detailPreview');if(!box||!state.file)return;
     box.innerHTML=mediaPreviewHTML('detailMedia',false)+detailInlineControlsHTMLV894();
     var preparedVideo=box.querySelector('video');
-    if(preparedVideo&&state.detailPoster){try{preparedVideo.setAttribute('poster',state.detailPoster);}catch(_e){}}
+    if(preparedVideo&&state.detailPoster){try{preparedVideo.setAttribute('poster',state.detailPoster);preparedVideo.style.display='block';preparedVideo.style.visibility='visible';preparedVideo.style.opacity='1';}catch(_e){}}
     bindNaturalCrop(box);
     bindDetailInlineControlsV894(box);
     var video=box.querySelector('video');
@@ -2156,22 +2157,44 @@ return {source:'story',id:storyId};
   /* V902 : conserver une image réellement décodée de la première page.
      Le second <video> peut mettre quelques dizaines/centaines de ms à décoder le blob
      sur Android ; ce poster empêche l'aperçu Détails d'afficher du noir entre-temps. */
-  function captureSelectionPosterForDetailsV902(){
+  async function captureSelectionPosterForDetailsV1137(){
     state.detailPoster='';
     if(state.kind!=='video')return '';
     try{
       var source=$('preview'),video=source&&source.querySelector('video');
-      if(!video||video.readyState<2||!video.videoWidth||!video.videoHeight)return '';
+      if(!video)return '';
+      await new Promise(function(resolve){
+        var done=false,timer=null;
+        function finish(){if(done)return;done=true;clearTimeout(timer);resolve();}
+        function seekAndPaint(){
+          try{
+            var d=Number(video.duration||state.videoDuration||0);
+            var target=Number(state.videoFrame);
+            if(!Number.isFinite(target)||target<0)target=d>0?Math.min(1,Math.max(.08,d*.08)):0;
+            if(d>0)target=Math.min(target,Math.max(0,d-.05));
+            if(video.readyState>=2&&Math.abs((video.currentTime||0)-target)>.03){
+              var onSeek=function(){video.removeEventListener('seeked',onSeek);requestAnimationFrame(function(){requestAnimationFrame(finish);});};
+              video.addEventListener('seeked',onSeek,{once:true});
+              video.currentTime=target;
+            }else if(video.readyState>=2){requestAnimationFrame(function(){requestAnimationFrame(finish);});}
+          }catch(_e){finish();}
+        }
+        if(video.readyState>=2&&video.videoWidth&&video.videoHeight)seekAndPaint();
+        else{
+          ['loadeddata','canplay'].forEach(function(ev){video.addEventListener(ev,seekAndPaint,{once:true});});
+          try{video.load();}catch(_e){}
+        }
+        timer=setTimeout(finish,2200);
+      });
+      if(!video.videoWidth||!video.videoHeight)return '';
       var vw=Number(video.videoWidth)||0,vh=Number(video.videoHeight)||0;
       if(!vw||!vh)return '';
       var maxSide=960,ratio=Math.min(1,maxSide/Math.max(vw,vh));
       var canvas=document.createElement('canvas');
-      canvas.width=Math.max(2,Math.round(vw*ratio));
-      canvas.height=Math.max(2,Math.round(vh*ratio));
-      var ctx=canvas.getContext('2d',{alpha:false});
-      if(!ctx)return '';
+      canvas.width=Math.max(2,Math.round(vw*ratio));canvas.height=Math.max(2,Math.round(vh*ratio));
+      var ctx=canvas.getContext('2d',{alpha:false});if(!ctx)return '';
       ctx.drawImage(video,0,0,canvas.width,canvas.height);
-      state.detailPoster=canvas.toDataURL('image/jpeg',0.88)||'';
+      state.detailPoster=canvas.toDataURL('image/jpeg',0.9)||'';
       return state.detailPoster;
     }catch(_e){state.detailPoster='';return '';}
   }
@@ -2188,18 +2211,28 @@ return {source:'story',id:storyId};
     }catch(_e){}
   }
 
-  function openDetails(){
+  let openDetailsBusyV1137=false;
+  async function openDetails(){
     if(!state.file){toast("Choisis une photo ou vidéo réelle");return;}
-    /* V897 : conserver la frame réellement visible avant d'ouvrir Détails.
-       Cela évite le retour sur une première image noire de certaines vidéos. */
-    captureSelectionFrameForDetailsV897();
-    captureSelectionPosterForDetailsV902();
-    loadLocations();
-    renderPublishModeUI();
-    syncDetailPreviewGeometryV894();
-    $("step2").classList.add("show");
-    renderDetailsPreview();
-    updatePublishButtonsState();
+    if(openDetailsBusyV1137)return;
+    openDetailsBusyV1137=true;
+    var next=$('nextBtn'),cont=$('continuePickV901');
+    if(next)next.disabled=true;if(cont)cont.disabled=true;
+    try{
+      /* V1137 : ne jamais quitter l'écran de sélection tant que la première vraie
+         image vidéo n'est pas décodée. Le poster est généré AVANT l'ouverture de
+         Détails : aucun squelette/placeholder n'a le temps d'apparaître. */
+      captureSelectionFrameForDetailsV897();
+      if(state.kind==='video')await captureSelectionPosterForDetailsV1137();
+      loadLocations();renderPublishModeUI();syncDetailPreviewGeometryV894();
+      renderDetailsPreview();
+      await new Promise(function(resolve){requestAnimationFrame(function(){requestAnimationFrame(resolve);});});
+      $("step2").classList.add("show");
+      updatePublishButtonsState();
+    }finally{
+      openDetailsBusyV1137=false;
+      if(next)next.disabled=false;if(cont)cont.disabled=false;
+    }
   }
 
   async function savePublish(){
