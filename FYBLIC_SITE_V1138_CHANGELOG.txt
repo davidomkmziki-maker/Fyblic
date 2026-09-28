@@ -1,0 +1,4 @@
+FYBLIC Site V1138
+- Decodes and captures a real video frame immediately after selection.
+- Reuses that poster before opening Details, so old media/blank video cannot flash.
+- Removes the poster only after the newly selected video has actually decoded.

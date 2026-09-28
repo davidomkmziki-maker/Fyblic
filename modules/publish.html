@@ -734,7 +734,7 @@ button:disabled{filter:none;transform:none}
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video'};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0};
   const $=id=>document.getElementById(id);
 
   function signalPublishReadyV936(reason){
@@ -898,7 +898,7 @@ button:disabled{filter:none;transform:none}
   function resetPublishComposer(reason){
     try{if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);}catch(_e){}
     try{releaseMediaLeaseV1126();}catch(_lease){}try{stopCameraV1126();}catch(_camera){}
-    state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.previewIssue='';
+    state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.previewIssue='';state.detailPosterPromise=null;state.detailPosterRevision=0;
     ['fileInput','cameraPhotoInput','cameraVideoInput'].forEach(function(id){try{var el=$(id);if(el)el.value='';}catch(_e){}});
     try{var preview=$('preview');if(preview){preview.innerHTML='';preview.classList.add('empty');preview.classList.remove('hasMedia','isPlaying');}}catch(_e){}
     try{var tools=$('selectionTools');if(tools)tools.classList.remove('show');}catch(_e){}
@@ -1055,6 +1055,7 @@ button:disabled{filter:none;transform:none}
           if(duration>0)target=Math.min(target,Math.max(0,duration-.05));
           try{video.removeAttribute('poster');}catch(_e){}
           video.style.display='block';video.style.visibility='visible';video.style.opacity='1';
+          try{var holder=video.parentNode&&video.parentNode.querySelector('.detailPosterV1138');if(holder)holder.remove();}catch(_x){}
           try{video.pause();}catch(_e){}
           if(Number.isFinite(target)){
             if(typeof video.fastSeek==='function'){
@@ -1459,6 +1460,44 @@ button:disabled{filter:none;transform:none}
     if(cont)cont.hidden=!hasMedia;
   }
 
+  function prepareVideoPosterImmediatelyV1138(){
+    state.detailPoster='';state.detailPosterPromise=null;
+    if(state.kind!=='video'||!state.objectUrl)return Promise.resolve('');
+    var revision=Number(state.selectionRevision)||0;
+    state.detailPosterRevision=revision;
+    state.detailPosterPromise=new Promise(function(resolve){
+      var v=document.createElement('video'),done=false,timer=null;
+      try{v.muted=true;v.playsInline=true;v.preload='auto';v.src=state.objectUrl;v.style.position='fixed';v.style.left='-99999px';v.style.width='2px';v.style.height='2px';v.style.opacity='0';document.body.appendChild(v);}catch(_e){resolve('');return;}
+      function cleanup(value){
+        if(done)return;done=true;clearTimeout(timer);
+        try{v.pause();v.removeAttribute('src');v.load();v.remove();}catch(_e){}
+        if((Number(state.selectionRevision)||0)!==revision){resolve('');return;}
+        if(value)state.detailPoster=value;
+        resolve(value||'');
+      }
+      function capture(){
+        try{
+          if(!v.videoWidth||!v.videoHeight||v.readyState<2)return;
+          var d=Number(v.duration||0);if(Number.isFinite(d)&&d>0)state.videoDuration=d;
+          var target=d>0?Math.min(.35,Math.max(.04,d*.035)):0;
+          if(Math.abs((v.currentTime||0)-target)>.025){v.currentTime=target;return;}
+          var maxSide=960,ratio=Math.min(1,maxSide/Math.max(v.videoWidth,v.videoHeight));
+          var c=document.createElement('canvas');c.width=Math.max(2,Math.round(v.videoWidth*ratio));c.height=Math.max(2,Math.round(v.videoHeight*ratio));
+          var ctx=c.getContext('2d',{alpha:false});if(!ctx){cleanup('');return;}
+          ctx.drawImage(v,0,0,c.width,c.height);
+          cleanup(c.toDataURL('image/jpeg',.9)||'');
+        }catch(_e){cleanup('');}
+      }
+      v.addEventListener('loadeddata',capture);
+      v.addEventListener('canplay',capture);
+      v.addEventListener('seeked',capture);
+      v.addEventListener('error',function(){cleanup('');},{once:true});
+      timer=setTimeout(function(){capture();if(!done)cleanup('');},1800);
+      try{v.load();}catch(_e){cleanup('');}
+    });
+    return state.detailPosterPromise;
+  }
+
   function renderSelectionPreview(){
     var preview=$('preview');
     if(!preview||!state.file)return;
@@ -1501,6 +1540,7 @@ button:disabled{filter:none;transform:none}
         requestAnimationFrame(function(){
           try{video.removeAttribute('poster');}catch(_e){}
           video.style.display='block';video.style.visibility='visible';video.style.opacity='1';
+          try{var holder=video.parentNode&&video.parentNode.querySelector('.detailPosterV1138');if(holder)holder.remove();}catch(_x){}
           try{video.pause();}catch(_e){}
         });
       });
@@ -1525,9 +1565,11 @@ button:disabled{filter:none;transform:none}
 
   function renderDetailsPreview(){
     var box=$('detailPreview');if(!box||!state.file)return;
-    box.innerHTML=mediaPreviewHTML('detailMedia',false)+detailInlineControlsHTMLV894();
+    if(state.kind==='video'&&state.detailPoster){
+      box.innerHTML='<img class="cardCropMedia detailPosterV1138" src="'+escapeHtml(state.detailPoster)+'" alt="Aperçu vidéo" style="display:block;visibility:visible;opacity:1">'+mediaPreviewHTML('detailMedia',false)+detailInlineControlsHTMLV894();
+    }else box.innerHTML=mediaPreviewHTML('detailMedia',false)+detailInlineControlsHTMLV894();
     var preparedVideo=box.querySelector('video');
-    if(preparedVideo&&state.detailPoster){try{preparedVideo.setAttribute('poster',state.detailPoster);preparedVideo.style.display='block';preparedVideo.style.visibility='visible';preparedVideo.style.opacity='1';}catch(_e){}}
+    if(preparedVideo&&state.detailPoster){try{preparedVideo.setAttribute('poster',state.detailPoster);preparedVideo.style.display='block';preparedVideo.style.visibility='hidden';preparedVideo.style.opacity='0';}catch(_e){}}
     bindNaturalCrop(box);
     bindDetailInlineControlsV894(box);
     var video=box.querySelector('video');
@@ -1550,7 +1592,9 @@ button:disabled{filter:none;transform:none}
     state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.objectUrl=nextUrl;
     if(leaseInput)retainMediaLeaseV1126(leaseInput);else releaseMediaLeaseV1126();
     if(oldUrl&&oldUrl!==nextUrl){try{URL.revokeObjectURL(oldUrl);}catch(_e){}}
-    stopCameraV1126();renderSelectionPreview();updateSummary();updatePublishButtonsState();
+    stopCameraV1126();
+    if(state.kind==='video')prepareVideoPosterImmediatelyV1138();
+    renderSelectionPreview();updateSummary();updatePublishButtonsState();
     requestAnimationFrame(function(){applyCardCrop();syncAdjustValues();});return true;
   }
 
@@ -2158,8 +2202,9 @@ return {source:'story',id:storyId};
      Le second <video> peut mettre quelques dizaines/centaines de ms à décoder le blob
      sur Android ; ce poster empêche l'aperçu Détails d'afficher du noir entre-temps. */
   async function captureSelectionPosterForDetailsV1137(){
-    state.detailPoster='';
     if(state.kind!=='video')return '';
+    if(state.detailPoster)return state.detailPoster;
+    if(state.detailPosterPromise){try{var eager=await Promise.race([state.detailPosterPromise,new Promise(function(r){setTimeout(function(){r('');},650);})]);if(eager||state.detailPoster)return eager||state.detailPoster;}catch(_e){}}
     try{
       var source=$('preview'),video=source&&source.querySelector('video');
       if(!video)return '';
@@ -2223,7 +2268,10 @@ return {source:'story',id:storyId};
          image vidéo n'est pas décodée. Le poster est généré AVANT l'ouverture de
          Détails : aucun squelette/placeholder n'a le temps d'apparaître. */
       captureSelectionFrameForDetailsV897();
-      if(state.kind==='video')await captureSelectionPosterForDetailsV1137();
+      if(state.kind==='video'){
+        if(state.detailPosterPromise&&!state.detailPoster){try{await Promise.race([state.detailPosterPromise,new Promise(function(r){setTimeout(r,700);})]);}catch(_e){}}
+        if(!state.detailPoster)await captureSelectionPosterForDetailsV1137();
+      }
       loadLocations();renderPublishModeUI();syncDetailPreviewGeometryV894();
       renderDetailsPreview();
       await new Promise(function(resolve){requestAnimationFrame(function(){requestAnimationFrame(resolve);});});
