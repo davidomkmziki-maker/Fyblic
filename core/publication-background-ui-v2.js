@@ -5,10 +5,10 @@
   var MUTED_KEY='FYBLIC_PUBLICATION_MUTED_V1';
   var NOTICE_KEY='FYBLIC_PROFILE_PUBLICATION_NOTICES_V1';
   var ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
-  var hideTimer=null,currentJobId='',mountTimer=null,lastStoryDetail=null;
+  var hideTimer=null,currentJobId='',mountTimer=null,lastStoryDetail=null,refreshed={};
   function json(key,fallback){try{var x=JSON.parse(localStorage.getItem(key)||'');return x&&typeof x==='object'?x:fallback;}catch(_e){return fallback;}}
   function muted(){return json(MUTED_KEY,{});}
-  function active(){return json(ACTIVE_KEY,null);}
+  function active(){var value=json(ACTIVE_KEY,null),me='';try{me=String(localStorage.getItem('HAPPYAD_AUTH_UID')||'').trim();}catch(_e){}return value&&value.userId&&me&&String(value.userId)!==me?null:value;}
   function isCurrent(id){var value=active();return !value||!value.id||String(value.id)===String(id||'');}
   function clearActive(id){var value=active();if(value&&String(value.id)===String(id||'')){try{localStorage.removeItem(ACTIVE_KEY);}catch(_e){}}}
   function forgetOnly(id){try{['FYBLIC_PUBLICATION_JOBS_V1080','FYBLIC_PUBLICATION_JOBS_V2','FYBLIC_PUBLICATION_GROUPS_V1080'].forEach(function(key){var list=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(list))localStorage.setItem(key,JSON.stringify(list.filter(function(x){return x&&String(x.id)!==String(id||'')&&String(x.groupId||'')!==String(id||'');})));});var mutedMap=muted();delete mutedMap[id];writeMuted(mutedMap);}catch(_e){}}
@@ -65,7 +65,9 @@
   }
   function refreshHome(){try{localStorage.setItem('HAPPYAD_HOME_REFRESH_NEEDED','1');sessionStorage.removeItem('HAPPYAD_HOME_POSTS_LAST_SYNC');if(typeof window.happyadRefreshHomePostsNow==='function')window.happyadRefreshHomePostsNow('pipeline-v2-primary-ready');}catch(_e){}}
   function render(detail){
-    detail=detail||{};var box=ensure(),jobId=String(detail.jobId||'');mount(box);
+    detail=detail||{};var box=ensure(),jobId=String(detail.jobId||'');
+    try{var me=String(localStorage.getItem('HAPPYAD_AUTH_UID')||'').trim();if(detail.userId&&me&&String(detail.userId)!==me)return;}catch(_user){}
+    mount(box);
     if(String(detail.publicationType||'')==='story'){
       if(jobId&&!isCurrent(jobId))return;
       box.classList.remove('show');
@@ -88,7 +90,12 @@
       addProfileNotice(detail,'Toutes les qualités de ta publication sont prêtes.','success');
       unmute(jobId);clearActive(jobId);forgetOnly(jobId);refreshHome();box.classList.remove('show');return;
     }
-    if(detail.primaryReady===true){mute(jobId);clearActive(jobId);refreshHome();box.classList.remove('show');return;}
+    if(detail.primaryReady===true){
+      mute(jobId);clearActive(jobId);
+      var mark=refreshed[jobId]||{};
+      if(!mark.primary||detail.quality1080Ready===true&&!mark.hd){refreshHome();mark.primary=true;if(detail.quality1080Ready===true)mark.hd=true;refreshed[jobId]=mark;}
+      box.classList.remove('show');return;
+    }
     if(detail.status==='canceled'){unmute(jobId);clearActive(jobId);forgetOnly(jobId);box.classList.remove('show');return;}
     if(isMuted(jobId)){
       if(detail.status==='failed'){addProfileNotice(detail,'Publication affichée, mais certaines qualités n’ont pas été terminées.','warning');unmute(jobId);}

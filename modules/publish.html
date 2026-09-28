@@ -63,7 +63,7 @@
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-engine-v1082.js?v=1124-fair-queue"></script>
+<script src="../core/publication-engine-v1082.js?v=1125-user-lines"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -728,10 +728,10 @@ button:disabled{filter:none;transform:none}
   const ACTIVE_PUBLICATION_KEY_V1067R1='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
   let activePublicationIdV1067R1='';
   function activePublicationV1067R1(){
-    try{var value=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');if(!value||!value.id)return null;var age=Date.now()-Number(value.at||0);if(age>2*60*60*1000){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}if(age>2*60*1000){var jobs=JSON.parse(localStorage.getItem('FYBLIC_PUBLICATION_JOBS_V1080')||'[]');var found=Array.isArray(jobs)&&jobs.some(function(job){return job&&(String(job.id)===String(value.id)||String(job.groupId||'')===String(value.id))&&['published','failed','canceled'].indexOf(String(job.status||''))<0;});if(!found){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}}return value;}catch(_e){try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_x){}return null;}
+    try{var value=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');if(!value||!value.id)return null;var me=String(localStorage.getItem('HAPPYAD_AUTH_UID')||'').trim();if(value.userId&&me&&String(value.userId)!==me)return null;var age=Date.now()-Number(value.at||0);if(age>2*60*60*1000){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}if(age>2*60*1000){var jobs=JSON.parse(localStorage.getItem('FYBLIC_PUBLICATION_JOBS_V1080')||'[]');var found=Array.isArray(jobs)&&jobs.some(function(job){return job&&(String(job.id)===String(value.id)||String(job.groupId||'')===String(value.id))&&['published','failed','canceled'].indexOf(String(job.status||''))<0;});if(!found){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}}return value;}catch(_e){return null;}
   }
-  function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');try{localStorage.setItem(ACTIVE_PUBLICATION_KEY_V1067R1,JSON.stringify({id:activePublicationIdV1067R1,mode:String(mode||'publish'),at:Date.now()}));}catch(_e){}}
-  function endPublicationV1067R1(){activePublicationIdV1067R1='';try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_e){}}
+  function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');try{localStorage.setItem(ACTIVE_PUBLICATION_KEY_V1067R1,JSON.stringify({id:activePublicationIdV1067R1,userId:String(localStorage.getItem('HAPPYAD_AUTH_UID')||''),mode:String(mode||'publish'),at:Date.now()}));}catch(_e){}}
+  function endPublicationV1067R1(expectedId){try{var current=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');if(expectedId&&current&&String(current.id)!==String(expectedId))return;if(current)localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);if(!expectedId||String(activePublicationIdV1067R1)===String(expectedId))activePublicationIdV1067R1='';}catch(_e){}}
   function simpleProgressMessage(text,value){var raw=String(text||'');if(/échec|echec|failed|erreur/i.test(raw))return 'Échec';if(/termin|publiée|publiee|published/i.test(raw))return 'Publication terminée';if(Number(value||0)<=45||/envoi|upload/i.test(raw))return 'Envoi du média';return 'Publication en cours';}
   /* V1082 : le moteur unique est la seule source globale de progression Story. */
   function setProgress(value,text){
@@ -763,7 +763,7 @@ button:disabled{filter:none;transform:none}
     const label=$("progressText");
     if(label) label.textContent="Échec";
     endPublicationV1067R1();
-    try{clearHeavyPublicationCaches();localStorage.removeItem('FYBLIC_PUBLICATION_MUTED_V1');}catch(_e){}
+    try{clearHeavyPublicationCaches();}catch(_e){}
     setTimeout(()=>{ const box=$("publishProgress"); if(box) box.classList.remove("show"); },1400);
   }
 
@@ -963,6 +963,7 @@ button:disabled{filter:none;transform:none}
     if(state.kind!=='video')return;
     document.querySelectorAll('.videoFramePreview').forEach(function(v){
       try{
+        if(!v.getAttribute('src')||v.readyState<1)return;
         var target=Math.min(Math.max(0,Number(state.videoFrame||0)),Math.max(0,(v.duration||state.videoDuration||0)-.05));
         if(Number.isFinite(target) && Math.abs((v.currentTime||0)-target)>.04)v.currentTime=target;
         v.pause();
@@ -1367,8 +1368,7 @@ button:disabled{filter:none;transform:none}
     var adjust=$('detailAdjust');if(adjust)adjust.innerHTML='';
     var type=$('detailMediaType');if(type)type.textContent=state.kind==='video'?'Vidéo':'Photo';
     applyCardCrop();syncAdjustValues();
-    if(state.kind==='video'&&state.mode!=='story')seekMiniaturePreviewV903(state.videoFrame==null?0:state.videoFrame);
-    else seekVideoPreviews();
+    if(state.kind==='video'&&state.mode!=='story'&&Number(state.videoFrame)>0)seekMiniaturePreviewV903(state.videoFrame);
   }
 
   function setSelectedFile(file,allFiles){
@@ -2151,14 +2151,14 @@ return {source:'story',id:storyId};
             if(state.mode==='story')safeLocalFlag('HAPPYAD_RADAR_REFRESH_NEEDED','1');
             // La qualité principale est réellement visible : libérer immédiatement
             // le verrou utilisateur. Les variantes continuent sans bloquer un nouveau post.
-            endPublicationV1067R1();
+            endPublicationV1067R1(id);
             try{resetPublishComposer('engine-v1082-visible');}catch(_reset){}
             return backgroundTask.then(function(result){return result&&result.completion;});
           }).then(function(){
             // Optimisation secondaire terminée en silence.
           }).catch(function(error){
             console.error('Fyblic engine V1082',error);
-            endPublicationV1067R1();
+            endPublicationV1067R1(id);
             if(firstVersionVisible){queueProfilePublicationNoticeV1066(id,'Publication visible, mais les autres qualités ont échoué.','warning');return;}
             try{clearHeavyPublicationCaches();}catch(_clean){}
             state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));try{resetPublishComposer('failed-engine-v1082');}catch(_reset){}updatePublishButtonsState();

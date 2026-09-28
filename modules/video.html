@@ -809,8 +809,17 @@ function happyadVideoUpgradeReelMediaAsync(reel,p){
         var v=reel.querySelector('video');
         if(v){
           if(v.dataset.src!==src){
-            /* Fyblic V465: ne jamais remplacer la source d'une vidéo active en lecture. */
-            if(v===activeVideo&&!v.paused){reel.__happyadPendingSrc=src;return;}
+            /* Le 1080p demandé est appliqué dès sa disponibilité, en reprenant
+               au même instant. Les autres changements gardent la transition douce. */
+            var wanted=happyadVideoDesiredQualityForPostV1095(merged);
+            var quality=happyadVideoQualityFromUrlV1088(v.dataset.src||v.src);
+            var exact=happyadVideoVariantsForPostV1099(merged)['1080p'];
+            if(v===activeVideo&&!v.paused){
+              if(wanted==='1080p'&&exact&&quality!=='1080p'){
+                happyadVideoSwitchSourceV1099(reel,merged,exact);return;
+              }
+              reel.__happyadPendingSrc=src;return;
+            }
             v.pause();v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';happyadVideoSetActivePreload(v,false);
           }
           return;
@@ -850,20 +859,19 @@ function happyadVideoScheduleAuto1080V1087(reel,p){
     if(!reel||!p)return;
     if(Array.isArray(reel.__happyad1080Timers))reel.__happyad1080Timers.forEach(clearTimeout);
     reel.__happyad1080Timers=[];
-    /* V1088 — vérifications courtes puis espacées : le 720p visible monte vite vers
-       1080p dès qu'il devient prêt, sans rechargement du module. */
-    [1800,4500,9000,18000,36000].forEach(function(delay){
-      reel.__happyad1080Timers.push(setTimeout(function(){
-        try{
-          if(!reel.isConnected)return;
-          const wanted=happyadVideoDesiredQualityForPostV1095(reel.__happyadPost||p);
-          const v=reel.querySelector('video');
-          const currentQuality=happyadVideoQualityFromUrlV1088(v&&(v.dataset.src||v.src)||happyadVideoPostMediaUrl(reel.__happyadPost||p));
-          if(currentQuality===wanted)return;
-          happyadVideoUpgradeReelMediaAsync(reel,reel.__happyadPost||p);
-        }catch(_e){}
-      },delay));
-    });
+    var started=Date.now();
+    function recheck(){
+      if(!reel.isConnected||Date.now()-started>30*60*1000)return;
+      var post=reel.__happyadPost||p,video=reel.querySelector('video');
+      var wanted=happyadVideoDesiredQualityForPostV1095(post);
+      var variants=happyadVideoVariantsForPostV1099(post);
+      if(wanted==='1080p'&&!(variants['1080p']&&happyadVideoQualityFromUrlV1088(video&&(video.dataset.src||video.src))==='1080p')){
+        if(!document.hidden&&video&&(video===activeVideo||!video.paused))happyadVideoUpgradeReelMediaAsync(reel,post);
+      }else if(wanted!=='1080p')return;
+      var delay=Date.now()-started<60000?6000:15000;
+      reel.__happyad1080Timers=[setTimeout(recheck,delay)];
+    }
+    reel.__happyad1080Timers=[setTimeout(recheck,2400)];
   }catch(_e){}
 }
 var happyadVideoAdaptiveNetworkBoundV1088=false;
