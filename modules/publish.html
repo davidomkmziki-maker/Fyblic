@@ -64,7 +64,6 @@
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
 <script src="../core/publication-engine-v1082.js?v=1127-parallel-lanes"></script>
-<script src="../core/vendor/heic2any-v0.0.4.min.js?v=1127-preview-heic"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -681,7 +680,7 @@ button:disabled{filter:none;transform:none}
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],previewGeneration:0};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],previewGeneration:0,nativePreview:{enabled:false,ready:false,dataUrl:'',requestId:'',meta:null,index:0,error:''}};
   const $=id=>document.getElementById(id);
 
   function signalPublishReadyV936(reason){
@@ -842,86 +841,96 @@ button:disabled{filter:none;transform:none}
     }catch(_e){}
   }
 
-  /* Fyblic V1128 — moteur de sélection local.
-     Règle principale : le File Android choisi reste intact et est ouvert directement.
-     On ne change jamais artificiellement son MIME avant le premier essai. Une vue
-     typée par extension n'est qu'un secours si le navigateur a reçu un MIME vide ou
-     générique. Cela évite de transformer un problème transitoire du picker en faux
-     « format non décodable ». */
-  function normalizedPreviewMimeV1127(file,kind){
-    var type=String(file&&file.type||'').toLowerCase().trim();
-    var name=String(file&&file.name||'').toLowerCase();
-    if(kind==='video'){
-      if(/^video\//.test(type)&&type!=='video/*')return type;
-      if(/\.webm$/i.test(name))return 'video/webm';
-      if(/\.(mov|qt)$/i.test(name))return 'video/quicktime';
-      if(/\.(3gp|3gpp)$/i.test(name))return 'video/3gpp';
-      if(/\.m4v$/i.test(name))return 'video/x-m4v';
-      if(/\.og[gv]$/i.test(name))return 'video/ogg';
-      return 'video/mp4';
-    }
-    if(kind==='photo'){
-      if(/^image\//.test(type))return type;
-      if(/\.png$/i.test(name))return 'image/png';
-      if(/\.webp$/i.test(name))return 'image/webp';
-      if(/\.avif$/i.test(name))return 'image/avif';
-      if(/\.(heic|heif)$/i.test(name))return 'image/heic';
-      if(/\.gif$/i.test(name))return 'image/gif';
-      return 'image/jpeg';
-    }
-    return type||'application/octet-stream';
-  }
-  function buildPreviewUrlV1127(file,kind,useOriginal){
-    if(!file)return '';
+  /* Fyblic V1129 — passerelle média unique.
+     Dans l’APK, Android choisit et décode le média. Le navigateur ne reçoit qu’une
+     miniature native pour l’aperçu, tandis que le File original reste la source de
+     publication. Hors APK, un seul fallback Web direct est conservé, sans réécriture
+     MIME, sans retry en cascade et sans conversion du fichier. */
+  function nativeMediaBridgeV1129(){
     try{
-      if(useOriginal!==false)return URL.createObjectURL(file);
-      var mime=normalizedPreviewMimeV1127(file,kind);
-      var source=file;
-      if(mime&&String(file.type||'').toLowerCase()!==mime){
-        // slice() référence les mêmes octets sans recopier plusieurs Go en mémoire.
-        source=(typeof file.slice==='function')?file.slice(0,file.size,mime):new Blob([file],{type:mime});
-      }
-      return URL.createObjectURL(source);
-    }catch(_e){
-      try{return URL.createObjectURL(file);}catch(_e2){return '';}
-    }
+      return !!(window.FyblicNativeMedia && typeof window.FyblicNativeMedia.isNativeApp==='function' && window.FyblicNativeMedia.isNativeApp());
+    }catch(_e){return false;}
   }
-  function preparePhotoPreviewV1127(file,generation){
-    try{
-      if(state.kind!=='photo'||!file)return;
-      var name=String(file.name||'').toLowerCase(),type=String(file.type||'').toLowerCase();
-      if(!/\.(heic|heif)$/i.test(name)&&!/image\/hei[cf]/i.test(type))return;
-      if(typeof window.heic2any!=='function')return;
-      Promise.resolve(window.heic2any({blob:file,toType:'image/jpeg',quality:.92})).then(function(converted){
-        try{
-          if(generation!==Number(state.previewGeneration||0)||state.file!==file)return;
-          if(Array.isArray(converted))converted=converted[0];
-          if(!(converted instanceof Blob))return;
-          var url=URL.createObjectURL(converted);replacePreviewObjectUrlV1127(url);
-          renderSelectionPreview();
-          var step=$('step2');if(step&&step.classList.contains('show'))renderDetailsPreview();
-        }catch(_e){}
-      }).catch(function(){});
-    }catch(_e){}
+  function clearNativePreviewV1129(){
+    state.nativePreview={enabled:nativeMediaBridgeV1129(),ready:false,dataUrl:'',requestId:'',meta:null,index:0,error:''};
   }
   function delayedRevokePreviewUrlV1127(url,delay){
     url=String(url||'');if(!url)return;
-    setTimeout(function(){try{URL.revokeObjectURL(url);}catch(_e){}},Math.max(1200,Number(delay)||2400));
+    setTimeout(function(){try{URL.revokeObjectURL(url);}catch(_e){}},Math.max(900,Number(delay)||1800));
   }
   function replacePreviewObjectUrlV1127(nextUrl){
-    var old=String(state.objectUrl||'');
-    state.objectUrl=String(nextUrl||'');
-    if(old&&old!==state.objectUrl)delayedRevokePreviewUrlV1127(old,3200);
+    var old=String(state.objectUrl||'');state.objectUrl=String(nextUrl||'');
+    if(old&&old!==state.objectUrl)delayedRevokePreviewUrlV1127(old,1800);
   }
   function releasePreviewObjectUrlV1127(){
     var old=String(state.objectUrl||'');state.objectUrl='';
-    if(old)delayedRevokePreviewUrlV1127(old,2200);
+    if(old)delayedRevokePreviewUrlV1127(old,1000);
+  }
+  function directWebPreviewUrlV1129(file){
+    try{return file?URL.createObjectURL(file):'';}catch(_e){return '';}
+  }
+  function requestNativePreviewV1129(index){
+    if(!nativeMediaBridgeV1129()||!state.file)return false;
+    index=Math.max(0,Number(index)||0);
+    var req='fyblic_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    state.nativePreview={enabled:true,ready:false,dataUrl:'',requestId:req,meta:null,index:index,error:''};
+    try{
+      window.FyblicNativeMedia.preparePreview(index,req);
+      return true;
+    }catch(e){
+      state.nativePreview.error=String(e&&e.message||e||'native-preview-error');
+      return false;
+    }
+  }
+  window.__FYBLIC_NATIVE_MEDIA_PREVIEW=function(payload){
+    try{
+      if(typeof payload==='string')payload=JSON.parse(payload);
+      payload=payload||{};
+      if(!state.file||!state.nativePreview||String(payload.requestId||'')!==String(state.nativePreview.requestId||''))return;
+      if(payload.ok===false){
+        state.nativePreview.error=String(payload.error||'Aperçu natif indisponible');
+        state.nativePreview.ready=false;
+      }else{
+        state.nativePreview.ready=!!payload.dataUrl;
+        state.nativePreview.dataUrl=String(payload.dataUrl||'');
+        state.nativePreview.meta=payload;
+        state.nativePreview.error='';
+        var durationMs=Number(payload.durationMs||0);
+        if(durationMs>0)state.videoDuration=durationMs/1000;
+        if(state.videoFrame==null)state.videoFrame=0;
+        if(state.kind==='video'&&state.nativePreview.dataUrl)state.detailPoster=state.nativePreview.dataUrl;
+      }
+      renderSelectionPreview();
+      var step=$('step2');if(step&&step.classList.contains('show'))renderDetailsPreview();
+      updateSummary();updatePublishButtonsState();
+    }catch(e){try{console.warn('Fyblic native preview callback',e);}catch(_e){}}
+  };
+  function openNativeMediaViewerV1129(index){
+    if(!nativeMediaBridgeV1129())return false;
+    try{
+      index=Math.max(0,Number(index)||0);
+      if(state.kind==='video'&&typeof window.FyblicNativeMedia.playVideo==='function')window.FyblicNativeMedia.playVideo(index);
+      else if(state.kind==='photo'&&typeof window.FyblicNativeMedia.openImage==='function')window.FyblicNativeMedia.openImage(index);
+      return true;
+    }catch(_e){return false;}
+  }
+  function prepareSelectedMediaPreviewV1129(file){
+    releasePreviewObjectUrlV1127();
+    clearNativePreviewV1129();
+    if(nativeMediaBridgeV1129()){
+      renderSelectionPreview();
+      requestNativePreviewV1129(0);
+      return;
+    }
+    state.objectUrl=directWebPreviewUrlV1129(file);
+    renderSelectionPreview();
   }
 
   function resetPublishComposer(reason){
     try{releasePreviewObjectUrlV1127();}catch(_e){}
     state.previewGeneration=(Number(state.previewGeneration)||0)+1;
     state.file=null;state.files=[];state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];
+    clearNativePreviewV1129();
     ['fileInput','cameraPhotoInput','cameraVideoInput'].forEach(function(id){try{var el=$(id);if(el)el.value='';}catch(_e){}});
     try{var preview=$('preview');if(preview){preview.innerHTML='';preview.classList.add('empty');preview.classList.remove('hasMedia','isPlaying');}}catch(_e){}
     try{var tools=$('selectionTools');if(tools)tools.classList.remove('show');}catch(_e){}
@@ -1107,7 +1116,7 @@ button:disabled{filter:none;transform:none}
 
   function detailInlineControlsHTMLV894(){
     /* V897 : pas de sélection de miniature pour une Story. */
-    var allowMiniature=(state.kind==='video' && state.mode!=='story');
+    var allowMiniature=(state.kind==='video' && state.mode!=='story' && !nativeMediaBridgeV1129());
     var miniature=allowMiniature
       ? '<label class="detailMiniatureControl"><span>Miniature</span><input data-video-frame type="range" min="0" max="'+Math.max(.1,state.videoDuration||1)+'" step="0.1" value="'+Number(state.videoFrame||0)+'"></label>'
       : '';
@@ -1229,15 +1238,21 @@ button:disabled{filter:none;transform:none}
   }
 
   function mediaPreviewHTML(extraClass,controls){
-    if(!state.file||!state.objectUrl)return '';
+    if(!state.file)return '';
     extraClass=extraClass||'';
-    if(state.kind==='video'){
-      /* V1128 : aucun src dans le HTML. Les listeners sont branchés AVANT la source
-         pour ne perdre ni loadedmetadata ni error sur les fichiers locaux très rapides. */
-      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" data-fyblic-preview-src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="auto" '+(controls?'controls':'')+'></video>';
+    var nativeMode=nativeMediaBridgeV1129();
+    if(nativeMode){
+      if(state.nativePreview&&state.nativePreview.ready&&state.nativePreview.dataUrl){
+        var cls='cardCropMedia '+extraClass+(state.kind==='video'?' nativeVideoPosterV1129':' nativePhotoPreviewV1129');
+        return '<img class="'+cls+'" src="'+escapeHtml(state.nativePreview.dataUrl)+'" alt="Aperçu natif de la publication" data-native-media-v1129="1">';
+      }
+      var text=(state.nativePreview&&state.nativePreview.error)?'Le média est sélectionné. L’aperçu Android n’a pas pu être créé.':'Préparation de l’aperçu Android…';
+      return '<div class="fyblicNativePreviewLoadingV1129" style="padding:24px;text-align:center;font-weight:900;color:#fff;line-height:1.4">'+escapeHtml(text)+'<br><small style="opacity:.65">'+escapeHtml(state.file.name||'Média sélectionné')+'</small></div>';
     }
+    if(!state.objectUrl)return '<div style="padding:24px;text-align:center;font-weight:900">'+escapeHtml(state.file.name||'Média sélectionné')+'</div>';
+    if(state.kind==='video')return '<video class="cardCropMedia videoFramePreview '+extraClass+'" data-fyblic-preview-src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="metadata" '+(controls?'controls':'')+'></video>';
     if(state.kind==='photo')return '<img class="cardCropMedia '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" alt="Aperçu de la publication">';
-    return '<div style="padding:24px;text-align:center;font-weight:1000">'+escapeHtml(state.file.name||'Média sélectionné')+'</div>';
+    return '<div style="padding:24px;text-align:center;font-weight:900">'+escapeHtml(state.file.name||'Média sélectionné')+'</div>';
   }
 
   function previewSoundIconV889(muted){
@@ -1247,7 +1262,7 @@ button:disabled{filter:none;transform:none}
   }
 
   function previewSoundButtonHTMLV889(){
-    if(state.kind!=='video')return '';
+    if(state.kind!=='video'||nativeMediaBridgeV1129())return '';
     var label=state.videoMuted?'Activer le son':'Couper le son';
     return '<button type="button" class="mediaSoundBtn" data-preview-sound-v889 aria-label="'+label+'" title="'+label+'">'+previewSoundIconV889(state.videoMuted)+'</button>';
   }
@@ -1289,114 +1304,33 @@ button:disabled{filter:none;transform:none}
   },{passive:true});
 
   function bindPreviewVideo(video){
-    if(!video||!state.file)return;
-    var generation=Number(state.previewGeneration||0);
-    var decoded=false,finished=false,attempt=0,sourceSerial=0;
-    var initialUrl=String(video.getAttribute('data-fyblic-preview-src')||state.objectUrl||'');
-    var ownedRetryUrls=[];
-    var startupTimer=0,longTimer=0,retryTimer=0;
-
+    if(!video||!state.file||nativeMediaBridgeV1129())return;
+    var generation=Number(state.previewGeneration||0),url=String(video.getAttribute('data-fyblic-preview-src')||state.objectUrl||'');
     function active(){return generation===Number(state.previewGeneration||0)&&video.isConnected&&state.file;}
-    function previewRoot(){return video.closest('.preview')||$('preview');}
-    function clearOverlay(){
-      try{var root=previewRoot();if(!root)return;root.querySelectorAll('.fyblicPreviewError,.fyblicPreviewLoading').forEach(function(x){x.remove();});}catch(_e){}
-    }
-    function showLoading(text){
-      try{
-        if(!active()||decoded)return;var root=previewRoot();if(!root)return;
-        var box=root.querySelector('.fyblicPreviewLoading');
-        if(!box){box=document.createElement('div');box.className='fyblicPreviewLoading';root.appendChild(box);}
-        box.textContent=String(text||'Préparation de l’aperçu…');
-        box.style.cssText='position:absolute;left:12px;right:12px;top:46%;padding:12px;border-radius:14px;background:rgba(0,0,0,.62);color:white;text-align:center;font-size:13px;font-weight:800;line-height:1.35;pointer-events:none';
-      }catch(_e){}
-    }
     function ready(){
-      try{
-        if(!active())return;
-        var d=Number(video.duration||0);if(Number.isFinite(d)&&d>0)state.videoDuration=d;
-        if(state.videoFrame==null)state.videoFrame=0;
-        fitSelectionMediaV891(video);syncAdjustValues();
-        // Demander une image réelle sans démarrer la lecture : sur certains Android,
-        // un très petit seek déclenche le décodeur alors que currentTime=0 reste noir.
-        if(!decoded&&video.readyState<2&&d>0&&Number(video.currentTime||0)===0){
-          try{video.currentTime=Math.min(.04,Math.max(.001,d/10000));}catch(_e){}
-        }
-      }catch(_e){}
+      if(!active())return;
+      var d=Number(video.duration||0);if(Number.isFinite(d)&&d>0)state.videoDuration=d;
+      fitSelectionMediaV891(video);syncAdjustValues();
     }
-    function decodedFrame(){
-      if(!active()||decoded)return;
-      decoded=true;finished=true;clearTimeout(startupTimer);clearTimeout(longTimer);clearTimeout(retryTimer);
-      ready();clearOverlay();
-      try{video.style.visibility='visible';video.style.opacity='1';}catch(_e){}
-      var good=String(video.currentSrc||video.src||'');
-      if(good&&good!==String(state.objectUrl||''))replacePreviewObjectUrlV1127(good);
-      ownedRetryUrls.forEach(function(u){if(u&&u!==good)delayedRevokePreviewUrlV1127(u,5000);});
-      ownedRetryUrls=[];
+    function decoded(){
+      if(!active())return;
+      ready();
+      var root=video.closest('.preview')||$('preview');if(root)root.querySelectorAll('.fyblicPreviewError').forEach(function(x){x.remove();});
     }
-    function finalUnsupported(code){
-      if(!active()||decoded||finished)return;
-      finished=true;clearTimeout(startupTimer);clearTimeout(longTimer);clearTimeout(retryTimer);
-      var root=previewRoot();if(!root)return;
-      clearOverlay();
-      try{video.style.visibility='hidden';}catch(_e){}
-      var warning=document.createElement('div');warning.className='fyblicPreviewError';root.appendChild(warning);
-      warning.innerHTML='<b>Aperçu local indisponible</b><br><span>'+escapeHtml(state.file.name||'Vidéo')+'</span><br><small>Le fichier original est conservé et reste publiable. Fyblic n’a déclaré cette incompatibilité qu’après plusieurs essais réels du décodeur.</small>'+(code?'<br><small style="opacity:.65">Code média '+escapeHtml(String(code))+'</small>':'');
-      warning.style.cssText='position:absolute;left:12px;right:12px;top:41%;padding:14px;border-radius:14px;background:rgba(0,0,0,.82);color:white;text-align:center;font-size:13px;line-height:1.35;pointer-events:none';
+    function failed(){
+      if(!active())return;
+      var root=video.closest('.preview')||$('preview');if(!root)return;
+      if(root.querySelector('.fyblicPreviewError'))return;
+      var warning=document.createElement('div');warning.className='fyblicPreviewError';
+      warning.innerHTML='<b>Aperçu Web indisponible</b><br><small>Utilise l’application Fyblic Android pour le décodage natif de ce média.</small>';
+      warning.style.cssText='position:absolute;left:12px;right:12px;top:43%;padding:14px;border-radius:14px;background:rgba(0,0,0,.82);color:white;text-align:center;font-size:13px;line-height:1.35;pointer-events:none';
+      root.appendChild(warning);
     }
-    function makeCandidate(index){
-      if(index===0&&initialUrl)return initialUrl;
-      if(index===1)return buildPreviewUrlV1127(state.file,state.kind,true);
-      if(index===2)return buildPreviewUrlV1127(state.file,state.kind,false);
-      return '';
-    }
-    function startAttempt(index){
-      if(!active()||decoded||finished)return;
-      attempt=index;sourceSerial+=1;var serial=sourceSerial;
-      var url=makeCandidate(index);
-      if(!url){if(index<2){startAttempt(index+1);return;}finalUnsupported('SRC');return;}
-      if(index>0)ownedRetryUrls.push(url);
-      showLoading(index===0?'Préparation de l’aperçu…':'Nouvel essai de l’aperçu…');
-      try{
-        video.pause();video.removeAttribute('src');video.load();
-        video.preload='auto';video.playsInline=true;video.muted=!!state.videoMuted;
-        video.src=url;video.load();
-      }catch(_e){
-        if(index<2){setTimeout(function(){startAttempt(index+1);},180);return;}finalUnsupported('LOAD');return;
-      }
-      clearTimeout(startupTimer);
-      startupTimer=setTimeout(function(){
-        if(!active()||decoded||finished||serial!==sourceSerial)return;
-        // Un gros fichier peut mettre plusieurs secondes à exposer son moov atom.
-        // Une absence de metadata n'est PAS une incompatibilité : on retente une URL
-        // fraîche, puis on continue d'attendre au lieu d'afficher une fausse erreur.
-        if(video.readyState<1&&index<1){startAttempt(index+1);}
-        else showLoading('Préparation de l’aperçu…');
-      },8000);
-    }
-
     video.addEventListener('loadedmetadata',ready);
-    video.addEventListener('loadeddata',decodedFrame);
-    video.addEventListener('canplay',decodedFrame);
-    if(typeof video.requestVideoFrameCallback==='function'){
-      try{video.requestVideoFrameCallback(function(){decodedFrame();});}catch(_e){}
-    }
-    video.addEventListener('error',function(){
-      if(!active()||decoded||finished)return;
-      var code=video.error&&video.error.code?video.error.code:'';
-      clearTimeout(retryTimer);
-      if(attempt<2){
-        retryTimer=setTimeout(function(){startAttempt(attempt+1);},350);
-      }else{
-        // MEDIA_ERR_SRC_NOT_SUPPORTED (4) après trois sources distinctes est le seul
-        // cas où l'on conclut réellement que le navigateur local ne décode pas.
-        setTimeout(function(){finalUnsupported(code||4);},350);
-      }
-    });
-    video.addEventListener('stalled',function(){if(active()&&!decoded)showLoading('Préparation de l’aperçu…');});
-    video.addEventListener('suspend',function(){if(active()&&!decoded&&video.readyState<2)showLoading('Préparation de l’aperçu…');});
-
-    startAttempt(0);
-    longTimer=setTimeout(function(){if(active()&&!decoded&&!finished)showLoading('Le média est intact. Fyblic prépare toujours l’aperçu…');},20000);
+    video.addEventListener('loadeddata',decoded);
+    video.addEventListener('canplay',decoded);
+    video.addEventListener('error',failed,{once:true});
+    try{video.src=url;video.load();}catch(_e){failed();}
   }
 
   function formatPreviewTimeV892(seconds){
@@ -1423,33 +1357,23 @@ button:disabled{filter:none;transform:none}
       change.addEventListener('pointerdown',function(e){e.stopPropagation();},{passive:true});
       change.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openFileChooser('fileInput');return false;},true);
     }
-    var video=preview.querySelector('video');
-    if(!video)return;
     var playBtn=preview.querySelector('[data-preview-play-v892]');
+    var nativePoster=preview.querySelector('[data-native-media-v1129]');
     var time=preview.querySelector('[data-preview-time-v892]');
+    if(nativeMediaBridgeV1129()){
+      if(time)time.textContent='0:00 / '+formatPreviewTimeV892(state.videoDuration);
+      function nativeOpen(e){if(e){e.preventDefault();e.stopPropagation();}openNativeMediaViewerV1129(0);}
+      if(state.kind==='video'&&playBtn)playBtn.addEventListener('click',nativeOpen,true);
+      if(nativePoster)nativePoster.addEventListener('click',nativeOpen,true);
+      return;
+    }
+    var video=preview.querySelector('video');if(!video)return;
     function syncTime(){if(time)time.textContent=formatPreviewTimeV892(video.currentTime)+' / '+formatPreviewTimeV892(video.duration||state.videoDuration);}
-    function syncPlay(){
-      var playing=!video.paused&&!video.ended;
-      preview.classList.toggle('isPlaying',playing);
-      if(playBtn)playBtn.setAttribute('aria-label',playing?'Mettre la vidéo en pause':'Lire la vidéo');
-      syncTime();
-    }
-    function togglePlay(e){
-      if(e){e.preventDefault();e.stopPropagation();}
-      try{
-        if(video.paused||video.ended){var promise=video.play();if(promise&&typeof promise.catch==='function')promise.catch(function(){});}
-        else video.pause();
-      }catch(_e){}
-    }
+    function syncPlay(){var playing=!video.paused&&!video.ended;preview.classList.toggle('isPlaying',playing);if(playBtn)playBtn.setAttribute('aria-label',playing?'Mettre la vidéo en pause':'Lire la vidéo');syncTime();}
+    function togglePlay(e){if(e){e.preventDefault();e.stopPropagation();}try{if(video.paused||video.ended){var promise=video.play();if(promise&&typeof promise.catch==='function')promise.catch(function(){});}else video.pause();}catch(_e){}}
     if(playBtn)playBtn.addEventListener('click',togglePlay,true);
     video.addEventListener('click',togglePlay,true);
-    video.addEventListener('loadedmetadata',syncTime);
-    video.addEventListener('durationchange',syncTime);
-    video.addEventListener('timeupdate',syncTime);
-    video.addEventListener('play',syncPlay);
-    video.addEventListener('pause',syncPlay);
-    video.addEventListener('ended',syncPlay);
-    syncPlay();
+    video.addEventListener('loadedmetadata',syncTime);video.addEventListener('durationchange',syncTime);video.addEventListener('timeupdate',syncTime);video.addEventListener('play',syncPlay);video.addEventListener('pause',syncPlay);video.addEventListener('ended',syncPlay);syncPlay();
   }
 
   function syncPickerActionsV901(){
@@ -1461,23 +1385,16 @@ button:disabled{filter:none;transform:none}
   }
 
   function renderSelectionPreview(){
-    var preview=$('preview');
-    if(!preview||!state.file)return;
-    preview.classList.remove('empty');
-    preview.classList.add('hasMedia');
-    /* Pas de controls natifs : on garde seulement lecture, durée, son et Changer. */
+    var preview=$('preview');if(!preview||!state.file)return;
+    preview.classList.remove('empty');preview.classList.add('hasMedia');
     preview.innerHTML=mediaPreviewHTML('selectionMedia',false)+previewChangeButtonHTMLV892()+previewSoundButtonHTMLV889()+previewVideoControlsHTMLV892();
     var video=preview.querySelector('video');if(video)bindPreviewVideo(video);
-    var image=preview.querySelector('img');if(image){
-      if(image.complete)fitSelectionMediaV891(image);
-      else image.addEventListener('load',function(){fitSelectionMediaV891(image);},{once:true});
-    }
+    var image=preview.querySelector('img');if(image){if(image.complete)fitSelectionMediaV891(image);else image.addEventListener('load',function(){fitSelectionMediaV891(image);},{once:true});}
     bindPreviewSoundV889(preview);syncPreviewSoundV889();bindPreviewInlineControlsV892(preview);
     var tools=$('selectionTools');if(tools)tools.classList.remove('show');
     var label=$('selectedMediaLabel');if(label)label.textContent=state.kind==='video'?'Vidéo sélectionnée':'Photo sélectionnée';
     var picker=$('pickerArea');if(picker)picker.classList.remove('hasMedia');
-    syncPickerActionsV901();
-    applyCardCrop();syncAdjustValues();
+    syncPickerActionsV901();applyCardCrop();syncAdjustValues();
   }
 
   function ensureDetailVideoVisibleV897(video){
@@ -1530,7 +1447,7 @@ button:disabled{filter:none;transform:none}
     var video=box.querySelector('video');
     if(video){bindPreviewVideo(video);ensureDetailVideoVisibleV897(video);}
     var image=box.querySelector('img');
-    if(image){image.style.display='block';image.style.visibility='visible';image.style.opacity='1';}
+    if(image){image.style.display='block';image.style.visibility='visible';image.style.opacity='1';if(nativeMediaBridgeV1129())image.addEventListener('click',function(e){e.preventDefault();openNativeMediaViewerV1129(0);},true);}
     var adjust=$('detailAdjust');if(adjust)adjust.innerHTML='';
     var type=$('detailMediaType');if(type)type.textContent=state.kind==='video'?'Vidéo':'Photo';
     applyCardCrop();syncAdjustValues();
@@ -1540,22 +1457,14 @@ button:disabled{filter:none;transform:none}
 
   function setSelectedFile(file,allFiles){
     if(!file)return;
-    // Détacher d'abord les anciens lecteurs. L'ancienne blob URL n'est révoquée
-    // qu'après un court délai : cela évite le décodeur Android encore attaché au blob.
     ['preview','detailPreview'].forEach(function(id){var el=$(id);if(el)el.replaceChildren();});
-    var oldPreviewUrl=String(state.objectUrl||'');
+    releasePreviewObjectUrlV1127();
     state.previewGeneration=(Number(state.previewGeneration)||0)+1;
-    state.completed=false;
-    state.file=file;
-    state.files=(allFiles&&allFiles.length)?allFiles:[file];
+    state.completed=false;state.file=file;state.files=(allFiles&&allFiles.length)?allFiles:[file];
     state.kind=(file.type&&file.type.startsWith('video/'))||/\.(mp4|mov|m4v|webm|mkv|avi|3gp)$/i.test(file.name||'')?'video':'photo';
     state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';
-    state.objectUrl=buildPreviewUrlV1127(file,state.kind,true);
-    if(oldPreviewUrl&&oldPreviewUrl!==state.objectUrl)delayedRevokePreviewUrlV1127(oldPreviewUrl,3200);
-    renderSelectionPreview();
-    preparePhotoPreviewV1127(file,Number(state.previewGeneration||0));
-    updateSummary();updatePublishButtonsState();
-    requestAnimationFrame(function(){applyCardCrop();syncAdjustValues();});
+    prepareSelectedMediaPreviewV1129(file);
+    updateSummary();updatePublishButtonsState();requestAnimationFrame(function(){applyCardCrop();syncAdjustValues();});
   }
 
   function showFiles(fileList){
@@ -1694,37 +1603,20 @@ button:disabled{filter:none;transform:none}
   }
 
 
+  function dataUrlToBlobV1129(dataUrl){
+    try{var parts=String(dataUrl||'').split(','),head=parts[0]||'',bin=atob(parts[1]||''),m=/data:([^;]+)/i.exec(head),arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return new Blob([arr],{type:(m&&m[1])||'image/jpeg'});}catch(_e){return null;}
+  }
   function happyadVideoThumbFromFile(file,frameTime,crop){
     return new Promise(function(resolve){
       try{
         if(!file || !String(file.type||'').toLowerCase().includes('video'))return resolve(null);
-        const video=document.createElement('video');
-        const url=URL.createObjectURL(file);
-        let done=false;
+        if(state.nativePreview&&state.nativePreview.ready&&state.nativePreview.dataUrl){return resolve(dataUrlToBlobV1129(state.nativePreview.dataUrl));}
+        const video=document.createElement('video'),url=URL.createObjectURL(file);let done=false;
         function finish(blob){if(done)return;done=true;try{URL.revokeObjectURL(url)}catch(e){}resolve(blob||null)}
-        video.muted=true; video.playsInline=true; video.preload='metadata'; video.src=url;
-        video.addEventListener('loadedmetadata',function(){try{
-          var duration=Number(video.duration||1);
-          var selected=(frameTime==null)?Math.min(1,Math.max(.15,duration*.08)):Number(frameTime);
-          video.currentTime=Math.min(Math.max(0,selected),Math.max(0,duration-.05));
-        }catch(e){finish(null)}},{once:true});
-        video.addEventListener('seeked',function(){try{
-          const c=document.createElement('canvas');
-          const vw=video.videoWidth||640, vh=video.videoHeight||360;
-          const size=720;c.width=size;c.height=size;
-          const ctx=c.getContext('2d');if(!ctx)return finish(null);
-          crop=crop||{v:2,scale:1,x:50,y:50};
-          const scale=Math.max(1,Math.min(4,Number(crop.scale||1)));
-          const fx=Number(crop.v||0)>=2?Math.max(0,Math.min(100,Number(crop.x==null?50:crop.x))):Math.max(0,Math.min(100,50-Number(crop.x||0)));
-          const fy=Number(crop.v||0)>=2?Math.max(0,Math.min(100,Number(crop.y==null?50:crop.y))):Math.max(0,Math.min(100,50-Number(crop.y||0)));
-          const base=Math.min(vw,vh), side=base/scale;
-          const sx=Math.max(0,Math.min(vw-side,(vw-side)*(fx/100)));
-          const sy=Math.max(0,Math.min(vh-side,(vh-side)*(fy/100)));
-          ctx.drawImage(video,sx,sy,side,side,0,0,size,size);
-          c.toBlob(function(blob){finish(blob)},'image/jpeg',0.84);
-        }catch(e){finish(null)}},{once:true});
-        video.addEventListener('error',function(){finish(null)},{once:true});
-        setTimeout(function(){finish(null)},6500);
+        video.muted=true;video.playsInline=true;video.preload='metadata';video.src=url;
+        video.addEventListener('loadedmetadata',function(){try{var duration=Number(video.duration||1),selected=(frameTime==null)?Math.min(1,Math.max(.15,duration*.08)):Number(frameTime);video.currentTime=Math.min(Math.max(0,selected),Math.max(0,duration-.05));}catch(e){finish(null)}},{once:true});
+        video.addEventListener('seeked',function(){try{const c=document.createElement('canvas'),vw=video.videoWidth||640,vh=video.videoHeight||360,size=720;c.width=size;c.height=size;const ctx=c.getContext('2d');if(!ctx)return finish(null);crop=crop||{v:2,scale:1,x:50,y:50};const scale=Math.max(1,Math.min(4,Number(crop.scale||1))),fx=Number(crop.v||0)>=2?Math.max(0,Math.min(100,Number(crop.x==null?50:crop.x))):Math.max(0,Math.min(100,50-Number(crop.x||0))),fy=Number(crop.v||0)>=2?Math.max(0,Math.min(100,Number(crop.y==null?50:crop.y))):Math.max(0,Math.min(100,50-Number(crop.y||0))),base=Math.min(vw,vh),side=base/scale,sx=Math.max(0,Math.min(vw-side,(vw-side)*(fx/100))),sy=Math.max(0,Math.min(vh-side,(vh-side)*(fy/100)));ctx.drawImage(video,sx,sy,side,side,0,0,size,size);c.toBlob(function(blob){finish(blob)},'image/jpeg',0.84);}catch(e){finish(null)}},{once:true});
+        video.addEventListener('error',function(){finish(null)},{once:true});setTimeout(function(){finish(null)},6500);
       }catch(e){resolve(null)}
     });
   }
@@ -2166,35 +2058,14 @@ return {source:'story',id:storyId};
      Le second <video> peut mettre quelques dizaines/centaines de ms à décoder le blob
      sur Android ; ce poster empêche l'aperçu Détails d'afficher du noir entre-temps. */
   function captureSelectionPosterForDetailsV902(){
-    state.detailPoster='';
-    if(state.kind!=='video')return '';
-    try{
-      var source=$('preview'),video=source&&source.querySelector('video');
-      if(!video||video.readyState<2||!video.videoWidth||!video.videoHeight)return '';
-      var vw=Number(video.videoWidth)||0,vh=Number(video.videoHeight)||0;
-      if(!vw||!vh)return '';
-      var maxSide=960,ratio=Math.min(1,maxSide/Math.max(vw,vh));
-      var canvas=document.createElement('canvas');
-      canvas.width=Math.max(2,Math.round(vw*ratio));
-      canvas.height=Math.max(2,Math.round(vh*ratio));
-      var ctx=canvas.getContext('2d',{alpha:false});
-      if(!ctx)return '';
-      ctx.drawImage(video,0,0,canvas.width,canvas.height);
-      state.detailPoster=canvas.toDataURL('image/jpeg',0.88)||'';
-      return state.detailPoster;
-    }catch(_e){state.detailPoster='';return '';}
+    state.detailPoster='';if(state.kind!=='video')return '';
+    if(state.nativePreview&&state.nativePreview.ready&&state.nativePreview.dataUrl){state.detailPoster=state.nativePreview.dataUrl;return state.detailPoster;}
+    try{var source=$('preview'),video=source&&source.querySelector('video');if(!video||video.readyState<2||!video.videoWidth||!video.videoHeight)return '';var vw=Number(video.videoWidth)||0,vh=Number(video.videoHeight)||0;if(!vw||!vh)return '';var maxSide=960,ratio=Math.min(1,maxSide/Math.max(vw,vh)),canvas=document.createElement('canvas');canvas.width=Math.max(2,Math.round(vw*ratio));canvas.height=Math.max(2,Math.round(vh*ratio));var ctx=canvas.getContext('2d',{alpha:false});if(!ctx)return '';ctx.drawImage(video,0,0,canvas.width,canvas.height);state.detailPoster=canvas.toDataURL('image/jpeg',0.88)||'';return state.detailPoster;}catch(_e){state.detailPoster='';return '';}
   }
 
   function captureSelectionFrameForDetailsV897(){
-    if(state.kind!=='video')return;
-    try{
-      var source=$('preview'),video=source&&source.querySelector('video');
-      if(!video)return;
-      var t=Number(video.currentTime);
-      if(Number.isFinite(t)&&t>=0)state.videoFrame=t;
-      var d=Number(video.duration);
-      if(Number.isFinite(d)&&d>0)state.videoDuration=d;
-    }catch(_e){}
+    if(state.kind!=='video'||nativeMediaBridgeV1129())return;
+    try{var source=$('preview'),video=source&&source.querySelector('video');if(!video)return;var t=Number(video.currentTime);if(Number.isFinite(t)&&t>=0)state.videoFrame=t;var d=Number(video.duration);if(Number.isFinite(d)&&d>0)state.videoDuration=d;}catch(_e){}
   }
 
   function openDetails(){
@@ -2479,6 +2350,7 @@ return {source:'story',id:storyId};
     try{location.replace("../index.html?happyad_publish_cancel=1&t="+Date.now());}catch(_e){try{location.href="../index.html";}catch(_e2){}}
     return false;
   }
+  try{window.__FYBLIC_MEDIA_ENGINE_VERSION='1129-native-bridge';}catch(_e){}
   bind("publishCloseBtn","click",closePublishModule);
   bind("nextBtn","click",openDetails);
   bind("continuePickV901","click",openDetails);

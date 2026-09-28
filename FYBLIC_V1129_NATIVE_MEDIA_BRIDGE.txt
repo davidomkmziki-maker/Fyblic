@@ -1,0 +1,10 @@
+FYBLIC V1129 — NATIVE MEDIA BRIDGE
+
+1. Suppression du moteur V1128 de retries/MIME/Blob pour le chemin APK.
+2. Un seul gateway de sélection : Android natif dans APK, fallback direct unique sur le Web.
+3. Le File original reste la source d upload/publication.
+4. Android fabrique la miniature photo/vidéo et renvoie uniquement un aperçu JPEG au WebView.
+5. Lecture vidéo sélectionnée via lecteur Android natif.
+6. Miniature de publication vidéo réutilise le poster natif si disponible.
+7. Cache Service Worker remonté en V1129.
+8. Aucun changement worker ni SQL dans cette version.
