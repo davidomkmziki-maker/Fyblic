@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="fr" data-happyad-page="video">
 <head>
+<script src="../core/video-source-switch-v1125.js?v=1125"></script>
 <style id="happyad-profile-avatar-source-v995">
 /* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
 .avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
@@ -275,7 +276,7 @@
 <script src="../core/like-direct-master-v876.js?v=995-like-network-stable"></script>
 <script id="happyad-auth-storage-quota-master-v752" src="../core/auth-storage-quota-master-v752.js?v=757-quota-audit-stable"></script>
 <script src="../core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
-<script src="../core/video-quality-master-v1099.js?v=1099-user-global-quality"></script>
+<script src="../core/video-quality-master-v1099.js?v=1125"></script>
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script src="../core/interaction-privacy-master-v855r52.js?v=972-p1-single-client"></script>
 <script src="../core/filtering-privacy-master-v855r55.js?v=855r55-filtering"></script>
@@ -809,18 +810,10 @@ function happyadVideoUpgradeReelMediaAsync(reel,p){
         var v=reel.querySelector('video');
         if(v){
           if(v.dataset.src!==src){
-            /* Le 1080p demandé est appliqué dès sa disponibilité, en reprenant
-               au même instant. Les autres changements gardent la transition douce. */
-            var wanted=happyadVideoDesiredQualityForPostV1095(merged);
-            var quality=happyadVideoQualityFromUrlV1088(v.dataset.src||v.src);
-            var exact=happyadVideoVariantsForPostV1099(merged)['1080p'];
-            if(v===activeVideo&&!v.paused){
-              if(wanted==='1080p'&&exact&&quality!=='1080p'){
-                happyadVideoSwitchSourceV1099(reel,merged,exact);return;
-              }
-              reel.__happyadPendingSrc=src;return;
-            }
-            v.pause();v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';happyadVideoSetActivePreload(v,false);
+            const preference=window.HappyVideoQualityMasterV1099&&window.HappyVideoQualityMasterV1099.get();
+            window.FyblicVideoSwitchV1125.switchSource(v,src,{
+              allowed:()=>reel.isConnected&&(!window.HappyVideoQualityMasterV1099||window.HappyVideoQualityMasterV1099.get()===preference)
+            });
           }
           return;
         }
@@ -855,24 +848,20 @@ function happyadVideoQualityFromUrlV1088(src){
   return '';
 }
 function happyadVideoScheduleAuto1080V1087(reel,p){
-  try{
-    if(!reel||!p)return;
-    if(Array.isArray(reel.__happyad1080Timers))reel.__happyad1080Timers.forEach(clearTimeout);
-    reel.__happyad1080Timers=[];
-    var started=Date.now();
-    function recheck(){
-      if(!reel.isConnected||Date.now()-started>30*60*1000)return;
-      var post=reel.__happyadPost||p,video=reel.querySelector('video');
-      var wanted=happyadVideoDesiredQualityForPostV1095(post);
-      var variants=happyadVideoVariantsForPostV1099(post);
-      if(wanted==='1080p'&&!(variants['1080p']&&happyadVideoQualityFromUrlV1088(video&&(video.dataset.src||video.src))==='1080p')){
-        if(!document.hidden&&video&&(video===activeVideo||!video.paused))happyadVideoUpgradeReelMediaAsync(reel,post);
-      }else if(wanted!=='1080p')return;
-      var delay=Date.now()-started<60000?6000:15000;
-      reel.__happyad1080Timers=[setTimeout(recheck,delay)];
+  if(!reel||!p)return;
+  if(Array.isArray(reel.__happyad1080Timers))reel.__happyad1080Timers.forEach(clearTimeout);
+  reel.__happyad1080Timers=[];
+  function poll(){
+    if(!reel.isConnected)return;
+    const video=reel.querySelector('video');
+    if(!document.hidden && video===activeVideo){
+      const wanted=happyadVideoDesiredQualityForPostV1095(reel.__happyadPost||p);
+      const current=happyadVideoQualityFromUrlV1088(video.currentSrc||video.src);
+      if(current!==wanted)happyadVideoUpgradeReelMediaAsync(reel,reel.__happyadPost||p);
     }
-    reel.__happyad1080Timers=[setTimeout(recheck,2400)];
-  }catch(_e){}
+    reel.__happyad1080Timers=[setTimeout(poll,5000)];
+  }
+  reel.__happyad1080Timers=[setTimeout(poll,1800)];
 }
 var happyadVideoAdaptiveNetworkBoundV1088=false;
 function happyadVideoRecheckAdaptiveNetworkV1088(){
@@ -1672,21 +1661,7 @@ async function happyadVideoFreshMarketplace1080BeforeAttachV1095(p){
     return fresh?happyadVideoMergePostKeepRich(p,fresh):p;
   }catch(_e){return p;}
 }
-function happyadVideoApplyPendingUpgradeAtBoundaryV1095(reel,v){
-  try{
-    if(!reel||!v||v.paused||!reel.__happyadPendingSrc||!Number.isFinite(v.duration)||v.duration<=0)return false;
-    if(v.currentTime<Math.max(0,v.duration-.40))return false;
-    const src=String(reel.__happyadPendingSrc||'').trim();
-    if(!src||src===String(v.dataset.src||v.src||''))return false;
-    reel.__happyadPendingSrc='';
-    const muted=v.muted;
-    v.pause();v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';v.muted=muted;
-    const resume=()=>{try{v.currentTime=0;happyadVideoSetActivePreload(v,true);happyadPlayVideo(v,false);}catch(_e){}};
-    v.addEventListener('canplay',resume,{once:true});
-    try{v.load();}catch(_e){}
-    return true;
-  }catch(_e){return false;}
-}
+function happyadVideoApplyPendingUpgradeAtBoundaryV1095(){return false;}
 async function attachVideo(reel,p){
   try{
     if(!reel)return null;
@@ -1740,6 +1715,7 @@ async function attachVideo(reel,p){
     ['canplay','canplaythrough','playing','seeked'].forEach(type=>v.addEventListener(type,()=>setBuffering(false),{passive:true}));
     setTimeout(function(){try{if(v.readyState>=2&&!reel.classList.contains('videoReady'))revealVideo();else if(v.readyState<2)setBuffering(true);}catch(_e){}},1700);
     v.addEventListener('error',()=>{
+      if(v.__fyblicSwitch)return;
       const tries=Number(v.dataset.happyadVideoRetryV621C||0);
       setBuffering(true);
       if(tries<2){
@@ -1762,7 +1738,7 @@ async function attachVideo(reel,p){
     if(hot)hot.onclick=e=>{e.stopPropagation();reel.classList.add('showTime');clearTimeout(reel.timer);reel.timer=setTimeout(()=>reel.classList.remove('showTime'),4200)};
     if(controls)controls.onclick=e=>e.stopPropagation();
     v.addEventListener('play',()=>{revealVideo();setPausedUI(v);try{happyadMarkVideoViewSupabase(p.id).then(()=>refreshVideoLikeFromSupabase(p.id))}catch(e){}try{happyadRecordListingVideoViewV820(p)}catch(e){}});
-v.addEventListener('ended',()=>{try{v.currentTime=0;happyadPlayVideo(v,true);}catch(e){}});
+v.addEventListener('ended',()=>{if(v.__fyblicSwitch)return;try{v.currentTime=0;happyadPlayVideo(v,true);}catch(e){}});
 v.addEventListener('pause',()=>{setPausedUI(v);happyadVideoApplyPendingUpgradeV1087(reel,v)});
     happyadVideoScheduleAuto1080V1087(reel,p);
     return v;
@@ -2244,16 +2220,12 @@ async function loadVideos(){
       src=happyadVideoNormalizeMediaSrc(src,p);if(!reel||!src)return false;
       var v=reel.querySelector('video');
       if(!v){p.mediaUrl=src;p.media_url=src;reel.__happyadPost=p;reel.__happyadPostV613E=p;reel.dataset.videoAttached='';attachVideo(reel,p).catch(function(){});return true;}
-      var current=String(v.dataset.src||v.currentSrc||v.src||'');if(current===src)return true;
-      var keep=Number(v.currentTime||0),wasPlaying=!v.paused,muted=v.muted,manualPause=String(v.dataset.happyadManualPause||'0');
       reel.__happyadPendingSrc='';
-      p.mediaUrl=src;p.media_url=src;reel.__happyadPost=p;reel.__happyadPostV613E=p;
-      try{v.pause();}catch(_p){}
-      v.src=src;v.dataset.src=src;v.dataset.happyadLoadOnce='';v.muted=muted;
-      var seek=function(){try{if(keep>0&&Number.isFinite(v.duration)&&v.duration>0)v.currentTime=Math.min(keep,Math.max(0,v.duration-.15));}catch(_e){}};
-      v.addEventListener('loadedmetadata',seek,{once:true});
-      if(wasPlaying&&manualPause!=='1')v.addEventListener('canplay',function(){try{happyadVideoSetActivePreload(v,true);happyadPlayVideo(v,false);}catch(_e){}},{once:true});
-      try{v.load();}catch(_l){}
+      const preference=window.HappyVideoQualityMasterV1099&&window.HappyVideoQualityMasterV1099.get();
+      window.FyblicVideoSwitchV1125.switchSource(v,src,{
+        allowed:()=>reel.isConnected&&(!window.HappyVideoQualityMasterV1099||window.HappyVideoQualityMasterV1099.get()===preference),
+        onSuccess:()=>{p.mediaUrl=src;p.media_url=src;reel.__happyadPost=p;reel.__happyadPostV613E=p;}
+      });
       return true;
     }catch(_e){return false;}
   }

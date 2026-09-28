@@ -315,11 +315,9 @@
     /* V1087 — quand le worker annonce une optimisation après la qualité visible,
        rafraîchir doucement le feed afin que le 1080p prêt remplace le 720p.
        Aucun changement du pipeline de publication : seulement une lecture fraîche. */
-    try{var qualityRefreshSeen={};window.addEventListener('FYBLIC_PUBLICATION_PROGRESS_V2',function(e){
-      var d=e&&e.detail||{},id=String(d.groupId||d.jobId||'');if(!id||d.primaryReady!==true)return;
-      var stage=d.quality1080Ready===true?'1080':d.status==='published'?'final':'primary';
-      if(qualityRefreshSeen[id]===stage)return;
-      qualityRefreshSeen[id]=stage;scheduleRefresh('quality-upgrade-v1087',650);
+    try{window.addEventListener('FYBLIC_PUBLICATION_PROGRESS_V2',function(e){
+      var d=e&&e.detail||{},status=String(d.status||'').toLowerCase(),progress=Number(d.progress||0);
+      if(d.primaryReady===true&&(status==='optimizing'||status==='published'||progress>=88))scheduleRefresh('quality-upgrade-v1087',650);
     });}catch(_qualityEvent){}
     try{window.addEventListener('happyad:marketplace-quality-upgraded',function(){scheduleRefresh('marketplace-quality-v1087',180);});}catch(_marketQuality){}
     /* V1088 — chaque appareil réévalue sa propre qualité lorsque sa connexion change.

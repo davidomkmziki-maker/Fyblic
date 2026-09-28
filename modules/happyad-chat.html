@@ -9380,9 +9380,9 @@ J’affiche déjà les résultats disponibles sans lieu précis. Dans quelle vil
       const showFallback=()=>{item.previewState='fallback';main.innerHTML=listingMediaFallbackMarkup(item,index);card.classList.add('preview-unavailable')};
       if(item.type==='video'){
         const video=document.createElement('video');
-        video.muted=true;video.playsInline=true;video.preload='metadata';video.setAttribute('aria-label',`Vidéo ${index+1}`);
+        video.muted=true;video.playsInline=true;video.preload='auto';video.setAttribute('aria-label',`Vidéo ${index+1}`);
         main.appendChild(video);
-        loadListingVideoElement(video,item,{onReady(){item.previewState='ready';item.previewable=true;card.classList.add('preview-ready')},onFail:showFallback});
+        loadListingVideoElement(video,item,{onReady(){item.previewState='ready';item.previewable=true;card.classList.add('preview-ready');try{if(Number.isFinite(video.duration)&&video.duration>.2)video.currentTime=Math.min(.2,video.duration/10)}catch(_){}},onFail:showFallback});
         const play=document.createElement('span');play.className='listing-media-video-play';main.appendChild(play);
       }else{
         const image=document.createElement('img');image.alt=`Photo ${index+1}`;image.decoding='async';main.appendChild(image);

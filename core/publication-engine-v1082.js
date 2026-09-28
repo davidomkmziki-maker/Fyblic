@@ -11,7 +11,7 @@
   var JOBS_KEY='FYBLIC_PUBLICATION_JOBS_V1080';
   var GROUPS_KEY='FYBLIC_PUBLICATION_GROUPS_V1080';
   var ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
-  var REQUIRED_SCHEMA_VERSION=1082;
+  var REQUIRED_SCHEMA_VERSION=1125;
   var REQUIRED_PROTOCOL_VERSION=1082;
   var DIRECT_TUS_CHUNK=6*1024*1024;
   var STORY_FIRST_TUS_CHUNK=1*1024*1024;
@@ -55,7 +55,7 @@
   function updateActiveChildren(group){var a=active();if(!a||String(a.id)!==String(group.id))return;try{a.children=(group.children||[]).slice();localStorage.setItem(ACTIVE_KEY,JSON.stringify(a));}catch(_e){}}
   function clearActive(id){var a=active();if(a&&String(a.id)===String(id||'')){try{localStorage.removeItem(ACTIVE_KEY);}catch(_e){}}}
   function rememberJob(job,groupId){job=guardJob(job);if(!job||!job.id)return;var list=readList(JOBS_KEY).filter(function(x){return x&&x.id!==job.id;});list.unshift({id:job.id,groupId:groupId||job.publication_group_id||'',postId:job.post_id||'',publicationType:job.publication_type||'',status:job.status||'uploading',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',createdAt:job.created_at||new Date().toISOString(),updatedAt:Date.now()});writeList(JOBS_KEY,list,60);}
-  function rememberGroup(group){if(!group||!group.id)return;var list=readList(GROUPS_KEY).filter(function(x){return x&&x.id!==group.id;});list.unshift({id:group.id,userId:group.userId||'',postId:group.postId||'',publicationType:group.publicationType||'',children:(group.children||[]).slice(),assetCount:Number(group.assetCount||0),createdAt:group.createdAt||new Date().toISOString(),updatedAt:Date.now()});writeList(GROUPS_KEY,list,20);}
+  function rememberGroup(group){if(!group||!group.id)return;var list=readList(GROUPS_KEY).filter(function(x){return x&&x.id!==group.id;});list.unshift({id:group.id,postId:group.postId||'',publicationType:group.publicationType||'',children:(group.children||[]).slice(),assetCount:Number(group.assetCount||0),createdAt:group.createdAt||new Date().toISOString(),updatedAt:Date.now()});writeList(GROUPS_KEY,list,20);}
   function forgetGroup(id){writeList(GROUPS_KEY,readList(GROUPS_KEY).filter(function(x){return x&&String(x.id)!==String(id||'');}),20);}
   function forgetJob(id){writeList(JOBS_KEY,readList(JOBS_KEY).filter(function(x){return x&&String(x.id)!==String(id||'');}),60);}
   function dispatch(detail){
@@ -77,7 +77,7 @@
       healthCache={at:Date.now(),value:ok,detail:p};return ok;
     }catch(error){healthCache={at:Date.now(),value:false,detail:{schemaError:error&&error.message||'Service média indisponible'}};return false;}
   }
-  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1082 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1082 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
+  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1125 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1125 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
   function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0',apikey:clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY)},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
   async function directFetch(url,options,timeoutMs){var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}}
   async function tusOffset(upload,token){var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000);if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}var offset=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');return offset;}
@@ -134,10 +134,9 @@
   function kindOf(file){return /^video\//i.test(clean(file&&file.type))?'video':'photo';}
   function aggregate(group,states){
     var count=states.length||1,total=0,allPrimary=true,allPublished=true,failed=null,canceled=false,anyUploading=false;
-    var ready1080=false;
-    states.forEach(function(job){job=job||{};total+=Math.max(0,Math.min(100,Number(job.progress||0)));if(!primaryVisible(job))allPrimary=false;if(job.status!=='published')allPublished=false;if(job.status==='failed'&&!failed)failed=job;if(job.status==='canceled')canceled=true;if(job.status==='uploading')anyUploading=true;if(job.result&&job.result.variants&&job.result.variants['1080p'])ready1080=true;});
+    states.forEach(function(job){job=job||{};total+=Math.max(0,Math.min(100,Number(job.progress||0)));if(!primaryVisible(job))allPrimary=false;if(job.status!=='published')allPublished=false;if(job.status==='failed'&&!failed)failed=job;if(job.status==='canceled')canceled=true;if(job.status==='uploading')anyUploading=true;});
     var progress=Math.round(total/count),status=failed?'failed':canceled?'canceled':allPublished?'published':(allPrimary?'optimizing':(anyUploading?'uploading':'processing'));
-    return {jobId:group.id,groupId:group.id,userId:group.userId||'',postId:group.postId||'',publicationType:group.publicationType||'normal',status:status,primaryReady:allPrimary,quality1080Ready:ready1080,progress:progress,stage:failed?'Échec':canceled?'Publication annulée':allPublished?'Publication terminée':allPrimary?'Publication visible · optimisation':anyUploading?'Envoi du média':'Publication en cours',error:failed?publicError(failed.error_message||failed.error||''):''};
+    return {jobId:group.id,groupId:group.id,postId:group.postId||'',publicationType:group.publicationType||'normal',status:status,primaryReady:allPrimary,progress:progress,stage:failed?'Échec':canceled?'Publication annulée':allPublished?'Publication terminée':allPrimary?'Publication visible · optimisation':anyUploading?'Envoi du média':'Publication en cours',error:failed?publicError(failed.error_message||failed.error||''):''};
   }
   async function submitMany(files,options){
     options=options||{};files=Array.prototype.slice.call(files||[]).filter(Boolean);if(!files.length)throw new Error('Média absent');

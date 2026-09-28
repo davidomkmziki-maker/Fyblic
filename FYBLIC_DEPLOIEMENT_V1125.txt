@@ -1,0 +1,103 @@
+FYBLIC V1125 — SITE, WORKER ET SQL
+Base : les deux ZIP V1124 fournis le 28 septembre 2026.
+Limites conservées : 5 000 000 000 octets par média ; vidéo 15 minutes.
+
+ORDRE DE DÉPLOIEMENT
+1. Dans Supabase SQL Editor, exécuter entièrement FYBLIC_MIGRATION_V1125.sql.
+   Cette migration suppose le schéma V1082 déjà installé ; elle inclut la
+   synchronisation Boutique V1087. Ne pas réexécuter les anciens SQL ensuite.
+   Elle ne supprime aucune publication. Elle ajoute video_variants aux stories.
+2. Dans Railway, ajouter/conserver :
+   FYBLIC_PRIMARY_WORKERS=1
+   FYBLIC_OPTIMIZATION_WORKERS=1
+   FYBLIC_FFMPEG_THREADS=1
+   Conserver les clés Supabase et les domaines existants.
+   Ces deux places se partagent les ressources de l'instance : aucune promesse
+   de gain de vitesse sans mesure CPU/RAM. FYBLIC_MEDIA_WORKERS reste utilisé
+   comme défaut des places initiales si FYBLIC_PRIMARY_WORKERS est absent.
+3. Déployer le worker V1125 sur toutes les instances du service.
+4. Vérifier /health : pipelineV2.ready=true, schemaVersion=1125,
+   protocolVersion=1082, laneCapacity.primary=1, laneCapacity.optimization=1.
+   Le protocole d'envoi reste volontairement V1082.
+5. Déployer le site V1125. Fermer puis rouvrir la PWA pour prendre le nouveau cache.
+
+COMMANDES TERMUX — remplacer seulement les chemins des deux dépôts existants.
+Les noms de dossiers locaux n'ont pas été fournis : DEPOT_SITE et DEPOT_WORKER
+sont des repères à remplacer, pas des dépôts à créer.
+
+WORKER — GROUPE 1
+cd ~/DEPOT_WORKER
+unzip -o ~/storage/downloads/FYBLIC_WORKER_V1125.zip
+git status --short
+
+WORKER — GROUPE 2
+git add -A
+git commit -m "Fyblic V1125 traitements independants et reprises securisees"
+git push origin main
+
+SITE — GROUPE 1
+cd ~/DEPOT_SITE
+unzip -o ~/storage/downloads/FYBLIC_SITE_V1125.zip
+git status --short
+
+SITE — GROUPE 2
+git add -A
+git commit -m "Fyblic V1125 apercu et passage automatique au 1080p"
+git push origin main
+
+COMPORTEMENT
+- Aperçu : conservation de l'original, attente d'une image décodée, une reprise
+  contrôlée, avertissement propre si le téléphone ne peut pas décoder le média.
+  Aucune conversion serveur ni envoi ne commence à la sélection.
+- Lecteur central Normal/Boutique : relecture des qualités tant que le lecteur
+  actif n'a pas la qualité souhaitée, préparation de la source et changement
+  à la position conservée. Repli sur la source précédente en cas d'erreur.
+- Stories publiées directement : variantes enregistrées sur la story et
+  actualisation du lecteur ouvert. Le partage d'une publication dans une story
+  conserve son parcours existant ; il n'est pas une nouvelle compression.
+- Auto donne priorité au 1080p ; le choix manuel garde priorité. La sélection
+  automatique par estimation du réseau ne force plus une baisse de qualité.
+  Une connexion trop lente peut donc occasionner une mise en tampon.
+- Worker : places séparées pour le premier affichage et pour les variantes.
+  Chaque variante secondaire rend sa place. Plusieurs instances utilisent
+  la prise atomique SQL et les baux ; aucune remise en file fondée sur le seul
+  updated_at d'une autre instance.
+- Une optimisation échouée est reprise jusqu'à trois échecs enregistrés.
+  Ensuite la publication visible reste accessible, l'état signale l'erreur,
+  variantsComplete reste false et l'original est conservé pour intervention.
+  Ces originaux retenus nécessitent un suivi/nettoyage administratif ultérieur.
+- Le passage 720p -> 1080p ne recharge pas la page. Une brève mise en tampon
+  reste possible. Pas de garantie d'aperçu pour tous les codecs.
+
+CAPACITÉ
+Les valeurs ci-dessus offrent 1 place initiale + 1 place d'optimisation par
+instance. Elles ne constituent pas 1 000 compressions simultanées.
+Le code accepte plusieurs instances et des places réglables ; il ne crée pas
+lui-même de nouveaux serveurs et ne configure pas l'autoscaling Railway.
+Pour des instances spécialisées : initiale PRIMARY=1 / OPTIMIZATION=0 ;
+optimisation PRIMARY=0 / OPTIMIZATION=1 (avec les noms complets ci-dessus).
+Augmenter seulement après mesure CPU/RAM, durée et âge des jobs en attente.
+Les fichiers temporaires doivent rester propres à chaque instance ; ne pas
+partager le même répertoire de travail entre réplicas.
+
+VÉRIFICATIONS LOCALES
+- 21 tests worker réussis, dont véritable compression FFmpeg photo/vidéo,
+  séquence 720p -> 1080p -> 540p -> 360p, reprise TUS et ordonnanceur simulé.
+- 9 tests du site réussis avec lecteurs/événements simulés : aperçu, conservation
+  de position, pause, erreur de source, choix manuel et lecteur détaché.
+- 93 scripts inline et fichiers principaux du site compilés sans erreur ;
+  vérification syntaxique du worker réussie.
+- Le SQL n'a pas été exécuté sur votre Supabase. Pas de navigateur Android
+  réel ni de test de charge sur Railway dans cet environnement.
+
+ESSAIS APRÈS DÉPLOIEMENT
+A. Sélectionner une vidéo lourde ; aller aux détails puis revenir ; changer
+   plusieurs fois de fichier. Vérifier aussi une photo incompatible.
+B. Publier simultanément depuis deux comptes ; constater qu'une optimisation
+   peut avancer pendant une première version. Vérifier l'indépendance des jobs.
+C. Ouvrir le 720p avant la fin du 1080p, lire plus de 36 secondes et vérifier le
+   changement sans retour au début ; répéter avec pause et choix manuel 720p.
+D. Répéter C en Boutique et en Story directement publiée.
+E. Interrompre une instance en environnement de test : le job doit être repris
+   après expiration du bail (1 800 s par défaut), pas immédiatement.
+F. Tester ensuite la charge réelle et dimensionner les instances.

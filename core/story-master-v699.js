@@ -953,7 +953,7 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
   }
   function close(reason){
     try{var closingRow=currentRow();if(closingRow&&reason!=='complete'&&reason!=='deleted'&&reason!=='empty'&&reason!=='error')analyticsTrackV728('story_exit',closingRow,{dedupeKey:'v728:story-exit:'+sessionStorage.getItem('HAPPYAD_ANALYTICS_SESSION_V728')+':'+storyId(closingRow)+':'+Math.floor(Date.now()/3000),metadata:{reason:clean(reason)||'close'}})}catch(_ae){}
-    state.closed=true;state.openToken++;stopTimer();stopAgeTickerV783();stopMedia();clearStoryPreloadsV793();clearTimeout(state.holdTimer);state.holdTimer=0;clearTimeout(state.composerDismissTimer);state.composerDismissTimer=0;state.composerDismissGuard=false;state.composerDismissGuardUntil=0;state.composerDismissPointerId=null;state.composerViewportBase=0;state.shareOverlayOpen=false;state.shareResumePending=false;state.pointers.clear();resetZoom(false);
+    clearTimeout(storyQualityTimerV1125);state.closed=true;state.openToken++;stopTimer();stopAgeTickerV783();stopMedia();clearStoryPreloadsV793();clearTimeout(state.holdTimer);state.holdTimer=0;clearTimeout(state.composerDismissTimer);state.composerDismissTimer=0;state.composerDismissGuard=false;state.composerDismissGuardUntil=0;state.composerDismissPointerId=null;state.composerViewportBase=0;state.shareOverlayOpen=false;state.shareResumePending=false;state.pointers.clear();resetZoom(false);
     if(state.box){
       state.box.classList.remove('on','full','haStoryShareUnderlayV705');
       state.box.setAttribute('aria-hidden','true');
@@ -1010,6 +1010,7 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
   function animate(){
     if(state.closed||state.paused||!state.box.classList.contains('on'))return;
     var v=state.box.querySelector('#ha629Media video'),pct=0;
+    if(v&&v.__fyblicSwitch){state.raf=requestAnimationFrame(animate);return;}
     if(v&&isFinite(v.duration)&&v.duration>0){state.duration=Math.max(1000,v.duration*1000);state.elapsed=Math.max(0,(v.currentTime||0)*1000);pct=state.elapsed/state.duration*100}
     else{var n=state.elapsed+(progressNowV786()-state.startedAt);pct=n/state.duration*100;if(n>=state.duration){setProgress(100);next();return}}
     setProgress(pct);state.raf=requestAnimationFrame(animate);
@@ -1045,7 +1046,7 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
       v.onloadedmetadata=start;v.oncanplay=start;
       v.ondurationchange=function(){if(isFinite(v.duration)&&v.duration>0){state.duration=Math.max(1000,v.duration*1000);state.elapsed=(v.currentTime||0)*1000;setProgress(state.elapsed/state.duration*100)}};
       v.ontimeupdate=function(){if(!state.paused&&isFinite(v.duration)&&v.duration>0){state.duration=v.duration*1000;state.elapsed=(v.currentTime||0)*1000;setProgress(state.elapsed/state.duration*100)}};
-      v.onended=next;try{v.play().catch(function(){})}catch(_e){}if(v.readyState>=1)start()
+      v.onended=function(){if(!v.__fyblicSwitch)next();};try{v.play().catch(function(){})}catch(_e){}if(v.readyState>=1)start()
     }else startPhotoProgressV787()
   }
   function next(){if(state.closed)return;if(state.index>=state.rows.length-1){close('complete');return}paint(state.index+1)}
@@ -1642,8 +1643,49 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
     if(action){['pointerdown','pointermove','pointerup','click'].forEach(function(t){action.addEventListener(t,function(e){e.stopPropagation()},{passive:false})});action.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openSharedStoryV888(row)},false)}
   }
 
+  var storyQualityTimerV1125=0;
+  function storySourceV1125(row){
+    var master=window.HappyVideoQualityMasterV1099;
+    return master?master.pick(row.video_variants||{},mediaOf(row),{force1080:true}).url:mediaOf(row);
+  }
+  function trackStoryQualityV1125(row){
+    clearTimeout(storyQualityTimerV1125);
+    var id=storyId(row),video=$('ha629Media').querySelector('video');
+    if(!video||isSharedStoryV888(row)||isSharedPostStoryV912(row))return;
+    function valid(){return !state.closed&&currentRow()===row&&video.isConnected;}
+    async function poll(){
+      if(!valid())return;
+      try{
+        if(!document.hidden){
+          var c=sb();
+          if(c){
+            var response=await c.from('happyad_stories').select('id,media_url,video_variants').eq('id',id).maybeSingle();
+            if(!valid())return;
+            if(response.data&&!response.error){
+              row.media_url=response.data.media_url;row.video_variants=response.data.video_variants||{};
+              var url=storySourceV1125(row),master=window.HappyVideoQualityMasterV1099,pref=master&&master.get();
+              if(url&&window.FyblicVideoSwitchV1125)window.FyblicVideoSwitchV1125.switchSource(video,url,{
+                allowed:function(){return valid()&&(!master||master.get()===pref);}
+              });
+            }
+          }
+        }
+      }catch(_e){}
+      if(valid())storyQualityTimerV1125=setTimeout(poll,5000);
+    }
+    storyQualityTimerV1125=setTimeout(poll,1800);
+  }
+  window.addEventListener('HAPPYAD_VIDEO_QUALITY_CHANGED_V1099',function(){
+    if(state.closed)return;
+    var row=currentRow(),video=$('ha629Media').querySelector('video');
+    if(row&&video&&window.FyblicVideoSwitchV1125){
+      var master=window.HappyVideoQualityMasterV1099,pref=master&&master.get();
+      window.FyblicVideoSwitchV1125.switchSource(video,storySourceV1125(row),{allowed:function(){return !state.closed&&currentRow()===row&&(!master||master.get()===pref);}});
+    }
+  });
+
   function paint(n){
-    if(state.closed||!state.rows.length)return;stopTimer();resetZoom(false);state.index=Math.max(0,Math.min(state.rows.length-1,n));var row=currentRow(),p=state.profile||{},name=clean(p.full_name||p.display_name||p.name||row.user_name)||'Utilisateur Fyblic',av=clean(p.avatar_url||p.avatar||row.user_avatar),badge=clean(p.badge||p.user_badge||p.badge_type||p.verification_badge||p.verified_badge||p.profile_badge||row.badge||row.user_badge||row.badge_type),media=mediaOf(row),typ=typeOf(row);
+    if(state.closed||!state.rows.length)return;stopTimer();resetZoom(false);state.index=Math.max(0,Math.min(state.rows.length-1,n));var row=currentRow(),p=state.profile||{},name=clean(p.full_name||p.display_name||p.name||row.user_name)||'Utilisateur Fyblic',av=clean(p.avatar_url||p.avatar||row.user_avatar),badge=clean(p.badge||p.user_badge||p.badge_type||p.verification_badge||p.verified_badge||p.profile_badge||row.badge||row.user_badge||row.badge_type),media=typeOf(row)==='video'?storySourceV1125(row):mediaOf(row),typ=typeOf(row);
     $('ha629Avatar').innerHTML=av?'<img src="'+esc(av)+'" alt="">':'<span class="happyadDefaultProfileAvatarV989" aria-hidden="true"></span>';$('ha629Name').innerHTML=esc(name)+badgeHtml(badge);$('ha629Sub').textContent=ageOf(row);$('ha629Caption').textContent=descOf(row);
     var backdrop=$('ha629Backdrop'),mediaBox=$('ha629Media'),sharedStory=isSharedStoryV888(row),sharedPost=isSharedPostStoryV912(row),shared=sharedStory||sharedPost,backdropMedia=shared?clean(row.thumbnail_url||row.poster_url||media):media;if(typ==='photo'||shared)backdrop.style.backgroundImage='url("'+backdropMedia.replace(/["\\]/g,'\\$&')+'")';else backdrop.style.backgroundImage='none';
     mediaBox.classList.toggle('is-shared-post-v912',shared);
@@ -1652,7 +1694,7 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
     else if(sharedPost){$('ha629Caption').textContent='';mediaBox.innerHTML=sharedPostCardHtmlV912(row);bindSharedPostCardV912(row)}
     else mediaBox.innerHTML=typ==='video'?'<video src="'+esc(media)+'" autoplay playsinline webkit-playsinline preload="auto" controlslist="nodownload noplaybackrate" disablepictureinpicture></video>':'<img src="'+esc(media)+'" alt="Story" draggable="false">';
     resetSegments(state.index);renderBottom(row);window.__HAPPYAD_CURRENT_STORY_CTX={id:storyId(row),row:row,p:itemFromRow(row,p),profile:p,isMine:ownerOf(row)===currentUid()};
-    startAgeTickerV783();markSeen(row).then(function(){setTimeout(renderRadarHomeV629,50)});try{document.dispatchEvent(new CustomEvent('happyad:story-master-opened-v629'))}catch(_e){}startDuration(row);scheduleStoryNeighborsV793(state.index)
+    startAgeTickerV783();markSeen(row).then(function(){setTimeout(renderRadarHomeV629,50)});try{document.dispatchEvent(new CustomEvent('happyad:story-master-opened-v629'))}catch(_e){}startDuration(row);trackStoryQualityV1125(row);scheduleStoryNeighborsV793(state.index)
   }
 
   function show(owner,rows,profile,startId){
