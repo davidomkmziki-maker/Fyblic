@@ -183,8 +183,7 @@
   function validatePublicFile(file){
     var kind=publicMediaKind(file);
     if(!kind)throw new Error('Les médias publics acceptent uniquement des images ou vidéos.');
-    if(kind==='image'&&Number(file.size||0)>20*1024*1024)throw new Error('Chaque image doit faire au maximum 20 Mo.');
-    if(kind==='video'&&Number(file.size||0)>1100000000)throw new Error('Chaque vidéo doit faire au maximum 1,1 Go.');
+    if(Number(file.size||0)>5000000000)throw new Error('Chaque média doit faire au maximum 5 Go.');
   }
   function validatePrivateFile(file){
     var type=lower(file&&file.type);

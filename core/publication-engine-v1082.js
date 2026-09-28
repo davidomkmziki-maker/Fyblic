@@ -1,27 +1,20 @@
-/* Fyblic V1122 — moteur publication durable : grâce TUS 404/410 + reprise adaptative.
+/* Fyblic V1083 Story TUS Anchor — correctif ciblé sur Story, base moteur V1082 inchangée pour Normal/Boutique.
    - Un seul protocole TUS direct pour tous les médias.
    - Les fichiers restent détenus par la fenêtre principale quand le module Publication se ferme.
    - Les publications multi-médias sont orchestrées comme un groupe unique avec progression agrégée.
 */
 (function(){
   'use strict';
-  if(window.FyblicPublicationEngineV1082&&String(window.FyblicPublicationEngineV1082.version||'').indexOf('1122.')===0)return;
+  if(window.FyblicPublicationEngineV1082)return;
 
   var BASE=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app').replace(/\/+$/,'');
   var JOBS_KEY='FYBLIC_PUBLICATION_JOBS_V1080';
   var GROUPS_KEY='FYBLIC_PUBLICATION_GROUPS_V1080';
-  var LEGACY_ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
-  var ACTIVE_GROUPS_KEY='FYBLIC_ACTIVE_PUBLICATIONS_V1117';
-  var REQUIRED_SCHEMA_VERSION=1118;
-  var REQUIRED_PROTOCOL_VERSION=1118;
-  var DIRECT_TUS_CHUNK=8*1024*1024;
-  var DIRECT_TUS_MIN_CHUNK=2*1024*1024;
-  var DIRECT_TUS_MAX_CHUNK=12*1024*1024;
-  var DIRECT_TUS_MAX_REFRESHES=3;
-  var DIRECT_TUS_404_GRACE_MS=[250,700,1500];
+  var ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
+  var REQUIRED_SCHEMA_VERSION=1082;
+  var REQUIRED_PROTOCOL_VERSION=1082;
+  var DIRECT_TUS_CHUNK=6*1024*1024;
   var STORY_FIRST_TUS_CHUNK=1*1024*1024;
-  // V1112 Étape 1 : défense client cohérente avec Supabase et le worker.
-  var MAX_MEDIA_BYTES_V1112=4_000_000_000;
   var healthCache={at:0,value:false,detail:null};
   var watchers={};
   var terminalJobs={};
@@ -33,7 +26,6 @@
     var m=clean(value);
     if(!m)return 'Publication impossible. Réessaie.';
     if(/requested file could not be read|permission problems|reference to a file|notreadableerror|file.*could not be read/i.test(m))return 'Le téléphone a interrompu l’accès au média. Sélectionne-le puis réessaie.';
-    if(/404|not found|introuvable/i.test(m))return 'Une étape média a expiré. Fyblic tente désormais une reprise automatique.';
     if(/supabase|23502|failing row|violates|constraint|postgres|pgrst|sql/i.test(m))return 'La publication n’a pas pu être enregistrée. Réessaie après la mise à jour.';
     return m.slice(0,160);
   }
@@ -58,20 +50,10 @@
   function guardJob(job){if(!job||!job.id)return job;var id=String(job.id),known=terminalJobs[id];if(known&&!terminalStatus(job.status))return null;if(terminalStatus(job.status))terminalJobs[id]=job.status;return job;}
   function mergeJobState(previous,next){previous=previous||{};next=guardJob(next);if(!next)return previous;var out=Object.assign({},previous,next);if(!terminalStatus(next.status))out.progress=Math.max(Number(previous.progress||0),Number(next.progress||0));return out;}
   function visibleJob(job){if(!job||typeof job!=='object')return job;var copy=Object.assign({},job);copy.stage=publicStage(copy);return copy;}
-  function writeActiveGroups(list){try{localStorage.setItem(ACTIVE_GROUPS_KEY,JSON.stringify((list||[]).slice(0,24)));}catch(_e){}}
-  function activeGroups(){
-    var list=[];
-    try{var raw=JSON.parse(localStorage.getItem(ACTIVE_GROUPS_KEY)||'[]');if(Array.isArray(raw))list=raw;}catch(_e){list=[];}
-    /* V1117 : migrer une dernière fois l'ancien verrou unique sans perdre une tâche
-       déjà partie avant la mise à jour. Il ne sert plus à bloquer un nouveau post. */
-    try{var legacy=JSON.parse(localStorage.getItem(LEGACY_ACTIVE_KEY)||'null');if(legacy&&legacy.id&&!list.some(function(x){return x&&String(x.id)===String(legacy.id);}))list.unshift(legacy);localStorage.removeItem(LEGACY_ACTIVE_KEY);}catch(_legacy){}
-    var now=Date.now(),seen={};
-    list=list.filter(function(item){if(!item||!item.id)return false;var id=String(item.id);if(seen[id])return false;seen[id]=1;var at=Number(item.at||item.createdAt||0);return !at||now-at<6*60*60*1000;});
-    writeActiveGroups(list);return list;
-  }
-  function activateGroup(group){if(!group||!group.id)return;var id=String(group.id),list=activeGroups().filter(function(x){return x&&String(x.id)!==id;});list.unshift({id:id,postId:group.postId||'',mode:group.publicationType||'normal',children:(group.children||[]).slice(),at:Date.now()});writeActiveGroups(list);}
-  function updateActiveChildren(group){if(!group||!group.id)return;var id=String(group.id),list=activeGroups(),found=false;list=list.map(function(a){if(!a||String(a.id)!==id)return a;found=true;return Object.assign({},a,{children:(group.children||[]).slice(),postId:group.postId||a.postId||'',mode:group.publicationType||a.mode||'normal',at:Number(a.at||Date.now())});});if(!found)list.unshift({id:id,postId:group.postId||'',mode:group.publicationType||'normal',children:(group.children||[]).slice(),at:Date.now()});writeActiveGroups(list);}
-  function clearActive(id){id=String(id||'');if(!id)return;writeActiveGroups(activeGroups().filter(function(a){return a&&String(a.id)!==id;}));}
+  function active(){try{var value=JSON.parse(localStorage.getItem(ACTIVE_KEY)||'null'),me=clean(localStorage.getItem('HAPPYAD_AUTH_UID'));return value&&value.id&&(!value.userId||!me||String(value.userId)===me)?value:null;}catch(_e){return null;}}
+  function activateGroup(group){try{localStorage.setItem(ACTIVE_KEY,JSON.stringify({id:group.id,userId:group.userId||'',postId:group.postId||'',mode:group.publicationType||'normal',children:(group.children||[]).slice(),at:Date.now()}));}catch(_e){}}
+  function updateActiveChildren(group){var a=active();if(!a||String(a.id)!==String(group.id))return;try{a.children=(group.children||[]).slice();localStorage.setItem(ACTIVE_KEY,JSON.stringify(a));}catch(_e){}}
+  function clearActive(id){var a=active();if(a&&String(a.id)===String(id||'')){try{localStorage.removeItem(ACTIVE_KEY);}catch(_e){}}}
   function rememberJob(job,groupId){job=guardJob(job);if(!job||!job.id)return;var list=readList(JOBS_KEY).filter(function(x){return x&&x.id!==job.id;});list.unshift({id:job.id,groupId:groupId||job.publication_group_id||'',postId:job.post_id||'',publicationType:job.publication_type||'',status:job.status||'uploading',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',createdAt:job.created_at||new Date().toISOString(),updatedAt:Date.now()});writeList(JOBS_KEY,list,60);}
   function rememberGroup(group){if(!group||!group.id)return;var list=readList(GROUPS_KEY).filter(function(x){return x&&x.id!==group.id;});list.unshift({id:group.id,postId:group.postId||'',publicationType:group.publicationType||'',children:(group.children||[]).slice(),assetCount:Number(group.assetCount||0),createdAt:group.createdAt||new Date().toISOString(),updatedAt:Date.now()});writeList(GROUPS_KEY,list,20);}
   function forgetGroup(id){writeList(GROUPS_KEY,readList(GROUPS_KEY).filter(function(x){return x&&String(x.id)!==String(id||'');}),20);}
@@ -84,114 +66,49 @@
   function rawEvent(job,groupId,emit){
     job=guardJob(job);if(!job)return;rememberJob(job,groupId);
     if(emit===false)return;
-    dispatch({jobId:job.id,groupId:groupId||job.publication_group_id||'',postId:job.post_id||'',publicationType:job.publication_type||'',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:publicStage(job),error:publicError(job.error_message||''),result:job.result||null,renditions:Array.isArray(job.renditions)?job.renditions:[]});
+    dispatch({jobId:job.id,groupId:groupId||job.publication_group_id||'',postId:job.post_id||'',publicationType:job.publication_type||'',status:job.status||'',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:publicStage(job),error:publicError(job.error_message||''),result:job.result||null});
   }
   async function available(force){
     if(!force&&Date.now()-healthCache.at<30000)return healthCache.value;
     try{
       var r=await request('/health',{},'',10000),p=r.body&&r.body.pipelineV2||{};
       var caps=p.capabilities||{};
-      var ok=!!(r.body&&r.body.ok&&p.enabled&&p.ready&&p.schemaReady&&Number(p.schemaVersion||0)>=REQUIRED_SCHEMA_VERSION&&Number(p.protocolVersion||0)>=REQUIRED_PROTOCOL_VERSION&&p.uploadMode==='direct-tus-binary'&&caps.normal===true&&caps.story===true&&caps.boutique===true&&caps.album===true&&caps.groupAssets===true&&caps.groupFinalize===true&&caps.postMediaSafe===true&&caps.yieldingOptimization===true&&caps.posterBeforePrimary===true&&caps.renditionsTable===true&&caps.parentRenditions===true&&caps.renditionState===true&&caps.renditionClose===true&&caps.fairUserScheduler===true&&caps.userScheduleTable===true&&caps.perUserActiveCap===true&&caps.highestNativePrimary===true&&caps.fastPathBackgroundVariants===true&&caps.fastPathSafeRemux===true&&caps.limits4gb===true&&caps.duration15m===true&&caps.primary1080WhenAvailable===true&&caps.noVideoUpscaling===true&&caps.fastPathPrimaryFirst===true&&caps.multiQueuedPerUser===true&&caps.submissionIdempotency===true);
+      var ok=!!(r.body&&r.body.ok&&p.enabled&&p.ready&&p.schemaReady&&Number(p.schemaVersion||0)>=REQUIRED_SCHEMA_VERSION&&Number(p.protocolVersion||0)>=REQUIRED_PROTOCOL_VERSION&&p.uploadMode==='direct-tus-binary'&&caps.normal===true&&caps.story===true&&caps.boutique===true&&caps.album===true&&caps.groupAssets===true&&caps.groupFinalize===true&&caps.postMediaSafe===true&&caps.yieldingOptimization===true&&caps.posterBeforePrimary===true);
       healthCache={at:Date.now(),value:ok,detail:p};return ok;
     }catch(error){healthCache={at:Date.now(),value:false,detail:{schemaError:error&&error.message||'Service média indisponible'}};return false;}
   }
-  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1118|1116|1115|1114|1113|1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1118 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1118 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
+  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1082 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1082 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
   function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0',apikey:clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY)},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
   async function directFetch(url,options,timeoutMs){var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}}
   async function tusOffset(upload,token){var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000);if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}var offset=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');return offset;}
-  async function tusOffsetWithGrace(upload,token,delays){
-    delays=Array.isArray(delays)?delays:DIRECT_TUS_404_GRACE_MS;
-    var lastError=null;
-    for(var i=0;i<=delays.length;i++){
-      try{return await tusOffset(upload,token);}
-      catch(error){
-        lastError=error;
-        if(!error||[404,410].indexOf(Number(error.status||0))<0||i>=delays.length)throw error;
-        await sleep(Math.max(0,Number(delays[i]||0)));
-      }
-    }
-    throw lastError||new Error('Session directe indisponible');
-  }
   async function uploadDirect(file,created,currentAuth,onProgress,transferOptions){
     transferOptions=transferOptions&&typeof transferOptions==='object'?transferOptions:{};
-    var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct absente');
-    var token=currentAuth.token,retries=0,sessionRefreshes=0;
-    var chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
-    chunkBytes=Math.max(DIRECT_TUS_MIN_CHUNK,Math.min(DIRECT_TUS_MAX_CHUNK,chunkBytes));
+    var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct V1082 absente');
+    var token=currentAuth.token,offset=await tusOffset(upload,token),retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
     var firstChunkBytes=Number(transferOptions.firstChunkBytes||0);if(!Number.isSafeInteger(firstChunkBytes)||firstChunkBytes<0)firstChunkBytes=0;if(firstChunkBytes>chunkBytes)firstChunkBytes=chunkBytes;
-    var offset=0,anchored=false;
+    var anchored=offset>0;
     function reportAnchored(){if(!anchored)return;if(typeof transferOptions.onAnchored==='function'){try{transferOptions.onAnchored(Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/Math.max(1,file.size)*44))),stage:'Envoi du média'}),{offset:offset,fileSize:file.size});}catch(uiError){try{console.warn('Fyblic Story TUS anchor UI ignorée:',uiError&&uiError.message||uiError);}catch(_e){}}transferOptions.onAnchored=null;}}
-    async function refreshUploadSession(reason){
-      if(sessionRefreshes>=DIRECT_TUS_MAX_REFRESHES)throw new Error('Session d’envoi expirée plusieurs fois');
-      sessionRefreshes++;
-      var refreshed=visibleJob((await request('/api/v2/publications/'+created.id+'/refresh-upload',{method:'POST'},currentAuth.token,45000)).body);
-      if(!refreshed||!refreshed.upload||!/^https:\/\//i.test(clean(refreshed.upload.url)))throw new Error('Reprise de session indisponible');
-      Object.assign(created,refreshed);upload=created.upload;
-      chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
-      chunkBytes=Math.max(DIRECT_TUS_MIN_CHUNK,Math.min(DIRECT_TUS_MAX_CHUNK,chunkBytes));
-      offset=Number(upload.offset||0);if(!Number.isSafeInteger(offset)||offset<0)offset=0;
-      anchored=offset>0;
-      retries=0;
-      try{console.warn('Fyblic: session TUS renouvelée',reason||'404/410');}catch(_e){}
-      if(anchored)reportAnchored();
-    }
-    try{offset=await tusOffsetWithGrace(upload,token);}
-    catch(initialError){
-      if(initialError&&(initialError.status===401||initialError.status===403)){
-        try{
-          currentAuth=await auth();token=currentAuth.token;
-          offset=await tusOffsetWithGrace(upload,token,[200,600]);
-          initialError=null;
-        }catch(authRetryError){initialError=authRetryError;}
-      }
-      if(initialError&&(initialError.status===404||initialError.status===410))await refreshUploadSession('initial-'+initialError.status);
-      else if(initialError)throw initialError;
-    }
-    anchored=offset>0;if(anchored)reportAnchored();
+    if(anchored)reportAnchored();
     while(offset<file.size){
       var step=(!anchored&&firstChunkBytes>0)?firstChunkBytes:chunkBytes;
-      var end=Math.min(offset+step,file.size),blob=file.slice(offset,end),startedAt=Date.now(),attemptChunkBytes=end-offset;
+      var end=Math.min(offset+step,file.size),blob=file.slice(offset,end);
       try{
         var response=await directFetch(upload.url,{method:'PATCH',headers:directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'}),body:blob},600000);
         if(!response.ok){var rejected=new Error('Envoi direct refusé ('+response.status+')');rejected.status=response.status;throw rejected;}
         var next=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(next)||next<=offset||next>end)throw new Error('Confirmation directe incohérente');
-        offset=next;
-        var elapsed=Math.max(1,Date.now()-startedAt);
-        if(retries===0&&attemptChunkBytes>=DIRECT_TUS_MIN_CHUNK){
-          if(elapsed<4500&&chunkBytes<DIRECT_TUS_MAX_CHUNK)chunkBytes=Math.min(DIRECT_TUS_MAX_CHUNK,chunkBytes+2*1024*1024);
-          else if(elapsed>22000&&chunkBytes>DIRECT_TUS_MIN_CHUNK)chunkBytes=Math.max(DIRECT_TUS_MIN_CHUNK,chunkBytes-2*1024*1024);
-        }
-        retries=0;
+        offset=next;retries=0;
         if(!anchored&&offset>0){anchored=true;reportAnchored();}
         var uploadState=Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/file.size*44))),stage:'Envoi du média'});
         if(onProgress)onProgress(uploadState);
       }catch(error){
         retries++;if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
         if(error&&(error.status===401||error.status===403)){try{currentAuth=await auth();token=currentAuth.token;}catch(_authError){}}
-        if(error&&(error.status===404||error.status===410)){
-          try{
-            offset=await tusOffsetWithGrace(upload,token,[300,900]);
-            if(!anchored&&offset>0){anchored=true;reportAnchored();}
-            await sleep(120);
-            continue;
-          }catch(sameSessionError){
-            if(!sameSessionError||[404,410].indexOf(Number(sameSessionError.status||0))<0)throw sameSessionError;
-          }
-          await refreshUploadSession('patch-'+error.status);
-          await sleep(300);
-          continue;
-        }
-        chunkBytes=Math.max(DIRECT_TUS_MIN_CHUNK,Math.min(chunkBytes,Math.floor(chunkBytes/2)||DIRECT_TUS_MIN_CHUNK));
-        try{offset=await tusOffsetWithGrace(upload,token,[300,900]);if(!anchored&&offset>0){anchored=true;reportAnchored();}}
-        catch(offsetError){
-          if(offsetError&&(offsetError.status===404||offsetError.status===410)){await refreshUploadSession('head-'+offsetError.status);await sleep(300);continue;}
-        }
+        try{offset=await tusOffset(upload,token);if(!anchored&&offset>0){anchored=true;reportAnchored();}}catch(_offsetError){}
         await sleep(Math.min(10000,retries*900));
       }
     }
     return offset;
   }
-
   function fingerprint(file){return [file.name||'media',file.size||0,file.lastModified||0,file.type||''].join(':');}
   async function status(id,token){var job=visibleJob((await request('/api/v2/publications/'+id,{},token,30000)).body);return guardJob(job)||job;}
   function primaryVisible(job){return !!(job&&job.primary_ready===true&&(job.publication_type!=='album'||(job.result&&job.result.group_visible===true)));}
@@ -201,8 +118,6 @@
     return watchers[key];
   }
   async function createAndUpload(file,options,currentAuth,onProgress){
-    if(!file||!Number.isSafeInteger(Number(file.size))||Number(file.size)<=0)throw new Error('Média invalide');
-    if(Number(file.size)>MAX_MEDIA_BYTES_V1112)throw new Error('Média trop lourd : maximum 4 Go');
     var created=visibleJob((await request('/api/v2/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       filename:file.name||'media',size:file.size,mime:file.type||'application/octet-stream',kind:options.kind||'photo',publicationType:options.publicationType||'normal',postId:options.postId,payload:options.payload||{},fingerprint:fingerprint(file),groupId:options.groupId||options.postId,assetIndex:options.assetIndex||0,assetCount:options.assetCount||1
     })},currentAuth.token,45000)).body);
@@ -225,11 +140,10 @@
   }
   async function submitMany(files,options){
     options=options||{};files=Array.prototype.slice.call(files||[]).filter(Boolean);if(!files.length)throw new Error('Média absent');
-    for(var limitIndex=0;limitIndex<files.length;limitIndex++){var limitFile=files[limitIndex];if(!Number.isSafeInteger(Number(limitFile.size))||Number(limitFile.size)<=0)throw new Error('Média invalide');if(Number(limitFile.size)>MAX_MEDIA_BYTES_V1112)throw new Error('Média trop lourd : maximum 4 Go');}
     if(options.publicationType==='story'&&files.length!==1)throw new Error('Une Story accepte un seul média.');
-    if(!(await available(true)))return {used:false,reason:'engine-v1118-unavailable'};
+    if(!(await available(true)))return {used:false,reason:'engine-v1082-unavailable'};
     var a=await auth();
-    var group={id:clean(options.groupId)||('pub_'+uid().replace(/-/g,'')),postId:clean(options.postId)||('p_'+uid().replace(/-/g,'')),publicationType:clean(options.publicationType)||'normal',assetCount:files.length,children:[],createdAt:new Date().toISOString()};
+    var group={id:clean(options.groupId)||('pub_'+uid().replace(/-/g,'')),postId:clean(options.postId)||('p_'+uid().replace(/-/g,'')),userId:clean(a.user&&a.user.id),publicationType:clean(options.publicationType)||'normal',assetCount:files.length,children:[],createdAt:new Date().toISOString()};
     rememberGroup(group);activateGroup(group);
     var states=new Array(files.length).fill(null).map(function(){return {status:'uploading',progress:0,primary_ready:false};});
     var queuedJobs=new Array(files.length);
@@ -266,15 +180,13 @@
   async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+id+'/cancel',{method:'POST'},a.token,30000)).body;rawEvent(job,job.publication_group_id||'',true);return job;}
   function forget(id){forgetJob(id);forgetGroup(id);clearActive(id);}
   async function resumeTracking(){
-    var groups=activeGroups().filter(function(a){return a&&a.id&&Array.isArray(a.children)&&a.children.length;});if(!groups.length)return;
+    var a=active();if(!a||!a.id||!Array.isArray(a.children)||!a.children.length)return;
     var session;try{session=await auth();}catch(_e){return;}
-    groups.forEach(function(a){
-      var group={id:a.id,postId:a.postId||'',publicationType:a.mode||'normal',children:a.children.slice(),assetCount:a.children.length};
-      var states=new Array(group.children.length).fill(null).map(function(){return {status:'processing',progress:45,primary_ready:false};});
-      group.children.forEach(function(id,index){watch(id,session.token,function(job){states[index]=mergeJobState(states[index],job);dispatch(aggregate(group,states));},false).then(function(){var allDone=states.every(function(row){return row&&terminalStatus(row.status);});if(allDone)clearActive(group.id);}).catch(function(error){states[index]={status:'failed',progress:Number(states[index]&&states[index].progress||45),error_message:error.message};dispatch(aggregate(group,states));});});
-    });
+    var group={id:a.id,postId:a.postId||'',publicationType:a.mode||'normal',children:a.children.slice(),assetCount:a.children.length};
+    var states=new Array(group.children.length).fill(null).map(function(){return {status:'processing',progress:45,primary_ready:false};});
+    group.children.forEach(function(id,index){watch(id,session.token,function(job){states[index]=mergeJobState(states[index],job);dispatch(aggregate(group,states));},false).catch(function(error){states[index]={status:'failed',progress:Number(states[index]&&states[index].progress||45),error_message:error.message};dispatch(aggregate(group,states));});});
   }
 
-  var api={version:'1122.0-54-preview-hardened',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
+  var api={version:'1082.1-story-tus-anchor',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();
