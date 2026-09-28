@@ -1,0 +1,7 @@
+FYBLIC Site V1128 — Native Android mode
+
+- Detects native Android app before PWA/service-worker startup by query and FyblicAndroid user-agent marker.
+- Never shows the browser/PWA install banner or install guide inside the Android application.
+- Prevents the install module from resetting PWA-disabled=false in native mode.
+- Normal browser/PWA behavior remains unchanged outside the Android application.
+- No media-selection, publication, quality, Supabase or worker logic changed.

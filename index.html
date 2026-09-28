@@ -3,6 +3,25 @@
 <!-- Fyblic V885: Stories last-good immediate + skeleton <=180ms -->
 <!-- Regression lineage cache-bust: 855r65-options-reactivation-fluide | 855r66-options-optimistic-supabase-bg | 855r67-popup-persistant-confirmation-haut | 855r90-home-card-single-design | 855r91-radar-add-persistent -->
 <!DOCTYPE html><html lang="fr" data-happyad-page="home"><head>
+<script id="fyblic-v1128-native-app-early-boot">
+(function(){
+  try{
+    var q=String(location.search||'');
+    var nativeAndroid=(/(?:^|[?&])native_app=android(?:&|$)/i.test(q)||/FyblicAndroid\/\d+/i.test(String(navigator.userAgent||'')));
+    if(!nativeAndroid)return;
+    window.__FYBLIC_NATIVE_ANDROID__=true;
+    window.__HAPPYAD_PWA_DISABLED__=true;
+    document.documentElement.setAttribute('data-fyblic-native','android');
+    try{localStorage.setItem('HAPPYAD_PWA_INSTALLED_AT_V610',String(Date.now()));}catch(_e){}
+  }catch(_e){}
+})();
+</script>
+<style id="fyblic-v1128-native-app-first-paint">
+html[data-fyblic-native="android"] #happyadInstallAppBtn,
+html[data-fyblic-native="android"] #happyadInstallAppBtn.on,
+html[data-fyblic-native="android"] #happyadPwaGuide,
+html[data-fyblic-native="android"] #happyadPwaGuide.on{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+</style>
 <style id="happyad-profile-avatar-source-v995">
 /* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
 .avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
@@ -10592,6 +10611,10 @@ body[data-happyad-main-page="message"] #happyadInstallAppBtn{display:none!import
   'use strict';
   if(window.__HAPPYAD_V16ZF_PWA_INSTALL_10S_SESSION__)return;
   window.__HAPPYAD_V16ZF_PWA_INSTALL_10S_SESSION__=true;
+  if(window.__FYBLIC_NATIVE_ANDROID__||window.__HAPPYAD_PWA_DISABLED__){
+    window.__HAPPYAD_PWA_DISABLED__=true;
+    return;
+  }
   window.__HAPPYAD_PWA_DISABLED__=false;
 
   var deferredPrompt=null;
