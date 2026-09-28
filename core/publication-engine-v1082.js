@@ -1,4 +1,4 @@
-/* Fyblic V1127 Publication Engine — lanes primaire/optimisation et équité multi-utilisateurs.
+/* Fyblic V1083 Story TUS Anchor — correctif ciblé sur Story, base moteur V1082 inchangée pour Normal/Boutique.
    - Un seul protocole TUS direct pour tous les médias.
    - Les fichiers restent détenus par la fenêtre principale quand le module Publication se ferme.
    - Les publications multi-médias sont orchestrées comme un groupe unique avec progression agrégée.
@@ -11,8 +11,8 @@
   var JOBS_KEY='FYBLIC_PUBLICATION_JOBS_V1080';
   var GROUPS_KEY='FYBLIC_PUBLICATION_GROUPS_V1080';
   var ACTIVE_KEY='FYBLIC_ACTIVE_PUBLICATION_V1067R1';
-  var REQUIRED_SCHEMA_VERSION=1127;
-  var REQUIRED_PROTOCOL_VERSION=1127;
+  var REQUIRED_SCHEMA_VERSION=1082;
+  var REQUIRED_PROTOCOL_VERSION=1082;
   var DIRECT_TUS_CHUNK=6*1024*1024;
   var STORY_FIRST_TUS_CHUNK=1*1024*1024;
   var healthCache={at:0,value:false,detail:null};
@@ -21,6 +21,12 @@
 
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
   function clean(v){return String(v==null?'':v).trim();}
+  function inferredMime(file){
+    var raw=clean(file&&file.type).toLowerCase();if(raw&&raw!=='application/octet-stream')return raw;
+    var name=clean(file&&file.name).toLowerCase(),m=name.match(/\.([a-z0-9]{2,8})$/),ext=m&&m[1]||'';
+    return ({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',heic:'image/heic',heif:'image/heif',avif:'image/avif',bmp:'image/bmp',tif:'image/tiff',tiff:'image/tiff',mp4:'video/mp4',mov:'video/quicktime',m4v:'video/x-m4v','3gp':'video/3gpp','3g2':'video/3gpp2',webm:'video/webm',mkv:'video/x-matroska',avi:'video/x-msvideo',mpeg:'video/mpeg',mpg:'video/mpeg',mts:'video/mp2t',m2ts:'video/mp2t',ts:'video/mp2t'})[ext]||'application/octet-stream';
+  }
+  function inferredKind(file){var mime=inferredMime(file),name=clean(file&&file.name).toLowerCase();if(mime.indexOf('video/')===0||/\.(mp4|mov|m4v|3gp|3g2|webm|mkv|avi|mpeg|mpg|mts|m2ts|ts)$/.test(name))return 'video';if(mime.indexOf('image/')===0||/\.(jpe?g|png|webp|gif|heic|heif|avif|bmp|tiff?)$/.test(name))return 'photo';return '';}
   function uid(){try{return crypto.randomUUID();}catch(_e){return 'g_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2);}}
   function publicError(value){
     var m=clean(value);
@@ -50,8 +56,8 @@
   function guardJob(job){if(!job||!job.id)return job;var id=String(job.id),known=terminalJobs[id];if(known&&!terminalStatus(job.status))return null;if(terminalStatus(job.status))terminalJobs[id]=job.status;return job;}
   function mergeJobState(previous,next){previous=previous||{};next=guardJob(next);if(!next)return previous;var out=Object.assign({},previous,next);if(!terminalStatus(next.status))out.progress=Math.max(Number(previous.progress||0),Number(next.progress||0));return out;}
   function visibleJob(job){if(!job||typeof job!=='object')return job;var copy=Object.assign({},job);copy.stage=publicStage(copy);return copy;}
-  function active(){try{var value=JSON.parse(localStorage.getItem(ACTIVE_KEY)||'null'),me=clean(localStorage.getItem('HAPPYAD_AUTH_UID'));return value&&value.id&&(!value.userId||!me||String(value.userId)===me)?value:null;}catch(_e){return null;}}
-  function activateGroup(group){try{localStorage.setItem(ACTIVE_KEY,JSON.stringify({id:group.id,userId:group.userId||'',postId:group.postId||'',mode:group.publicationType||'normal',children:(group.children||[]).slice(),at:Date.now()}));}catch(_e){}}
+  function active(){try{var value=JSON.parse(localStorage.getItem(ACTIVE_KEY)||'null');return value&&value.id?value:null;}catch(_e){return null;}}
+  function activateGroup(group){try{localStorage.setItem(ACTIVE_KEY,JSON.stringify({id:group.id,postId:group.postId||'',mode:group.publicationType||'normal',children:(group.children||[]).slice(),at:Date.now()}));}catch(_e){}}
   function updateActiveChildren(group){var a=active();if(!a||String(a.id)!==String(group.id))return;try{a.children=(group.children||[]).slice();localStorage.setItem(ACTIVE_KEY,JSON.stringify(a));}catch(_e){}}
   function clearActive(id){var a=active();if(a&&String(a.id)===String(id||'')){try{localStorage.removeItem(ACTIVE_KEY);}catch(_e){}}}
   function rememberJob(job,groupId){job=guardJob(job);if(!job||!job.id)return;var list=readList(JOBS_KEY).filter(function(x){return x&&x.id!==job.id;});list.unshift({id:job.id,groupId:groupId||job.publication_group_id||'',postId:job.post_id||'',publicationType:job.publication_type||'',status:job.status||'uploading',primaryReady:job.primary_ready===true,progress:Number(job.progress||0),stage:job.stage||'',createdAt:job.created_at||new Date().toISOString(),updatedAt:Date.now()});writeList(JOBS_KEY,list,60);}
@@ -73,11 +79,11 @@
     try{
       var r=await request('/health',{},'',10000),p=r.body&&r.body.pipelineV2||{};
       var caps=p.capabilities||{};
-      var ok=!!(r.body&&r.body.ok&&p.enabled&&p.ready&&p.schemaReady&&Number(p.schemaVersion||0)>=REQUIRED_SCHEMA_VERSION&&Number(p.protocolVersion||0)>=REQUIRED_PROTOCOL_VERSION&&p.uploadMode==='direct-tus-binary'&&caps.normal===true&&caps.story===true&&caps.boutique===true&&caps.album===true&&caps.groupAssets===true&&caps.groupFinalize===true&&caps.postMediaSafe===true&&caps.yieldingOptimization===true&&caps.posterBeforePrimary===true&&caps.laneIsolation===true&&caps.userFairness===true);
+      var ok=!!(r.body&&r.body.ok&&p.enabled&&p.ready&&p.schemaReady&&Number(p.schemaVersion||0)>=REQUIRED_SCHEMA_VERSION&&Number(p.protocolVersion||0)>=REQUIRED_PROTOCOL_VERSION&&p.uploadMode==='direct-tus-binary'&&caps.normal===true&&caps.story===true&&caps.boutique===true&&caps.album===true&&caps.groupAssets===true&&caps.groupFinalize===true&&caps.postMediaSafe===true&&caps.yieldingOptimization===true&&caps.posterBeforePrimary===true);
       healthCache={at:Date.now(),value:ok,detail:p};return ok;
     }catch(error){healthCache={at:Date.now(),value:false,detail:{schemaError:error&&error.message||'Service média indisponible'}};return false;}
   }
-  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1127|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1127 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1127 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
+  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1082 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1082 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
   function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0',apikey:clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY)},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
   async function directFetch(url,options,timeoutMs){var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}}
   async function tusOffset(upload,token){var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000);if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}var offset=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');return offset;}
@@ -109,7 +115,7 @@
     }
     return offset;
   }
-  function fingerprint(file){return [file.name||'media',file.size||0,file.lastModified||0,file.type||''].join(':');}
+  function fingerprint(file){return [file.name||'media',file.size||0,file.lastModified||0,inferredMime(file)].join(':');}
   async function status(id,token){var job=visibleJob((await request('/api/v2/publications/'+id,{},token,30000)).body);return guardJob(job)||job;}
   function primaryVisible(job){return !!(job&&job.primary_ready===true&&(job.publication_type!=='album'||(job.result&&job.result.group_visible===true)));}
   async function watch(id,token,onProgress,untilPrimary){
@@ -119,7 +125,7 @@
   }
   async function createAndUpload(file,options,currentAuth,onProgress){
     var created=visibleJob((await request('/api/v2/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      filename:file.name||'media',size:file.size,mime:file.type||'application/octet-stream',kind:options.kind||'photo',publicationType:options.publicationType||'normal',postId:options.postId,payload:options.payload||{},fingerprint:fingerprint(file),groupId:options.groupId||options.postId,assetIndex:options.assetIndex||0,assetCount:options.assetCount||1
+      filename:file.name||'media',size:file.size,mime:inferredMime(file),kind:options.kind||inferredKind(file)||'photo',publicationType:options.publicationType||'normal',postId:options.postId,payload:options.payload||{},fingerprint:fingerprint(file),groupId:options.groupId||options.postId,assetIndex:options.assetIndex||0,assetCount:options.assetCount||1
     })},currentAuth.token,45000)).body);
     rememberJob(created,options.groupId||'');
     if(typeof options.onCreated==='function')options.onCreated(created);
@@ -143,7 +149,7 @@
     if(options.publicationType==='story'&&files.length!==1)throw new Error('Une Story accepte un seul média.');
     if(!(await available(true)))return {used:false,reason:'engine-v1082-unavailable'};
     var a=await auth();
-    var group={id:clean(options.groupId)||('pub_'+uid().replace(/-/g,'')),postId:clean(options.postId)||('p_'+uid().replace(/-/g,'')),userId:clean(a.user&&a.user.id),publicationType:clean(options.publicationType)||'normal',assetCount:files.length,children:[],createdAt:new Date().toISOString()};
+    var group={id:clean(options.groupId)||('pub_'+uid().replace(/-/g,'')),postId:clean(options.postId)||('p_'+uid().replace(/-/g,'')),publicationType:clean(options.publicationType)||'normal',assetCount:files.length,children:[],createdAt:new Date().toISOString()};
     rememberGroup(group);activateGroup(group);
     var states=new Array(files.length).fill(null).map(function(){return {status:'uploading',progress:0,primary_ready:false};});
     var queuedJobs=new Array(files.length);
@@ -187,6 +193,6 @@
     group.children.forEach(function(id,index){watch(id,session.token,function(job){states[index]=mergeJobState(states[index],job);dispatch(aggregate(group,states));},false).catch(function(error){states[index]={status:'failed',progress:Number(states[index]&&states[index].progress||45),error_message:error.message};dispatch(aggregate(group,states));});});
   }
 
-  var api={version:'1127.0-parallel-lanes',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
+  var api={version:'1126.1-media-lease-mime',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

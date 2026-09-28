@@ -61,12 +61,22 @@
     return out;
   }
   function autoDesired(){
-    /* V1127 : Auto vise toujours 1080p. Si 1080p n'est pas encore disponible,
-       pick() utilise 720p/540p/360p comme repli temporaire puis remonte vers 1080p.
-       Un choix manuel 720p/540p/360p reste strictement respecté. */
-    return '1080p';
+    try{
+      var c=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
+      var effective=clean(c.effectiveType).toLowerCase(),down=Number(c.downlink||0);
+      /* Auto reste volontairement conservateur : 1080p sauf reseau franchement faible. */
+      if(down>0){
+        if(down<0.30)return '360p';
+        if(down<0.55)return '540p';
+        if(down<0.95)return '720p';
+        return '1080p';
+      }
+      if(effective==='slow-2g')return '360p';
+      if(effective==='2g')return '540p';
+      if(effective==='3g')return '720p';
+      return '1080p';
+    }catch(_e){return '1080p';}
   }
-
   function desired(options){
     options=options||{};
     var pref=get();
@@ -88,5 +98,5 @@
   }
   function label(q){q=normalize(q==null?get():q);return q==='auto'?'Auto · 1080p prioritaire':q;}
 
-  window.HappyVideoQualityMasterV1099={version:'V1127',get:get,set:set,isManual:isManual,desired:desired,autoDesired:autoDesired,normalizeVariants:normalizeVariants,pick:pick,label:label,userId:uid,storageKey:storageKey};
+  window.HappyVideoQualityMasterV1099={version:'V1099',get:get,set:set,isManual:isManual,desired:desired,autoDesired:autoDesired,normalizeVariants:normalizeVariants,pick:pick,label:label,userId:uid,storageKey:storageKey};
 })();

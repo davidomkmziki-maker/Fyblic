@@ -1,0 +1,11 @@
+FYBLIC V1126 — SELECTION MEDIA CAMERA/GALERIE
+
+1. Le + ouvre l'interface caméra plein écran quand le module Publication devient visible.
+2. Vidéo : limite d'enregistrement affichée 15 min. Photo : mode PHOTO disponible.
+3. Le petit carré ouvre le sélecteur sécurisé Android limité aux photos et vidéos.
+4. Chaque ouverture crée un nouvel input média. L'input qui détient le média courant reste attaché au document jusqu'au remplacement ou jusqu'à la prise en charge de la publication; aucune remise à zéro prématurée de input.value.
+5. Détection média robuste par MIME + extension (MP4/MOV/WebM/3GP/MKV, JPG/PNG/WebP/HEIC/HEIF/AVIF, etc.).
+6. Une erreur de décodage du navigateur ne montre plus une icône cassée : le File original reste intact et publiable par le worker.
+7. Le moteur V1082 transmet un MIME déduit de l'extension si Android fournit un type vide ou application/octet-stream.
+8. Aucun nouveau SQL requis.
+9. Si une publication utilise encore le File Android en arrière-plan, rouvrir + ou fermer le module ne détache plus ce fichier; la galerie/caméra est bloquée jusqu'au point sûr de la publication précédente.

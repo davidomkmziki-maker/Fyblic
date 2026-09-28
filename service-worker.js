@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1129-native-media-bridge-20260928';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1113-legal-boot-stable-20260924';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -67,12 +67,12 @@ var HAPPYAD_APP_SHELL = [
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
   './modules/assistance.html?v=974-p1-module-lifecycle-registry',
-  './modules/video.html?v=1127-live-1080',
+  './modules/video.html?v=1104-quality-clean',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
-  './modules/publish.html?v=1129-native-media-bridge',
+  './modules/publish.html?v=1072-finalisation-reseau',
   './core/media-compression-client-v1.js?v=1067-compression-lock',
-  './core/publication-engine-v1082.js?v=1127-parallel-lanes',
+  './core/publication-engine-v1082.js?v=1083-story-tus-anchor',
   './core/publication-background-ui-v2.js?v=1081-fast-primary',
   './core/profile-publication-notice-v1066.js?v=1066-silent-finish',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
@@ -88,7 +88,7 @@ var HAPPYAD_APP_SHELL = [
   './core/follow-master-v855r34.js?v=986-professional-icons-love',
   './core/auth-storage-quota-master-v752.js?v=937-idb-auth-purge',
   './core/supabase-config-master-v973.js?v=973-p1-central-config',
-  './core/video-quality-master-v1099.js?v=1127-live-1080',
+  './core/video-quality-master-v1099.js?v=1099-user-global-quality',
   './core/supabase-client-master-v972.js?v=973-p1-central-config',
   './core/account-isolation-master-v937.js?v=966-view-once-tombstone-isolation',
   './core/message-privacy-master-v855r51.js?v=972-p1-single-client',
@@ -130,7 +130,7 @@ var HAPPYAD_APP_SHELL = [
   './core/assistance-supabase-realtime-v750.js?v=851r12-ecriture-stable',
   './modules/my-profile.html?v=1066-silent-finish',
   './modules/profile-edit.html?v=974-p1-module-lifecycle-registry',
-  './core/vendor/heic2any-v0.0.4.min.js?v=1127-preview-heic',
+  './core/vendor/heic2any-v0.0.4.min.js?v=855r32-local-heif-decoder',
   './modules/settings.html?v=974-p1-module-lifecycle-registry',
   './core/profile/settings-account-auth-v855r48.js?v=972-p1-single-client',
   './core/profile/settings-data-v855r36.js?v=972-p1-single-client',

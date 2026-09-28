@@ -533,7 +533,7 @@ html body #list.homeTimeline .miniMedia:not(.haPhotoUserCropV613D)>img{transform
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="core/supabase-config-master-v973.js?v=973-p1-central-config"></script>
-<script src="core/video-quality-master-v1099.js?v=1127-live-1080"></script>
+<script src="core/video-quality-master-v1099.js?v=1099-user-global-quality"></script>
 <script id="happyad-auth-storage-quota-master-v752" src="core/auth-storage-quota-master-v752.js?v=937-idb-auth-purge"></script>
 <script src="core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script src="core/account-isolation-master-v937.js?v=938-action-memory-reset"></script>
@@ -8906,7 +8906,7 @@ html body #happyadSmartSearchV427 .haDiscoveryPostTitleV1014.haDiscoveryIdentity
       if(window.__HAPPYAD_PWA_DISABLED__)return;
       if(!('serviceWorker' in navigator))return;
       if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;
-      navigator.serviceWorker.register('./service-worker.js?v=v1129-native-media-bridge-20260928',{scope:'./',updateViaCache:'none'}).then(function(reg){
+      navigator.serviceWorker.register('./service-worker.js?v=v1113-legal-boot-stable-20260924',{scope:'./',updateViaCache:'none'}).then(function(reg){
         try{
           if(reg.active)reg.active.postMessage({type:'HAPPYAD_CLEAR_OLD_CACHES'});
           if(reg.waiting)reg.waiting.postMessage({type:'HAPPYAD_SKIP_WAITING'});
@@ -12611,8 +12611,8 @@ body.haHomeCommentLock #happyadHomePhotoFullscreen{pointer-events:none!important
 <link rel="stylesheet" href="core/happyad-global-coherence-v997.css?v=1101-home-background-unified">
 <script src="core/happyad-global-coherence-v997.js?v=1025-search-suggestion-story"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
-<script src="core/publication-engine-v1082.js?v=1127-parallel-lanes"></script>
-<script src="core/publication-background-ui-v2.js?v=1124-fail-clear"></script>
+<script src="core/publication-engine-v1082.js?v=1083-story-tus-anchor"></script>
+<script src="core/publication-background-ui-v2.js?v=1082-story-poster-queue"></script>
 
 <!-- Fyblic V998 SEARCH ROW + STORY RING -->
 <link rel="stylesheet" href="core/happyad-search-nav-v998.css?v=1005r4-search-primary-name-white-locked">
