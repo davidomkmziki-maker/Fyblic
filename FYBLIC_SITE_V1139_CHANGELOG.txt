@@ -1,0 +1,5 @@
+FYBLIC SITE V1139
+- Atomic video preview transition: the details screen cannot open before a real video poster exists.
+- Clears prior details DOM immediately on every new selection.
+- Accepts a native Android-generated poster through FyblicApplyNativePosterV1139.
+- Keeps the user on the selection screen during poster preparation instead of flashing stale/placeholder media.
