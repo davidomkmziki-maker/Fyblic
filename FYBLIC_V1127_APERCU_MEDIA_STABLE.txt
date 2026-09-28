@@ -1,0 +1,17 @@
+FYBLIC V1127 — APERÇU MEDIA STABLE
+Date: 2026-09-28
+
+Correction prioritaire uniquement côté sélection/aperçu média.
+
+- Le fichier original sélectionné reste intact pour l'upload.
+- Détection réelle des types photo par signature binaire.
+- HEIC/HEIF: conversion locale d'aperçu en JPEG avec ImageDecoder puis heic2any en secours.
+- Photos décodables mais refusées par <img>: rasterisation locale JPEG de secours.
+- Vidéos: test réel de décodage avant affichage + essais MIME Android/Chrome (MP4/MOV/WebM/MKV/AVI/3GP, type vide/générique si nécessaire).
+- L'ancienne URL blob n'est libérée qu'après installation du nouvel aperçu.
+- Protection anti-course si l'utilisateur change rapidement de média.
+- Le bouton Continuer reste bloqué uniquement pendant la préparation de l'aperçu, puis se réactive.
+- Plus d'élément <img> cassé laissé visible: fallback propre uniquement si aucun décodeur web local ne sait lire le fichier.
+- Cache PWA et URL du module publication passés à V1127 afin de ne pas réutiliser V1126.
+
+Aucun changement worker / SQL / pipeline de publication dans cette version.
