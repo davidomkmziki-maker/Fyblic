@@ -7,7 +7,7 @@
 .avatar>img,.commentAvatar>img,.commentAvatarSmall>img,.haCommentAvatar>img,.person-selector-avatar>img,.chat-avatar>img,.haProfileAvatar>img,.ha629Avatar>img,.ha629SharedPostAvatarV912>img,.haMentionAvatarV63>img,.haSearchAvatar>img,.happy-avatar>img,.hsvAvatar>img,.haV872Avatar>img,.haHomeFsAvatar>img,.hsvmAv>img,.haSamAv>img,#currentUserAvatar>img,#chatAvatar>img,#profileAvatar>img,#hsvAvatar>img{position:relative;z-index:1}
 #currentUserInitials{display:none!important}
 
-/* V1141: native handoff stays on the selected frame until the new media is painted. */
+/* V1142: one selected frame is preserved from native gallery to the newly decoded media. */
 .fyDetailsPreparingV1139{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(8,11,16,.38);backdrop-filter:blur(2px);pointer-events:auto}
 .fyDetailsPreparingV1139.on{display:none}
 .fyDetailsPreparingV1139 span{padding:9px 13px;border-radius:999px;background:rgba(8,11,16,.88);color:#fff;font-size:12px;font-weight:900;border:1px solid rgba(255,255,255,.12)}
@@ -16,6 +16,9 @@
    NOUVEAU média couvre entièrement l'ancien DOM jusqu'au décodage du nouveau blob. */
 .preview.fyNativeHandoffV1141{background-color:#080b10!important;background-repeat:no-repeat!important;background-size:cover!important;background-position:center!important}
 .preview.fyNativeHandoffV1141>*{visibility:hidden!important;opacity:0!important}
+/* V1142: the old selected media is never allowed to repaint while Android's gallery is open. */
+.preview.fyNativePickingV1142>*{visibility:hidden!important;opacity:0!important}
+.preview.fyNativePickingV1142{background-color:#080b10!important;background-image:none!important}
 html[data-fyblic-native-android="1"] .preview.empty:not(.fyNativeRecentV1134):before{display:none!important}
 html[data-fyblic-native-android="1"] .preview.empty:not(.fyNativeRecentV1134):after{top:50%!important;transform:translateY(-50%);content:"Choisir une photo ou une vidéo"!important}
 </style><script id="happyad-frame-first-paint-v623">
@@ -280,6 +283,15 @@ textarea.field{min-height:136px;resize:vertical;line-height:1.45}
 .previewPlayBtn svg{width:31px;height:31px;display:block;fill:currentColor;stroke:none;margin-left:3px}
 .preview.isPlaying .previewPlayBtn{opacity:0;pointer-events:none}
 .preview .selectionMedia{cursor:pointer}
+
+/* Fyblic V1142 — plusieurs médias visibles dans une bande horizontale, sans toucher au moteur de publication. */
+.mediaStripV1142{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;flex:0 0 auto;margin:0 14px 8px;padding:2px 0 4px;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.mediaStripV1142[hidden]{display:none!important}
+.mediaStripV1142::-webkit-scrollbar{display:none}
+.mediaStripItemV1142{position:relative;flex:0 0 66px;width:66px;height:66px;border-radius:14px;overflow:hidden;background:#11151d;border:1px solid rgba(255,255,255,.16)}
+.mediaStripItemV1142:first-child{border-color:rgba(255,138,0,.95);box-shadow:0 0 0 1px rgba(255,138,0,.3)}
+.mediaStripItemV1142 img,.mediaStripItemV1142 video{display:block;width:100%;height:100%;object-fit:cover;background:#080b10}
+.mediaStripIndexV1142{position:absolute;right:4px;top:4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;display:grid;place-items:center;background:#ff315f;color:#fff;font-size:10px;font-weight:1000;border:1px solid rgba(255,255,255,.82);pointer-events:none}
 
 </style>
 
@@ -649,6 +661,7 @@ button:disabled{filter:none;transform:none}
     <button type="button" class="mode" data-mode="live">Live</button>
   </div>
   <div class="preview empty" id="preview"></div>
+  <div class="mediaStripV1142" id="mediaStripV1142" hidden aria-label="Médias sélectionnés"></div>
   <div class="selectionTools" id="selectionTools">
     <div class="selectionHead"><div><div id="selectedMediaLabel">Média sélectionné</div><small>Aperçu exact de la carte d’accueil</small></div><button type="button" class="changeMediaBtn" id="changeMediaBtn">Changer</button></div>
   </div>
@@ -746,7 +759,7 @@ button:disabled{filter:none;transform:none}
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0,nativeSelectionGeneration:0,nativePreviewHint:'',nativeHandoffGeneration:0,nativeHandoffPreview:''};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0,nativeSelectionGeneration:0,nativePreviewHint:'',nativeHandoffGeneration:0,nativeHandoffPreview:'',multiPreviewUrlsV1142:[]};
   const $=id=>document.getElementById(id);
   const FYBLIC_NATIVE_ANDROID_V1141=/FyblicAndroid\/\d+/i.test(String(navigator.userAgent||''))||/[?&]native_app=android(?:&|$)/i.test(String(location.search||''));
   if(FYBLIC_NATIVE_ANDROID_V1141){try{document.documentElement.setAttribute('data-fyblic-native-android','1');}catch(_e){}}
@@ -768,7 +781,7 @@ button:disabled{filter:none;transform:none}
       if(g&&state.nativeHandoffGeneration&&g!==state.nativeHandoffGeneration)return false;
       var pv=$('preview');
       if(pv){
-        pv.classList.remove('fyNativeHandoffV1141');
+        pv.classList.remove('fyNativeHandoffV1141','fyNativePickingV1142');
         if(!pv.classList.contains('fyNativeRecentV1134')){
           pv.style.removeProperty('background-image');
           pv.style.removeProperty('background-size');
@@ -791,7 +804,7 @@ button:disabled{filter:none;transform:none}
       window.__FYBLIC_NATIVE_HANDOFF_PREVIEW_V1141__=data;
       window.__FYBLIC_NATIVE_HANDOFF_GENERATION_V1141__=g;
       var pv=$('preview');if(!pv)return false;
-      pv.classList.add('fyNativeHandoffV1141');
+      pv.classList.remove('fyNativePickingV1142');pv.classList.add('fyNativeHandoffV1141');
       pv.style.backgroundImage='url('+data+')';pv.style.backgroundSize='cover';pv.style.backgroundPosition='center';
       return true;
     }catch(_e){return false;}
@@ -811,7 +824,15 @@ button:disabled{filter:none;transform:none}
       window.__FYBLIC_NATIVE_HANDOFF_PREVIEW_V1141__='';
       window.__FYBLIC_NATIVE_HANDOFF_GENERATION_V1141__=0;
       state.nativeHandoffGeneration=0;state.nativeHandoffPreview='';
-      var pv=$('preview');if(pv)pv.classList.remove('fyNativeHandoffV1141');
+      var pv=$('preview');if(pv){pv.classList.remove('fyNativeHandoffV1141');pv.classList.add('fyNativePickingV1142');}
+      return true;
+    }catch(_e){return false;}
+  };
+  window.FyblicCancelNativeSelectionV1142=function(generation){
+    try{
+      var g=Number(generation)||0,expected=Number(window.__FYBLIC_NATIVE_SELECTION_GENERATION_V1140__||0)||0;
+      if(g&&expected&&g!==expected)return false;
+      var pv=$('preview');if(pv)pv.classList.remove('fyNativePickingV1142','fyNativeHandoffV1141');
       return true;
     }catch(_e){return false;}
   };
@@ -1001,9 +1022,10 @@ button:disabled{filter:none;transform:none}
   function resetPublishComposer(reason){
     try{if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);}catch(_e){}
     try{releaseMediaLeaseV1126();}catch(_lease){}try{stopCameraV1126();}catch(_camera){}
+    clearMultiStripV1142();
     state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.previewIssue='';state.detailPosterPromise=null;state.detailPosterRevision=0;state.nativeSelectionGeneration=0;state.nativePreviewHint='';state.nativeHandoffGeneration=0;state.nativeHandoffPreview='';window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;window.__FYBLIC_NATIVE_HANDOFF_PREVIEW_V1141__='';window.__FYBLIC_NATIVE_HANDOFF_GENERATION_V1141__=0;
     ['fileInput','cameraPhotoInput','cameraVideoInput'].forEach(function(id){try{var el=$(id);if(el)el.value='';}catch(_e){}});
-    try{var preview=$('preview');if(preview){preview.innerHTML='';preview.classList.add('empty');preview.classList.remove('hasMedia','isPlaying','fyNativeHandoffV1141');preview.style.removeProperty('background-image');preview.style.removeProperty('background-size');preview.style.removeProperty('background-position');}}catch(_e){}
+    try{var preview=$('preview');if(preview){preview.innerHTML='';preview.classList.add('empty');preview.classList.remove('hasMedia','isPlaying','fyNativeHandoffV1141','fyNativePickingV1142');preview.style.removeProperty('background-image');preview.style.removeProperty('background-size');preview.style.removeProperty('background-position');}}catch(_e){}
     try{var tools=$('selectionTools');if(tools)tools.classList.remove('show');}catch(_e){}
     try{var picker=$('pickerArea');if(picker)picker.classList.remove('hasMedia','hasMediaV901');syncPickerActionsV901();}catch(_e){}
     try{var step=$('step2');if(step)step.classList.remove('show');}catch(_e){}
@@ -1616,7 +1638,7 @@ button:disabled{filter:none;transform:none}
     var preview=$('preview');
     if(!preview||!state.file)return;
     var handoffActive=preview.classList.contains('fyNativeHandoffV1141')&&!!state.nativeHandoffPreview&&(!state.nativeHandoffGeneration||state.nativeHandoffGeneration===state.nativeSelectionGeneration);
-    preview.classList.remove('empty','fyNativeRecentV1134');
+    preview.classList.remove('empty','fyNativeRecentV1134','fyNativePickingV1142');
     if(!handoffActive){
       preview.style.removeProperty('background-image');
       preview.style.removeProperty('background-size');
@@ -1647,7 +1669,36 @@ button:disabled{filter:none;transform:none}
     var label=$('selectedMediaLabel');if(label)label.textContent=state.kind==='video'?'Vidéo sélectionnée':'Photo sélectionnée';
     var picker=$('pickerArea');if(picker)picker.classList.remove('hasMedia');
     syncPickerActionsV901();
+    renderMultiStripV1142();
     applyCardCrop();syncAdjustValues();
+  }
+
+  function clearMultiStripV1142(){
+    try{
+      (state.multiPreviewUrlsV1142||[]).forEach(function(u){try{URL.revokeObjectURL(u);}catch(_e){}});
+      state.multiPreviewUrlsV1142=[];
+      var strip=$('mediaStripV1142');if(strip){strip.innerHTML='';strip.hidden=true;}
+    }catch(_e){}
+  }
+  function renderMultiStripV1142(){
+    var strip=$('mediaStripV1142');if(!strip)return;
+    clearMultiStripV1142();
+    var files=Array.from(state.files||[]);
+    if(files.length<=1)return;
+    strip.hidden=false;
+    files.forEach(function(file,index){
+      try{
+        var url=URL.createObjectURL(file);state.multiPreviewUrlsV1142.push(url);
+        var item=document.createElement('div');item.className='mediaStripItemV1142';
+        var kind=mediaKindV1126(file),media;
+        if(kind==='video'){media=document.createElement('video');media.muted=true;media.playsInline=true;media.preload='metadata';media.src=url;media.addEventListener('loadedmetadata',function(){try{if(Number(media.duration||0)>0)media.currentTime=Math.min(.08,Math.max(0,Number(media.duration||0)-.02));}catch(_e){}},{once:true});}
+        else{media=document.createElement('img');media.alt='';media.decoding='async';media.src=url;}
+        item.appendChild(media);
+        var badge=document.createElement('span');badge.className='mediaStripIndexV1142';badge.textContent=String(index+1);item.appendChild(badge);
+        strip.appendChild(item);
+      }catch(_e){}
+    });
+    requestAnimationFrame(function(){try{strip.scrollLeft=0;}catch(_e){}});
   }
 
   function ensureDetailVideoVisibleV897(video){
@@ -1725,7 +1776,7 @@ button:disabled{filter:none;transform:none}
     var handoffPreview=String(window.__FYBLIC_NATIVE_HANDOFF_PREVIEW_V1141__||'');
     if(handoffPreview&&(!handoffGen||!state.nativeSelectionGeneration||handoffGen===state.nativeSelectionGeneration)){
       state.nativeHandoffGeneration=handoffGen||state.nativeSelectionGeneration;state.nativeHandoffPreview=handoffPreview;
-      var hp=$('preview');if(hp){hp.classList.add('fyNativeHandoffV1141');hp.style.backgroundImage='url('+handoffPreview+')';hp.style.backgroundSize='cover';hp.style.backgroundPosition='center';}
+      var hp=$('preview');if(hp){hp.classList.remove('fyNativePickingV1142');hp.classList.add('fyNativeHandoffV1141');hp.style.backgroundImage='url('+handoffPreview+')';hp.style.backgroundSize='cover';hp.style.backgroundPosition='center';}
     }
     try{var d=$('detailPreview');if(d)d.innerHTML='';var st=$('step2');if(st)st.classList.remove('show');}catch(_clear){}
     var nativePosterGen=Number(window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__||0)||0;
@@ -1737,6 +1788,7 @@ button:disabled{filter:none;transform:none}
     if(leaseInput)retainMediaLeaseV1126(leaseInput);else releaseMediaLeaseV1126();
     if(oldUrl&&oldUrl!==nextUrl){try{URL.revokeObjectURL(oldUrl);}catch(_e){}}
     stopCameraV1126();
+    try{var pv1142=$('preview');if(pv1142)pv1142.classList.remove('fyNativePickingV1142');}catch(_e){}
     if(state.kind==='video'&&!state.detailPoster)prepareVideoPosterImmediatelyV1138();
     renderSelectionPreview();updateSummary();updatePublishButtonsState();
     requestAnimationFrame(function(){applyCardCrop();syncAdjustValues();});return true;

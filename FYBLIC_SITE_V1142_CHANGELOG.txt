@@ -1,0 +1,17 @@
+FYBLIC SITE V1142 — MEDIA TRAY + ATOMIC HANDOFF
+29/09/2026
+
+1. GALERIE -> APERÇU
+- Pendant l’ouverture de la galerie Android, l’ancien média du composer n’est plus autorisé à repeindre.
+- Le thumbnail natif du nouveau média remplace cet état avant que le nouveau File soit transmis.
+- Annulation galerie restaure proprement le composer précédent.
+
+2. PLUSIEURS MÉDIAS
+- Quand plusieurs fichiers sont sélectionnés, une bande horizontale scrollable affiche tous les médias sous le grand aperçu.
+- Les vidéos utilisent leur blob local en aperçu muet; les photos utilisent leur blob local.
+- Les Object URLs de cette bande sont révoquées lors du changement/réinitialisation pour éviter les fuites mémoire.
+
+3. CACHE
+- Route Publication/navigation/service worker passés à V1142 pour empêcher le cache V1141 de reprendre l’ancien composer.
+
+Aucun SQL. Aucun changement worker/compression/Supabase.
