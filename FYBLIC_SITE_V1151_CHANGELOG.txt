@@ -1,0 +1,10 @@
+FYBLIC SITE V1151 — WEB MEDIA ONLY
+
+- Navigateur uniquement : le bouton + ouvre Nouvelle publication, sans lancer automatiquement la caméra.
+- Caméra et Galerie sont désormais deux actions explicites.
+- Galerie Web : conservation du File original + aperçu stable séparé.
+- Photos : aperçu décodé/canvas quand le navigateur le permet.
+- Vidéos : poster extrait immédiatement et réinjecté dans le grand aperçu.
+- Multi-médias : bande horizontale conservée, miniatures vidéo stabilisées côté Web.
+- Le chemin FyblicAndroid reste inchangé.
+- Aucun SQL, worker ou Supabase modifié.

@@ -7,6 +7,7 @@
 .avatar>img,.commentAvatar>img,.commentAvatarSmall>img,.haCommentAvatar>img,.person-selector-avatar>img,.chat-avatar>img,.haProfileAvatar>img,.ha629Avatar>img,.ha629SharedPostAvatarV912>img,.haMentionAvatarV63>img,.haSearchAvatar>img,.happy-avatar>img,.hsvAvatar>img,.haV872Avatar>img,.haHomeFsAvatar>img,.hsvmAv>img,.haSamAv>img,#currentUserAvatar>img,#chatAvatar>img,#profileAvatar>img,#hsvAvatar>img{position:relative;z-index:1}
 #currentUserInitials{display:none!important}
 
+/* V1151 Web: + ouvre le composer, galerie/caméra explicites, aperçu navigateur robuste. */
 /* V1142: one selected frame is preserved from native gallery to the newly decoded media. */
 .fyDetailsPreparingV1139{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(8,11,16,.38);backdrop-filter:blur(2px);pointer-events:auto}
 .fyDetailsPreparingV1139.on{display:none}
@@ -759,9 +760,10 @@ button:disabled{filter:none;transform:none}
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0,nativeSelectionGeneration:0,nativePreviewHint:'',nativeHandoffGeneration:0,nativeHandoffPreview:'',multiPreviewUrlsV1142:[]};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0,nativeSelectionGeneration:0,nativePreviewHint:'',nativeHandoffGeneration:0,nativeHandoffPreview:'',multiPreviewUrlsV1142:[],webPreviewHintV1151:'',webPreviewRevisionV1151:0};
   const $=id=>document.getElementById(id);
   const FYBLIC_NATIVE_ANDROID_V1141=/FyblicAndroid\/\d+/i.test(String(navigator.userAgent||''))||/[?&]native_app=android(?:&|$)/i.test(String(location.search||''));
+  const FYBLIC_WEB_BROWSER_V1151=!FYBLIC_NATIVE_ANDROID_V1141;
   if(FYBLIC_NATIVE_ANDROID_V1141){try{document.documentElement.setAttribute('data-fyblic-native-android','1');}catch(_e){}}
 
   function applyNativeRecentV1141(data){
@@ -1023,7 +1025,7 @@ button:disabled{filter:none;transform:none}
     try{if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);}catch(_e){}
     try{releaseMediaLeaseV1126();}catch(_lease){}try{stopCameraV1126();}catch(_camera){}
     clearMultiStripV1142();
-    state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.previewIssue='';state.detailPosterPromise=null;state.detailPosterRevision=0;state.nativeSelectionGeneration=0;state.nativePreviewHint='';state.nativeHandoffGeneration=0;state.nativeHandoffPreview='';window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;window.__FYBLIC_NATIVE_HANDOFF_PREVIEW_V1141__='';window.__FYBLIC_NATIVE_HANDOFF_GENERATION_V1141__=0;
+    state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.previewIssue='';state.detailPosterPromise=null;state.detailPosterRevision=0;state.nativeSelectionGeneration=0;state.nativePreviewHint='';state.nativeHandoffGeneration=0;state.nativeHandoffPreview='';state.webPreviewHintV1151='';state.webPreviewRevisionV1151=0;window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;window.__FYBLIC_NATIVE_HANDOFF_PREVIEW_V1141__='';window.__FYBLIC_NATIVE_HANDOFF_GENERATION_V1141__=0;
     ['fileInput','cameraPhotoInput','cameraVideoInput'].forEach(function(id){try{var el=$(id);if(el)el.value='';}catch(_e){}});
     try{var preview=$('preview');if(preview){preview.innerHTML='';preview.classList.add('empty');preview.classList.remove('hasMedia','isPlaying','fyNativeHandoffV1141','fyNativePickingV1142');preview.style.removeProperty('background-image');preview.style.removeProperty('background-size');preview.style.removeProperty('background-position');}}catch(_e){}
     try{var tools=$('selectionTools');if(tools)tools.classList.remove('show');}catch(_e){}
@@ -1357,6 +1359,48 @@ button:disabled{filter:none;transform:none}
     if(old&&old!==input){try{old.remove();}catch(_e){}}
   }
   function stablePickerAcceptV1126(){return 'image/*,video/*,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.mp4,.mov,.m4v,.3gp,.3g2,.webm,.mkv,.avi,.mpeg,.mpg,.mts,.m2ts,.ts';}
+
+  /* Fyblic V1151 — aperçu Web autonome.
+     Le navigateur garde toujours le File original pour la publication, mais fabrique
+     une surface d'aperçu stable (photo décodée / poster vidéo) séparément. L'APK
+     natif n'entre jamais dans ce chemin. */
+  async function prepareWebPhotoPreviewV1151(file,revision){
+    if(!FYBLIC_WEB_BROWSER_V1151||!file||mediaKindV1126(file)!=='photo')return '';
+    var result='';
+    try{
+      if(typeof createImageBitmap==='function'){
+        var bitmap=await createImageBitmap(file,{imageOrientation:'from-image'}).catch(function(){return null;});
+        if(bitmap&&bitmap.width&&bitmap.height){
+          var maxSide=1600,ratio=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+          var canvas=document.createElement('canvas');canvas.width=Math.max(2,Math.round(bitmap.width*ratio));canvas.height=Math.max(2,Math.round(bitmap.height*ratio));
+          var ctx=canvas.getContext('2d',{alpha:false});if(ctx){ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);result=canvas.toDataURL('image/jpeg',.92)||'';}
+          try{bitmap.close();}catch(_e){}
+        }
+      }
+    }catch(_e){}
+    if((Number(state.selectionRevision)||0)!==Number(revision||0))return '';
+    if(result){state.webPreviewHintV1151=result;state.webPreviewRevisionV1151=revision;}
+    return result;
+  }
+  function refreshWebSelectionPreviewV1151(revision){
+    if(!FYBLIC_WEB_BROWSER_V1151||!state.file||(Number(state.selectionRevision)||0)!==Number(revision||0))return;
+    try{renderSelectionPreview();}catch(_e){}
+    try{if($('step2')&&$('step2').classList.contains('show'))renderDetailsPreview();}catch(_e){}
+  }
+  function prepareWebSelectionPreviewV1151(file,kind,revision){
+    if(!FYBLIC_WEB_BROWSER_V1151||!file)return;
+    if(kind==='photo'){
+      prepareWebPhotoPreviewV1151(file,revision).then(function(value){if(value)refreshWebSelectionPreviewV1151(revision);}).catch(function(){});
+      return;
+    }
+    if(kind==='video'){
+      var promise=state.detailPosterPromise||prepareVideoPosterImmediatelyV1138();
+      Promise.resolve(promise).then(function(value){
+        if((Number(state.selectionRevision)||0)!==Number(revision||0))return;
+        if(value){state.webPreviewHintV1151=value;state.webPreviewRevisionV1151=revision;refreshWebSelectionPreviewV1151(revision);}
+      }).catch(function(){});
+    }
+  }
   function prepareNativeMediaChoiceV1140(){
     try{
       window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;
@@ -1367,6 +1411,7 @@ button:disabled{filter:none;transform:none}
   }
   function openStableGalleryV1126(){
     if(activePublicationV1067R1()){toast('Une publication est déjà en cours');return;}
+    if(FYBLIC_WEB_BROWSER_V1151){try{stopCameraV1126();}catch(_camera){}try{var sh=$('cameraSheet');if(sh)sh.classList.remove('show');}catch(_sheet){}}
     prepareNativeMediaChoiceV1140();
     var input=document.createElement('input');
     input.type='file';input.accept=stablePickerAcceptV1126();input.multiple=true;
@@ -1461,10 +1506,11 @@ button:disabled{filter:none;transform:none}
     if(!state.file||!state.objectUrl)return '';
     extraClass=extraClass||'';
     if(state.kind==='video'){
-      var p=state.detailPoster||state.nativePreviewHint||'';
-      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(p?'poster="'+escapeHtml(p)+'" ':'')+(state.videoMuted?'muted ':'')+'playsinline preload="auto" style="background:#080b10;opacity:'+(p?'1':'0')+'" '+(controls?'controls':'')+'></video>';
+      var p=state.detailPoster||state.webPreviewHintV1151||state.nativePreviewHint||'';
+      var visible=(p||FYBLIC_WEB_BROWSER_V1151)?'1':'0';
+      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(p?'poster="'+escapeHtml(p)+'" ':'')+(state.videoMuted?'muted ':'')+'playsinline preload="auto" style="background:#080b10;opacity:'+visible+'" '+(controls?'controls':'')+'></video>';
     }
-    if(state.kind==='photo')return '<img class="cardCropMedia '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" alt="Aperçu de la publication"'+(state.nativePreviewHint?' style="background-image:url('+escapeHtml(state.nativePreviewHint)+');background-size:cover;background-position:center"':'')+'>';
+    if(state.kind==='photo'){var photoSrc=(FYBLIC_WEB_BROWSER_V1151&&state.webPreviewHintV1151)?state.webPreviewHintV1151:state.objectUrl;return '<img class="cardCropMedia '+extraClass+'" src="'+escapeHtml(photoSrc)+'" alt="Aperçu de la publication"'+(state.nativePreviewHint?' style="background-image:url('+escapeHtml(state.nativePreviewHint)+');background-size:cover;background-position:center"':'')+'>';}
     return '<div style="padding:24px;text-align:center;font-weight:1000">'+escapeHtml(state.file.name||'Média sélectionné')+'</div>';
   }
 
@@ -1608,7 +1654,7 @@ button:disabled{filter:none;transform:none}
         if(done)return;done=true;clearTimeout(timer);
         try{v.pause();v.removeAttribute('src');v.load();v.remove();}catch(_e){}
         if((Number(state.selectionRevision)||0)!==revision){resolve('');return;}
-        if(value)state.detailPoster=value;
+        if(value){state.detailPoster=value;if(FYBLIC_WEB_BROWSER_V1151){state.webPreviewHintV1151=value;state.webPreviewRevisionV1151=revision;}}
         resolve(value||'');
       }
       function capture(){
@@ -1691,7 +1737,7 @@ button:disabled{filter:none;transform:none}
         var url=URL.createObjectURL(file);state.multiPreviewUrlsV1142.push(url);
         var item=document.createElement('div');item.className='mediaStripItemV1142';
         var kind=mediaKindV1126(file),media;
-        if(kind==='video'){media=document.createElement('video');media.muted=true;media.playsInline=true;media.preload='metadata';media.src=url;media.addEventListener('loadedmetadata',function(){try{if(Number(media.duration||0)>0)media.currentTime=Math.min(.08,Math.max(0,Number(media.duration||0)-.02));}catch(_e){}},{once:true});}
+        if(kind==='video'){media=document.createElement('video');media.muted=true;media.playsInline=true;media.preload=FYBLIC_WEB_BROWSER_V1151?'auto':'metadata';media.src=url;media.addEventListener('loadedmetadata',function(){try{if(Number(media.duration||0)>0)media.currentTime=Math.min(.12,Math.max(0,Number(media.duration||0)-.02));}catch(_e){}},{once:true});if(FYBLIC_WEB_BROWSER_V1151){var captureStrip=function(){try{if(!media.videoWidth||!media.videoHeight||media.readyState<2)return;var c=document.createElement('canvas'),ratio=Math.min(1,360/Math.max(media.videoWidth,media.videoHeight));c.width=Math.max(2,Math.round(media.videoWidth*ratio));c.height=Math.max(2,Math.round(media.videoHeight*ratio));var ctx=c.getContext('2d',{alpha:false});if(!ctx)return;ctx.drawImage(media,0,0,c.width,c.height);var img=document.createElement('img');img.alt='';img.decoding='async';img.src=c.toDataURL('image/jpeg',.82);if(media.parentNode===item)item.replaceChild(img,media);}catch(_e){}};media.addEventListener('seeked',captureStrip,{once:true});media.addEventListener('loadeddata',function(){if((media.currentTime||0)>.01)captureStrip();},{once:true});}}
         else{media=document.createElement('img');media.alt='';media.decoding='async';media.src=url;}
         item.appendChild(media);
         var badge=document.createElement('span');badge.className='mediaStripIndexV1142';badge.textContent=String(index+1);item.appendChild(badge);
@@ -1770,7 +1816,7 @@ button:disabled{filter:none;transform:none}
     var nextUrl='';try{nextUrl=URL.createObjectURL(file);}catch(_e){if(leaseInput){try{leaseInput.remove();}catch(_x){}}toast('Ce média ne peut pas être ouvert');return false;}
     var oldUrl=state.objectUrl;state.selectionRevision=(Number(state.selectionRevision)||0)+1;
     state.completed=false;state.previewIssue='';state.file=file;state.files=(allFiles&&allFiles.length)?Array.from(allFiles):[file];state.kind=kind;
-    state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.nativePreviewHint='';state.objectUrl=nextUrl;
+    state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.nativePreviewHint='';state.webPreviewHintV1151='';state.webPreviewRevisionV1151=state.selectionRevision;state.objectUrl=nextUrl;
     state.nativeSelectionGeneration=Number(window.__FYBLIC_NATIVE_SELECTION_GENERATION_V1140__||0)||0;
     var handoffGen=Number(window.__FYBLIC_NATIVE_HANDOFF_GENERATION_V1141__||0)||0;
     var handoffPreview=String(window.__FYBLIC_NATIVE_HANDOFF_PREVIEW_V1141__||'');
@@ -1790,6 +1836,7 @@ button:disabled{filter:none;transform:none}
     stopCameraV1126();
     try{var pv1142=$('preview');if(pv1142)pv1142.classList.remove('fyNativePickingV1142');}catch(_e){}
     if(state.kind==='video'&&!state.detailPoster)prepareVideoPosterImmediatelyV1138();
+    if(FYBLIC_WEB_BROWSER_V1151)prepareWebSelectionPreviewV1151(file,state.kind,state.selectionRevision);
     renderSelectionPreview();updateSummary();updatePublishButtonsState();
     requestAnimationFrame(function(){applyCardCrop();syncAdjustValues();});return true;
   }
@@ -2822,7 +2869,8 @@ return {source:'story',id:storyId};
       if(!state.sessionOpen){if(!activeV1126)resetPublishComposer('frame-visible-fresh');state.sessionOpen=true;}
       setPublishModeV885(d.publishMode||d.mode||state.mode||'publish',d.source||'frame-visible-v885');
       if(activeV1126){toast('Une publication est déjà en cours');return;}
-      if(!state.file&&!FYBLIC_NATIVE_ANDROID_V1134)setTimeout(function(){startCameraV1126();},0);
+      /* V1151 Web : le + ouvre toujours d'abord Nouvelle publication.
+         Caméra et Galerie ne s'ouvrent qu'après un choix explicite de l'utilisateur. */
     }catch(_e){}
   });
   window.addEventListener('HAPPYAD_PROFILE_AVATAR_UPDATED_V855R32',function(ev){var d=ev&&ev.detail||{},id=String(d.userId||d.uid||d.id||'').trim(),url=String(d.url||d.avatarUrl||d.avatar_url||'').trim();if(!id)return;storyMentionResults.forEach(function(p){if(p&&p.id===id)p.avatar=url;});state.mentions.forEach(function(p){if(p&&p.id===id)p.avatar=url;});if(activeMentionToken)renderMentionResults(storyMentionResults);});
