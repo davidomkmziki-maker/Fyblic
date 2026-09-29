@@ -1,0 +1,18 @@
+FYBLIC SITE V1140 — NATIVE COMPOSER PREWARM + ATOMIC PREVIEW
+
+1. + / Nouvelle publication
+- Publication is prewarmed as a persistent hidden frame only inside the Fyblic Android app.
+- A very early + tap keeps the currently painted surface until Publication is ready instead of showing grey/black skeleton blocks.
+- Ordinary website routing behavior remains unchanged.
+
+2. Gallery -> preview / Next
+- Native selections are generation-tagged; stale poster data from the previous file is rejected.
+- The native Gallery thumbnail is used immediately while the real local media decodes.
+- Late native thumbnail delivery also updates photo/video preview safely.
+- The Details screen is not revealed until the new image/poster has actually decoded, removing old-media -> black -> new-media flashes.
+
+3. Cache safety
+- publish.html and navigation router use V1140 cache-busting URLs.
+- Service-worker cache version bumped to V1140 so V1139 composer/router cannot be resurrected from the old cache.
+
+No SQL, Supabase schema, compression worker, publication engine, or media quality logic changed.

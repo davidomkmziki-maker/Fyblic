@@ -7,9 +7,9 @@
 .avatar>img,.commentAvatar>img,.commentAvatarSmall>img,.haCommentAvatar>img,.person-selector-avatar>img,.chat-avatar>img,.haProfileAvatar>img,.ha629Avatar>img,.ha629SharedPostAvatarV912>img,.haMentionAvatarV63>img,.haSearchAvatar>img,.happy-avatar>img,.hsvAvatar>img,.haV872Avatar>img,.haHomeFsAvatar>img,.hsvmAv>img,.haSamAv>img,#currentUserAvatar>img,#chatAvatar>img,#profileAvatar>img,#hsvAvatar>img{position:relative;z-index:1}
 #currentUserInitials{display:none!important}
 
-/* V1139: never expose a stale/blank details video while its real poster is preparing. */
+/* V1140: prepare new media off-screen; never expose stale/blank preview frames. */
 .fyDetailsPreparingV1139{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(8,11,16,.38);backdrop-filter:blur(2px);pointer-events:auto}
-.fyDetailsPreparingV1139.on{display:flex}
+.fyDetailsPreparingV1139.on{display:none}
 .fyDetailsPreparingV1139 span{padding:9px 13px;border-radius:999px;background:rgba(8,11,16,.88);color:#fff;font-size:12px;font-weight:900;border:1px solid rgba(255,255,255,.12)}
 </style><script id="happyad-frame-first-paint-v623">
 (function(){
@@ -739,18 +739,39 @@ button:disabled{filter:none;transform:none}
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0,nativeSelectionGeneration:0,nativePreviewHint:''};
   const $=id=>document.getElementById(id);
-  window.FyblicApplyNativePosterV1139=function(data){
+  window.FyblicBeginNativeSelectionV1140=function(generation){
     try{
-      data=String(data||'');
-      window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__=data;
-      if(!data||state.kind!=='video'||!state.file)return false;
-      state.detailPoster=data;
-      var pv=$('preview'),video=pv&&pv.querySelector('video');
-      if(video){try{video.setAttribute('poster',data);}catch(_e){}}
+      var g=Number(generation)||0;
+      window.__FYBLIC_NATIVE_SELECTION_GENERATION_V1140__=g;
+      window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';
+      window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;
       return true;
     }catch(_e){return false;}
+  };
+  window.FyblicApplyNativePosterV1140=function(data,generation){
+    try{
+      data=String(data||'');var g=Number(generation)||0;
+      window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__=data;
+      window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=g;
+      if(!data||!state.file)return false;
+      if(g&&(!state.nativeSelectionGeneration||g!==state.nativeSelectionGeneration))return false;
+      state.nativePreviewHint=data;
+      var pv=$('preview');
+      if(state.kind==='video'){
+        state.detailPoster=data;
+        var video=pv&&pv.querySelector('video');
+        if(video){try{video.setAttribute('poster',data);video.style.opacity='1';}catch(_e){}}
+      }else if(state.kind==='photo'){
+        var image=pv&&pv.querySelector('img');
+        if(image){try{image.style.backgroundImage='url('+data+')';image.style.backgroundSize='cover';image.style.backgroundPosition='center';}catch(_e){}}
+      }
+      return true;
+    }catch(_e){return false;}
+  };
+  window.FyblicApplyNativePosterV1139=function(data){
+    return window.FyblicApplyNativePosterV1140(data,Number(window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__||window.__FYBLIC_NATIVE_SELECTION_GENERATION_V1140__||0));
   };
 
 
@@ -915,7 +936,7 @@ button:disabled{filter:none;transform:none}
   function resetPublishComposer(reason){
     try{if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);}catch(_e){}
     try{releaseMediaLeaseV1126();}catch(_lease){}try{stopCameraV1126();}catch(_camera){}
-    state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.previewIssue='';state.detailPosterPromise=null;state.detailPosterRevision=0;window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';
+    state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.previewIssue='';state.detailPosterPromise=null;state.detailPosterRevision=0;state.nativeSelectionGeneration=0;state.nativePreviewHint='';window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;
     ['fileInput','cameraPhotoInput','cameraVideoInput'].forEach(function(id){try{var el=$(id);if(el)el.value='';}catch(_e){}});
     try{var preview=$('preview');if(preview){preview.innerHTML='';preview.classList.add('empty');preview.classList.remove('hasMedia','isPlaying');}}catch(_e){}
     try{var tools=$('selectionTools');if(tools)tools.classList.remove('show');}catch(_e){}
@@ -1249,8 +1270,12 @@ button:disabled{filter:none;transform:none}
     if(old&&old!==input){try{old.remove();}catch(_e){}}
   }
   function stablePickerAcceptV1126(){return 'image/*,video/*,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.mp4,.mov,.m4v,.3gp,.3g2,.webm,.mkv,.avi,.mpeg,.mpg,.mts,.m2ts,.ts';}
+  function prepareNativeMediaChoiceV1140(){
+    try{window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;}catch(_e){}
+  }
   function openStableGalleryV1126(){
     if(activePublicationV1067R1()){toast('Une publication est déjà en cours');return;}
+    prepareNativeMediaChoiceV1140();
     var input=document.createElement('input');
     input.type='file';input.accept=stablePickerAcceptV1126();input.multiple=true;
     input.setAttribute('data-fyblic-media-lease-v1126','pending');
@@ -1300,6 +1325,7 @@ button:disabled{filter:none;transform:none}
       stopCameraV1126();
       var nativeInput=$('cameraVideoInput');
       if(!nativeInput){toast('Caméra Fyblic indisponible');return;}
+      prepareNativeMediaChoiceV1140();
       try{nativeInput.click();}catch(_e){toast('Impossible d’ouvrir la caméra Fyblic');}
       return;
     }
@@ -1343,9 +1369,10 @@ button:disabled{filter:none;transform:none}
     if(!state.file||!state.objectUrl)return '';
     extraClass=extraClass||'';
     if(state.kind==='video'){
-      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(state.videoMuted?'muted ':'')+'playsinline preload="auto" style="background:#080b10;opacity:0" '+(controls?'controls':'')+'></video>';
+      var p=state.detailPoster||state.nativePreviewHint||'';
+      return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(p?'poster="'+escapeHtml(p)+'" ':'')+(state.videoMuted?'muted ':'')+'playsinline preload="auto" style="background:#080b10;opacity:'+(p?'1':'0')+'" '+(controls?'controls':'')+'></video>';
     }
-    if(state.kind==='photo')return '<img class="cardCropMedia '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" alt="Aperçu de la publication">';
+    if(state.kind==='photo')return '<img class="cardCropMedia '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" alt="Aperçu de la publication"'+(state.nativePreviewHint?' style="background-image:url('+escapeHtml(state.nativePreviewHint)+');background-size:cover;background-position:center"':'')+'>';
     return '<div style="padding:24px;text-align:center;font-weight:1000">'+escapeHtml(state.file.name||'Média sélectionné')+'</div>';
   }
 
@@ -1607,9 +1634,15 @@ button:disabled{filter:none;transform:none}
     var nextUrl='';try{nextUrl=URL.createObjectURL(file);}catch(_e){if(leaseInput){try{leaseInput.remove();}catch(_x){}}toast('Ce média ne peut pas être ouvert');return false;}
     var oldUrl=state.objectUrl;state.selectionRevision=(Number(state.selectionRevision)||0)+1;
     state.completed=false;state.previewIssue='';state.file=file;state.files=(allFiles&&allFiles.length)?Array.from(allFiles):[file];state.kind=kind;
-    state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.objectUrl=nextUrl;
+    state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.nativePreviewHint='';state.objectUrl=nextUrl;
+    state.nativeSelectionGeneration=Number(window.__FYBLIC_NATIVE_SELECTION_GENERATION_V1140__||0)||0;
     try{var d=$('detailPreview');if(d)d.innerHTML='';var st=$('step2');if(st)st.classList.remove('show');}catch(_clear){}
-    if(state.kind==='video'&&window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__){state.detailPoster=String(window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__||'');window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';}
+    var nativePosterGen=Number(window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__||0)||0;
+    var nativePoster=String(window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__||'');
+    if(nativePoster&&(!nativePosterGen||!state.nativeSelectionGeneration||nativePosterGen===state.nativeSelectionGeneration)){
+      state.nativePreviewHint=nativePoster;if(state.kind==='video')state.detailPoster=nativePoster;
+    }
+    window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;
     if(leaseInput)retainMediaLeaseV1126(leaseInput);else releaseMediaLeaseV1126();
     if(oldUrl&&oldUrl!==nextUrl){try{URL.revokeObjectURL(oldUrl);}catch(_e){}}
     stopCameraV1126();
@@ -2289,7 +2322,8 @@ return {source:'story',id:storyId};
     while(Date.now()-started<3600){
       if(state.detailPoster)return true;
       if(window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__){
-        FyblicApplyNativePosterV1139(window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__);
+        var ng=Number(window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__||0)||0;
+        FyblicApplyNativePosterV1140(window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__,ng);
         if(state.detailPoster)return true;
       }
       if(state.detailPosterPromise){try{await Promise.race([state.detailPosterPromise,new Promise(function(r){setTimeout(r,140);})]);}catch(_e){}}
@@ -2299,6 +2333,21 @@ return {source:'story',id:storyId};
     if(!state.detailPoster)await captureSelectionPosterForDetailsV1137();
     return !!state.detailPoster;
   }
+  async function waitDetailsPreviewPaintV1140(){
+    var box=$('detailPreview');if(!box)return false;
+    var visual=box.querySelector('.detailPosterV1138,img.detailMedia,img.cardCropMedia');
+    if(!visual)return state.kind==='video'?!!state.detailPoster:true;
+    try{
+      if(visual.tagName==='IMG'){
+        if(visual.complete&&visual.naturalWidth>0){if(visual.decode)try{await visual.decode();}catch(_d){}return true;}
+        await Promise.race([new Promise(function(resolve){var done=function(){resolve(true);};visual.addEventListener('load',done,{once:true});visual.addEventListener('error',done,{once:true});}),new Promise(function(resolve){setTimeout(function(){resolve(false);},1200);})]);
+        if(visual.decode)try{await visual.decode();}catch(_e){}
+        return !!(visual.complete&&visual.naturalWidth>0);
+      }
+    }catch(_e){}
+    return true;
+  }
+
   async function openDetails(){
     if(!state.file){toast("Choisis une photo ou vidéo réelle");return;}
     if(openDetailsBusyV1137)return;
@@ -2314,6 +2363,7 @@ return {source:'story',id:storyId};
       }
       loadLocations();renderPublishModeUI();syncDetailPreviewGeometryV894();
       renderDetailsPreview();
+      await waitDetailsPreviewPaintV1140();
       await new Promise(function(resolve){requestAnimationFrame(function(){requestAnimationFrame(resolve);});});
       $("step2").classList.add("show");
       updatePublishButtonsState();
