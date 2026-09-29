@@ -1,0 +1,8 @@
+FYBLIC SITE V1152 — APERÇU WEB HYBRIDE
+
+- APK Android inchangée.
+- Le navigateur tente d’abord l’aperçu local.
+- En cas d’échec de décodage, le média est envoyé temporairement au worker /api/web-preview.
+- Le worker renvoie un JPEG universel utilisé uniquement comme aperçu.
+- Le fichier original reste inchangé pour la publication.
+- Aucun SQL.

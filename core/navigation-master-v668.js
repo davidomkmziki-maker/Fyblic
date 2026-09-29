@@ -4,7 +4,7 @@
   window.__HAPPYAD_NAVIGATION_MASTER_V668__=true;
   window.__HAPPYAD_NAVIGATION_MASTER_V656__=true;
 
-  var MASTER_VERSION='NAV_MASTER_V1151_WEB_MEDIA';
+  var MASTER_VERSION='NAV_MASTER_V1152_WEB_PREVIEW';
   var VISITOR_PROFILE_PRELOAD_URL_V601='modules/visitor-profile.html?deferred=1&v=869-connection-phase2';
   var VISITOR_PROFILE_MESSAGE_V601='HAPPYAD_PROFILE_SHOW_V601';
   var NAV_FLAG='__happyadCoreNavV10';
@@ -43,7 +43,7 @@
     video:'modules/video.html?v=986-base-video-text',
     photo:'modules/photo.html',
     message:'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover',
-    publish:'modules/publish.html?v=1151-web-media',
+    publish:'modules/publish.html?v=1152-web-preview',
     map:'modules/map.html'
   };
 
@@ -809,7 +809,7 @@
     if(page==='message')return 'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover';
     if(page==='profile')return 'modules/my-profile.html?v=1001-profile-identity-scale';
     if(page==='profile_public')return VISITOR_PROFILE_PRELOAD_URL_V601;
-    if(page==='publish')return 'modules/publish.html?v=1151-web-media';
+    if(page==='publish')return 'modules/publish.html?v=1152-web-preview';
     return pages[page]||'index.html';
   }
   function ownerAuthUidHintV855R23(){

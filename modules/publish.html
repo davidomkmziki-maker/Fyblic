@@ -7,7 +7,7 @@
 .avatar>img,.commentAvatar>img,.commentAvatarSmall>img,.haCommentAvatar>img,.person-selector-avatar>img,.chat-avatar>img,.haProfileAvatar>img,.ha629Avatar>img,.ha629SharedPostAvatarV912>img,.haMentionAvatarV63>img,.haSearchAvatar>img,.happy-avatar>img,.hsvAvatar>img,.haV872Avatar>img,.haHomeFsAvatar>img,.hsvmAv>img,.haSamAv>img,#currentUserAvatar>img,#chatAvatar>img,#profileAvatar>img,#hsvAvatar>img{position:relative;z-index:1}
 #currentUserInitials{display:none!important}
 
-/* V1151 Web: + ouvre le composer, galerie/caméra explicites, aperçu navigateur robuste. */
+/* V1152 Web: aperçu local puis fallback worker FFmpeg si le navigateur ne décode pas. */
 /* V1142: one selected frame is preserved from native gallery to the newly decoded media. */
 .fyDetailsPreparingV1139{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(8,11,16,.38);backdrop-filter:blur(2px);pointer-events:auto}
 .fyDetailsPreparingV1139.on{display:none}
@@ -760,7 +760,7 @@ button:disabled{filter:none;transform:none}
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0,nativeSelectionGeneration:0,nativePreviewHint:'',nativeHandoffGeneration:0,nativeHandoffPreview:'',multiPreviewUrlsV1142:[],webPreviewHintV1151:'',webPreviewRevisionV1151:0};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0,nativeSelectionGeneration:0,nativePreviewHint:'',nativeHandoffGeneration:0,nativeHandoffPreview:'',multiPreviewUrlsV1142:[],webPreviewHintV1151:'',webPreviewRevisionV1151:0,webServerPreviewUrlV1152:'',webServerPreviewRevisionV1152:0,webServerPreviewPromiseV1152:null};
   const $=id=>document.getElementById(id);
   const FYBLIC_NATIVE_ANDROID_V1141=/FyblicAndroid\/\d+/i.test(String(navigator.userAgent||''))||/[?&]native_app=android(?:&|$)/i.test(String(location.search||''));
   const FYBLIC_WEB_BROWSER_V1151=!FYBLIC_NATIVE_ANDROID_V1141;
@@ -1025,7 +1025,7 @@ button:disabled{filter:none;transform:none}
     try{if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);}catch(_e){}
     try{releaseMediaLeaseV1126();}catch(_lease){}try{stopCameraV1126();}catch(_camera){}
     clearMultiStripV1142();
-    state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.previewIssue='';state.detailPosterPromise=null;state.detailPosterRevision=0;state.nativeSelectionGeneration=0;state.nativePreviewHint='';state.nativeHandoffGeneration=0;state.nativeHandoffPreview='';state.webPreviewHintV1151='';state.webPreviewRevisionV1151=0;window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;window.__FYBLIC_NATIVE_HANDOFF_PREVIEW_V1141__='';window.__FYBLIC_NATIVE_HANDOFF_GENERATION_V1141__=0;
+    clearWebServerPreviewV1152();state.file=null;state.files=[];state.objectUrl='';state.kind='';state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.completed=false;state.mentions=[];state.previewIssue='';state.detailPosterPromise=null;state.detailPosterRevision=0;state.nativeSelectionGeneration=0;state.nativePreviewHint='';state.nativeHandoffGeneration=0;state.nativeHandoffPreview='';state.webPreviewHintV1151='';state.webPreviewRevisionV1151=0;window.__FYBLIC_NATIVE_SELECTED_POSTER_V1139__='';window.__FYBLIC_NATIVE_SELECTED_POSTER_GENERATION_V1140__=0;window.__FYBLIC_NATIVE_HANDOFF_PREVIEW_V1141__='';window.__FYBLIC_NATIVE_HANDOFF_GENERATION_V1141__=0;
     ['fileInput','cameraPhotoInput','cameraVideoInput'].forEach(function(id){try{var el=$(id);if(el)el.value='';}catch(_e){}});
     try{var preview=$('preview');if(preview){preview.innerHTML='';preview.classList.add('empty');preview.classList.remove('hasMedia','isPlaying','fyNativeHandoffV1141','fyNativePickingV1142');preview.style.removeProperty('background-image');preview.style.removeProperty('background-size');preview.style.removeProperty('background-position');}}catch(_e){}
     try{var tools=$('selectionTools');if(tools)tools.classList.remove('show');}catch(_e){}
@@ -1360,6 +1360,69 @@ button:disabled{filter:none;transform:none}
   }
   function stablePickerAcceptV1126(){return 'image/*,video/*,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.mp4,.mov,.m4v,.3gp,.3g2,.webm,.mkv,.avi,.mpeg,.mpg,.mts,.m2ts,.ts';}
 
+  /* Fyblic V1152 — fallback serveur uniquement si le navigateur ne sait pas décoder. */
+  function clearWebServerPreviewV1152(){
+    var old=String(state.webServerPreviewUrlV1152||'');
+    state.webServerPreviewUrlV1152='';state.webServerPreviewRevisionV1152=0;state.webServerPreviewPromiseV1152=null;
+    if(old&&/^blob:/i.test(old)){try{URL.revokeObjectURL(old);}catch(_e){}}
+  }
+  async function webPreviewTokenV1152(){
+    try{
+      var c=happySb();if(!c&&window.happyadEnsureSupabaseV936)c=await window.happyadEnsureSupabaseV936(12000);
+      if(!c||!c.auth)return '';
+      var r=await c.auth.getSession(),s=r&&r.data&&r.data.session;
+      if(!s&&c.auth.refreshSession){try{var rr=await c.auth.refreshSession();s=rr&&rr.data&&rr.data.session;}catch(_e){}}
+      return String(s&&s.access_token||'');
+    }catch(_e){return '';}
+  }
+  async function fetchWebServerPreviewV1152(file,revision){
+    if(!FYBLIC_WEB_BROWSER_V1151||!file)return '';
+    if((Number(state.selectionRevision)||0)!==Number(revision||0))return '';
+    if(state.webServerPreviewUrlV1152&&state.webServerPreviewRevisionV1152===revision)return state.webServerPreviewUrlV1152;
+    if(state.webServerPreviewPromiseV1152&&state.webServerPreviewRevisionV1152===revision)return state.webServerPreviewPromiseV1152;
+    state.webServerPreviewRevisionV1152=revision;
+    state.webServerPreviewPromiseV1152=(async function(){
+      var base=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'').replace(/\/+$/,'');if(!base)return '';
+      var token=await webPreviewTokenV1152();
+      var headers={'Content-Type':mediaMimeV1126(file)||'application/octet-stream'};if(token)headers.Authorization='Bearer '+token;
+      var controller=typeof AbortController!=='undefined'?new AbortController():null;
+      var timeoutMs=Math.max(90000,Math.min(6*60*1000,90000+Math.round(Number(file.size||0)/3500000)*1000));
+      var timer=controller?setTimeout(function(){try{controller.abort();}catch(_e){}},timeoutMs):null;
+      try{
+        var response=await fetch(base+'/api/web-preview?name='+encodeURIComponent(file.name||'media'),{method:'POST',headers:headers,body:file,signal:controller?controller.signal:undefined});
+        if(response.status===429){await new Promise(function(resolve){setTimeout(resolve,1800);});response=await fetch(base+'/api/web-preview?name='+encodeURIComponent(file.name||'media'),{method:'POST',headers:headers,body:file,signal:controller?controller.signal:undefined});}
+        if(!response.ok)throw new Error('Aperçu serveur '+response.status);
+        var blob=await response.blob();if(!blob||!blob.size)throw new Error('Aperçu serveur vide');
+        var url=URL.createObjectURL(blob);
+        if((Number(state.selectionRevision)||0)!==Number(revision||0)){try{URL.revokeObjectURL(url);}catch(_e){}return '';}
+        var old=String(state.webServerPreviewUrlV1152||'');if(old&&old!==url&&/^blob:/i.test(old)){try{URL.revokeObjectURL(old);}catch(_e){}}
+        state.webServerPreviewUrlV1152=url;state.webServerPreviewRevisionV1152=revision;state.webPreviewHintV1151=url;state.webPreviewRevisionV1151=revision;
+        var d=Number(response.headers.get('X-Fyblic-Preview-Duration')||0);if(Number.isFinite(d)&&d>0)state.videoDuration=d;
+        if(state.kind==='video')state.detailPoster=url;
+        state.previewIssue='';
+        try{renderSelectionPreview();}catch(_e){}
+        try{if($('step2')&&$('step2').classList.contains('show'))renderDetailsPreview();}catch(_e){}
+        return url;
+      }catch(error){
+        if((Number(state.selectionRevision)||0)===Number(revision||0))state.previewIssue='decode';
+        return '';
+      }finally{if(timer)clearTimeout(timer);state.webServerPreviewPromiseV1152=null;}
+    })();
+    return state.webServerPreviewPromiseV1152;
+  }
+  function requestWebServerPreviewV1152(file,revision){
+    return fetchWebServerPreviewV1152(file,revision).then(function(value){
+      if(value)return value;
+      if((Number(state.selectionRevision)||0)!==Number(revision||0))return '';
+      var root=$('preview');
+      if(root){
+        var name=file&&file.name||'Média sélectionné',mb=file&&file.size?(file.size/1024/1024).toFixed(file.size>10*1024*1024?0:1):'';
+        root.innerHTML='<div class="fyMediaFallbackV1126"><div><b>Média sélectionné</b><span>'+escapeHtml(name)+(mb?' · '+mb+' Mo':'')+'</span><span>L’aperçu n’est pas lisible dans ce navigateur, mais le fichier original reste prêt pour la publication.</span></div></div>';
+      }
+      return '';
+    });
+  }
+
   /* Fyblic V1151 — aperçu Web autonome.
      Le navigateur garde toujours le File original pour la publication, mais fabrique
      une surface d'aperçu stable (photo décodée / poster vidéo) séparément. L'APK
@@ -1390,15 +1453,15 @@ button:disabled{filter:none;transform:none}
   function prepareWebSelectionPreviewV1151(file,kind,revision){
     if(!FYBLIC_WEB_BROWSER_V1151||!file)return;
     if(kind==='photo'){
-      prepareWebPhotoPreviewV1151(file,revision).then(function(value){if(value)refreshWebSelectionPreviewV1151(revision);}).catch(function(){});
+      prepareWebPhotoPreviewV1151(file,revision).then(function(value){if(value)refreshWebSelectionPreviewV1151(revision);else requestWebServerPreviewV1152(file,revision);}).catch(function(){requestWebServerPreviewV1152(file,revision);});
       return;
     }
     if(kind==='video'){
       var promise=state.detailPosterPromise||prepareVideoPosterImmediatelyV1138();
       Promise.resolve(promise).then(function(value){
         if((Number(state.selectionRevision)||0)!==Number(revision||0))return;
-        if(value){state.webPreviewHintV1151=value;state.webPreviewRevisionV1151=revision;refreshWebSelectionPreviewV1151(revision);}
-      }).catch(function(){});
+        if(value){state.webPreviewHintV1151=value;state.webPreviewRevisionV1151=revision;refreshWebSelectionPreviewV1151(revision);}else requestWebServerPreviewV1152(file,revision);
+      }).catch(function(){requestWebServerPreviewV1152(file,revision);});
     }
   }
   function prepareNativeMediaChoiceV1140(){
@@ -1431,6 +1494,11 @@ button:disabled{filter:none;transform:none}
     if(!root)return;var media=root.querySelector('video,img');if(!media)return;
     function failed(){
       if(root.__fyblicDecodeFallbackV1126)return;root.__fyblicDecodeFallbackV1126=true;
+      if(FYBLIC_WEB_BROWSER_V1151&&state.file){
+        state.previewIssue='server-preview';
+        root.innerHTML='<div class="fyMediaFallbackV1126"><div><b>Préparation de l’aperçu…</b><span>Fyblic prépare une miniature compatible avec ce navigateur.</span></div></div>';
+        requestWebServerPreviewV1152(state.file,Number(state.selectionRevision)||0);return;
+      }
       var name=state.file&&state.file.name||'Média sélectionné',mb=state.file&&state.file.size?(state.file.size/1024/1024).toFixed(state.file.size>10*1024*1024?0:1):'';
       root.innerHTML='<div class="fyMediaFallbackV1126"><div><b>Média sélectionné</b><span>'+escapeHtml(name)+(mb?' · '+mb+' Mo':'')+'</span><span>Le fichier original est conservé intact et prêt pour la publication.</span></div></div>';
       state.previewIssue='decode';
@@ -1507,6 +1575,7 @@ button:disabled{filter:none;transform:none}
     extraClass=extraClass||'';
     if(state.kind==='video'){
       var p=state.detailPoster||state.webPreviewHintV1151||state.nativePreviewHint||'';
+      if(FYBLIC_WEB_BROWSER_V1151&&state.webServerPreviewUrlV1152){return '<img class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.webServerPreviewUrlV1152)+'" alt="Aperçu vidéo">';}
       var visible=(p||FYBLIC_WEB_BROWSER_V1151)?'1':'0';
       return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(p?'poster="'+escapeHtml(p)+'" ':'')+(state.videoMuted?'muted ':'')+'playsinline preload="auto" style="background:#080b10;opacity:'+visible+'" '+(controls?'controls':'')+'></video>';
     }
@@ -1521,7 +1590,7 @@ button:disabled{filter:none;transform:none}
   }
 
   function previewSoundButtonHTMLV889(){
-    if(state.kind!=='video')return '';
+    if(state.kind!=='video'||(FYBLIC_WEB_BROWSER_V1151&&state.webServerPreviewUrlV1152))return '';
     var label=state.videoMuted?'Activer le son':'Couper le son';
     return '<button type="button" class="mediaSoundBtn" data-preview-sound-v889 aria-label="'+label+'" title="'+label+'">'+previewSoundIconV889(state.videoMuted)+'</button>';
   }
@@ -1594,6 +1663,7 @@ button:disabled{filter:none;transform:none}
 
   function previewVideoControlsHTMLV892(){
     if(state.kind!=='video')return '';
+    if(FYBLIC_WEB_BROWSER_V1151&&state.webServerPreviewUrlV1152)return '<div class="previewVideoTime">Aperçu · '+formatPreviewTimeV892(state.videoDuration)+'</div>';
     return '<button type="button" class="previewPlayBtn" data-preview-play-v892 aria-label="Lire la vidéo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7Z"/></svg></button>'+
       '<div class="previewVideoTime" data-preview-time-v892>0:00 / '+formatPreviewTimeV892(state.videoDuration)+'<\/div>';
   }
@@ -1814,7 +1884,7 @@ button:disabled{filter:none;transform:none}
     if(!file)return false;
     var kind=mediaKindV1126(file);if(!kind){if(leaseInput){try{leaseInput.remove();}catch(_e){}}toast('Choisis uniquement une photo ou une vidéo');return false;}
     var nextUrl='';try{nextUrl=URL.createObjectURL(file);}catch(_e){if(leaseInput){try{leaseInput.remove();}catch(_x){}}toast('Ce média ne peut pas être ouvert');return false;}
-    var oldUrl=state.objectUrl;state.selectionRevision=(Number(state.selectionRevision)||0)+1;
+    var oldUrl=state.objectUrl;clearWebServerPreviewV1152();state.selectionRevision=(Number(state.selectionRevision)||0)+1;
     state.completed=false;state.previewIssue='';state.file=file;state.files=(allFiles&&allFiles.length)?Array.from(allFiles):[file];state.kind=kind;
     state.crop={v:2,scale:1,x:50,y:50};state.videoFrame=null;state.videoDuration=0;state.videoMuted=true;state.detailPoster='';state.nativePreviewHint='';state.webPreviewHintV1151='';state.webPreviewRevisionV1151=state.selectionRevision;state.objectUrl=nextUrl;
     state.nativeSelectionGeneration=Number(window.__FYBLIC_NATIVE_SELECTION_GENERATION_V1140__||0)||0;
