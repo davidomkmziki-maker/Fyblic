@@ -760,7 +760,7 @@ button:disabled{filter:none;transform:none}
   // V887 : sélection média simplifiée — seulement Caméra + Galerie universelle.
   // Les anciens liens Reel/Carte restent compatibles mais retombent sur Publier.
   const initialPublicMode=(initialMode==="story"||initialMode==="live")?initialMode:"publish";
-  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0,nativeSelectionGeneration:0,nativePreviewHint:'',nativeHandoffGeneration:0,nativeHandoffPreview:'',multiPreviewUrlsV1142:[],webPreviewHintV1151:'',webPreviewRevisionV1151:0,webServerPreviewUrlV1152:'',webServerPreviewRevisionV1152:0,webServerPreviewPromiseV1152:null};
+  const state={mode:initialPublicMode,file:null,files:[],objectUrl:"",kind:"",crop:{v:2,scale:1,x:50,y:50},videoFrame:null,videoDuration:0,videoMuted:true,detailPoster:'',completed:false,sessionOpen:false,mentions:[],mediaLeaseInput:null,selectionRevision:0,previewIssue:'',cameraMode:'video',detailPosterPromise:null,detailPosterRevision:0,nativeSelectionGeneration:0,nativePreviewHint:'',nativeHandoffGeneration:0,nativeHandoffPreview:'',multiPreviewUrlsV1142:[],webPreviewHintV1151:'',webPreviewRevisionV1151:0,webServerPreviewUrlV1152:'',webServerPreviewRevisionV1152:0,webServerPreviewPromiseV1152:null,webPlaybackSessionV1156:'',webPlaybackUrlV1156:'',webPlaybackStatusV1156:'',webPlaybackPollTimerV1156:null};
   const $=id=>document.getElementById(id);
   const FYBLIC_NATIVE_ANDROID_V1141=/FyblicAndroid\/\d+/i.test(String(navigator.userAgent||''))||/[?&]native_app=android(?:&|$)/i.test(String(location.search||''));
   const FYBLIC_WEB_BROWSER_V1151=!FYBLIC_NATIVE_ANDROID_V1141;
@@ -1364,7 +1364,60 @@ button:disabled{filter:none;transform:none}
   function clearWebServerPreviewV1152(){
     var old=String(state.webServerPreviewUrlV1152||'');
     state.webServerPreviewUrlV1152='';state.webServerPreviewRevisionV1152=0;state.webServerPreviewPromiseV1152=null;
+    state.webPlaybackSessionV1156='';state.webPlaybackUrlV1156='';state.webPlaybackStatusV1156='';
+    if(state.webPlaybackPollTimerV1156){clearTimeout(state.webPlaybackPollTimerV1156);state.webPlaybackPollTimerV1156=null;}
     if(old&&/^blob:/i.test(old)){try{URL.revokeObjectURL(old);}catch(_e){}}
+  }
+
+  function absoluteWorkerUrlV1156(pathname){
+    var base=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'').replace(/\/+$/,'');
+    pathname=String(pathname||'');
+    if(!pathname)return '';
+    if(/^https?:\/\//i.test(pathname))return pathname;
+    return base+(pathname.charAt(0)==='/'?pathname:'/'+pathname);
+  }
+  function scheduleWebPlaybackPollV1156(sessionId,revision,delay){
+    if(!sessionId||!FYBLIC_WEB_BROWSER_V1151)return;
+    if(state.webPlaybackPollTimerV1156)clearTimeout(state.webPlaybackPollTimerV1156);
+    state.webPlaybackPollTimerV1156=setTimeout(function(){pollWebPlaybackV1156(sessionId,revision);},Math.max(250,Number(delay)||700));
+  }
+  async function pollWebPlaybackV1156(sessionId,revision){
+    if((Number(state.selectionRevision)||0)!==Number(revision||0)||String(state.webPlaybackSessionV1156||'')!==String(sessionId||''))return;
+    var base=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'').replace(/\/+$/,'');if(!base)return;
+    try{
+      var r=await fetch(base+'/api/web-preview/status?id='+encodeURIComponent(sessionId)+'&v=1156',{method:'GET',mode:'cors',credentials:'omit',cache:'no-store'});
+      var data=await r.json().catch(function(){return null;});
+      if(!r.ok||!data||!data.ok)throw new Error('Statut aperçu '+r.status);
+      if((Number(state.selectionRevision)||0)!==Number(revision||0))return;
+      state.webPlaybackStatusV1156=String(data.status||'');
+      if(data.status==='ready'&&data.playbackPath){
+        state.webPlaybackUrlV1156=absoluteWorkerUrlV1156(data.playbackPath);
+        state.previewIssue='';
+        try{renderSelectionPreview();}catch(_e){}
+        try{if($('step2')&&$('step2').classList.contains('show'))renderDetailsPreview();}catch(_e){}
+        return;
+      }
+      if(data.status==='failed'||data.status==='expired')return;
+      scheduleWebPlaybackPollV1156(sessionId,revision,900);
+    }catch(_e){scheduleWebPlaybackPollV1156(sessionId,revision,1400);}
+  }
+  function rehydrateWebVideoPreviewV1156(){
+    if(!FYBLIC_WEB_BROWSER_V1151||!state.file||state.kind!=='video')return;
+    var revision=Number(state.selectionRevision)||0;
+    if(state.webServerPreviewUrlV1152){
+      try{renderSelectionPreview();}catch(_e){}
+      if(state.webPlaybackSessionV1156&&!state.webPlaybackUrlV1156)scheduleWebPlaybackPollV1156(state.webPlaybackSessionV1156,revision,100);
+      return;
+    }
+    try{
+      var local=$('preview')&&$('preview').querySelector('video');
+      if(local&&local.readyState>=2&&local.videoWidth>0)return;
+    }catch(_e){}
+    if(!state.webServerPreviewPromiseV1152){
+      state.previewIssue='server-preview';
+      var root=$('preview');if(root)root.innerHTML='<div class="fyMediaFallbackV1126"><div><b>Préparation de l’aperçu…</b><span>Fyblic réactive l’aperçu vidéo.</span></div></div>';
+      requestWebServerPreviewV1152(state.file,revision);
+    }
   }
   async function webPreviewTokenV1152(){
     try{
@@ -1386,7 +1439,7 @@ button:disabled{filter:none;transform:none}
       var controller=typeof AbortController!=='undefined'?new AbortController():null;
       var timeoutMs=Math.max(120000,Math.min(7*60*1000,120000+Math.round(Number(file.size||0)/2500000)*1000));
       var timer=controller?setTimeout(function(){try{controller.abort();}catch(_e){}},timeoutMs):null;
-      var previewUrl=base+'/api/web-preview?response=json&name='+encodeURIComponent(file.name||'media')+'&v=1155';
+      var previewUrl=base+'/api/web-preview?response=json&name='+encodeURIComponent(file.name||'media')+'&v=1156';
       async function viaFetchV1155(){
         var r=await fetch(previewUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:file,mode:'cors',credentials:'omit',cache:'no-store',redirect:'follow',signal:controller?controller.signal:undefined});
         if(!r.ok)throw new Error('Aperçu serveur '+r.status);
@@ -1412,12 +1465,18 @@ button:disabled{filter:none;transform:none}
         state.webServerPreviewUrlV1152=url;state.webServerPreviewRevisionV1152=revision;state.webPreviewHintV1151=url;state.webPreviewRevisionV1151=revision;
         var d=Number(data.duration||0);if(Number.isFinite(d)&&d>0)state.videoDuration=d;
         if(state.kind==='video')state.detailPoster=url;
+        if(state.kind==='video'&&data.sessionId){
+          state.webPlaybackSessionV1156=String(data.sessionId||'');
+          state.webPlaybackStatusV1156=String(data.playbackStatus||'queued');
+          state.webPlaybackUrlV1156='';
+          scheduleWebPlaybackPollV1156(state.webPlaybackSessionV1156,revision,250);
+        }
         state.previewIssue='';
         try{renderSelectionPreview();}catch(_e){}
         try{if($('step2')&&$('step2').classList.contains('show'))renderDetailsPreview();}catch(_e){}
         return url;
       }catch(error){
-        try{console.warn('[Fyblic V1155] aperçu serveur vidéo impossible',error&&error.message||error);}catch(_e){}
+        try{console.warn('[Fyblic V1156] aperçu serveur vidéo impossible',error&&error.message||error);}catch(_e){}
         if((Number(state.selectionRevision)||0)===Number(revision||0))state.previewIssue='decode';
         return '';
       }finally{if(timer)clearTimeout(timer);state.webServerPreviewPromiseV1152=null;}
@@ -1589,6 +1648,9 @@ button:disabled{filter:none;transform:none}
     extraClass=extraClass||'';
     if(state.kind==='video'){
       var p=state.detailPoster||state.webPreviewHintV1151||state.nativePreviewHint||'';
+      if(FYBLIC_WEB_BROWSER_V1151&&state.webPlaybackUrlV1156){
+        return '<video class="cardCropMedia videoFramePreview '+extraClass+'" crossorigin="anonymous" src="'+escapeHtml(state.webPlaybackUrlV1156)+'" '+(p?'poster="'+escapeHtml(p)+'" ':'')+(state.videoMuted?'muted ':'')+'playsinline preload="metadata" style="background:#080b10;opacity:1" '+(controls?'controls':'')+'></video>';
+      }
       if(FYBLIC_WEB_BROWSER_V1151&&state.webServerPreviewUrlV1152){return '<img class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.webServerPreviewUrlV1152)+'" alt="Aperçu vidéo">';}
       var visible=(p||FYBLIC_WEB_BROWSER_V1151)?'1':'0';
       return '<video class="cardCropMedia videoFramePreview '+extraClass+'" src="'+escapeHtml(state.objectUrl)+'" '+(p?'poster="'+escapeHtml(p)+'" ':'')+(state.videoMuted?'muted ':'')+'playsinline preload="auto" style="background:#080b10;opacity:'+visible+'" '+(controls?'controls':'')+'></video>';
@@ -1677,7 +1739,7 @@ button:disabled{filter:none;transform:none}
 
   function previewVideoControlsHTMLV892(){
     if(state.kind!=='video')return '';
-    if(FYBLIC_WEB_BROWSER_V1151&&state.webServerPreviewUrlV1152)return '<div class="previewVideoTime">Aperçu · '+formatPreviewTimeV892(state.videoDuration)+'</div>';
+    if(FYBLIC_WEB_BROWSER_V1151&&state.webServerPreviewUrlV1152&&!state.webPlaybackUrlV1156)return '<div class="previewVideoTime">Préparation vidéo · '+formatPreviewTimeV892(state.videoDuration)+'</div>';
     return '<button type="button" class="previewPlayBtn" data-preview-play-v892 aria-label="Lire la vidéo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7Z"/></svg></button>'+
       '<div class="previewVideoTime" data-preview-time-v892>0:00 / '+formatPreviewTimeV892(state.videoDuration)+'<\/div>';
   }
@@ -2952,11 +3014,14 @@ return {source:'story',id:storyId};
       var activeV1126=activePublicationV1067R1();
       if(!state.sessionOpen){if(!activeV1126)resetPublishComposer('frame-visible-fresh');state.sessionOpen=true;}
       setPublishModeV885(d.publishMode||d.mode||state.mode||'publish',d.source||'frame-visible-v885');
+      if(FYBLIC_WEB_BROWSER_V1151)setTimeout(rehydrateWebVideoPreviewV1156,0);
       if(activeV1126){toast('Une publication est déjà en cours');return;}
       /* V1151 Web : le + ouvre toujours d'abord Nouvelle publication.
          Caméra et Galerie ne s'ouvrent qu'après un choix explicite de l'utilisateur. */
     }catch(_e){}
   });
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(rehydrateWebVideoPreviewV1156,0);},{passive:true});
+  window.addEventListener('pageshow',function(){setTimeout(rehydrateWebVideoPreviewV1156,0);},{passive:true});
   window.addEventListener('HAPPYAD_PROFILE_AVATAR_UPDATED_V855R32',function(ev){var d=ev&&ev.detail||{},id=String(d.userId||d.uid||d.id||'').trim(),url=String(d.url||d.avatarUrl||d.avatar_url||'').trim();if(!id)return;storyMentionResults.forEach(function(p){if(p&&p.id===id)p.avatar=url;});state.mentions.forEach(function(p){if(p&&p.id===id)p.avatar=url;});if(activeMentionToken)renderMentionResults(storyMentionResults);});
   /* Fyblic V906 — autocomplete @ strict : une recherche part uniquement après une vraie modification du texte.
      Le focus/clic qui fait revenir le clavier et les changements de viewport ne doivent jamais relancer Supabase. */
