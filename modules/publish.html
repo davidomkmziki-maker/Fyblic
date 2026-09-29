@@ -1360,7 +1360,7 @@ button:disabled{filter:none;transform:none}
   }
   function stablePickerAcceptV1126(){return 'image/*,video/*,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.mp4,.mov,.m4v,.3gp,.3g2,.webm,.mkv,.avi,.mpeg,.mpg,.mts,.m2ts,.ts';}
 
-  /* Fyblic V1152 — fallback serveur uniquement si le navigateur ne sait pas décoder. */
+  /* Fyblic V1154 — fallback serveur direct sans preflight si le navigateur ne sait pas décoder. */
   function clearWebServerPreviewV1152(){
     var old=String(state.webServerPreviewUrlV1152||'');
     state.webServerPreviewUrlV1152='';state.webServerPreviewRevisionV1152=0;state.webServerPreviewPromiseV1152=null;
@@ -1383,14 +1383,23 @@ button:disabled{filter:none;transform:none}
     state.webServerPreviewRevisionV1152=revision;
     state.webServerPreviewPromiseV1152=(async function(){
       var base=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'').replace(/\/+$/,'');if(!base)return '';
-      var token=await webPreviewTokenV1152();
-      var headers={'Content-Type':mediaMimeV1126(file)||'application/octet-stream'};if(token)headers.Authorization='Bearer '+token;
+      /* V1154: transport CORS simple pour l’aperçu uniquement. Aucun Bearer, aucun preflight.
+         Le nom conserve l’extension réelle afin que FFmpeg reconnaisse toujours le conteneur. */
+      var headers={'Content-Type':'text/plain;charset=UTF-8'};
       var controller=typeof AbortController!=='undefined'?new AbortController():null;
-      var timeoutMs=Math.max(90000,Math.min(6*60*1000,90000+Math.round(Number(file.size||0)/3500000)*1000));
+      var timeoutMs=Math.max(120000,Math.min(7*60*1000,120000+Math.round(Number(file.size||0)/2500000)*1000));
       var timer=controller?setTimeout(function(){try{controller.abort();}catch(_e){}},timeoutMs):null;
+      var previewUrl=base+'/api/web-preview?name='+encodeURIComponent(file.name||'media')+'&mime='+encodeURIComponent(mediaMimeV1126(file)||'application/octet-stream')+'&v=1154';
+      async function sendPreviewV1154(){
+        return fetch(previewUrl,{method:'POST',headers:headers,body:file,mode:'cors',credentials:'omit',cache:'no-store',redirect:'follow',signal:controller?controller.signal:undefined});
+      }
       try{
-        var response=await fetch(base+'/api/web-preview?name='+encodeURIComponent(file.name||'media'),{method:'POST',headers:headers,body:file,signal:controller?controller.signal:undefined});
-        if(response.status===429){await new Promise(function(resolve){setTimeout(resolve,1800);});response=await fetch(base+'/api/web-preview?name='+encodeURIComponent(file.name||'media'),{method:'POST',headers:headers,body:file,signal:controller?controller.signal:undefined});}
+        var response;
+        try{response=await sendPreviewV1154();}catch(firstError){
+          await new Promise(function(resolve){setTimeout(resolve,1200);});
+          response=await sendPreviewV1154();
+        }
+        if(response.status===429||response.status>=500){await new Promise(function(resolve){setTimeout(resolve,1800);});response=await sendPreviewV1154();}
         if(!response.ok)throw new Error('Aperçu serveur '+response.status);
         var blob=await response.blob();if(!blob||!blob.size)throw new Error('Aperçu serveur vide');
         var url=URL.createObjectURL(blob);

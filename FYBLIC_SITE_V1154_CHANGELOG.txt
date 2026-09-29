@@ -1,0 +1,9 @@
+FYBLIC SITE V1154 — VIDEO PREVIEW DIRECT
+
+- Photos : comportement V1152 conservé.
+- Vidéos incompatibles avec le decodeur du navigateur : fallback direct vers /api/web-preview.
+- Le fallback n’envoie plus de Bearer et utilise un transport CORS simple text/plain pour éviter le preflight mobile.
+- L’extension réelle reste transmise dans le nom afin que FFmpeg détecte correctement le conteneur.
+- Retry réseau unique + retry 429/5xx conservateur.
+- Cache-busters service worker, navigation et publish passés en V1154.
+- Le chemin FyblicAndroid reste inchangé.
