@@ -1,0 +1,7 @@
+FYBLIC SITE V1144 — PUBLISH GESTURE GUARD
+Date: 2026-09-29
+
+Correction unique : le geste qui ouvre Publication via + ne peut plus traverser vers Caméra/Galerie lors des ouvertures suivantes.
+Le bouclier reste actif au minimum 420 ms, attend la fin du geste et absorbe aussi les événements pointer/touch/mouse retardés.
+
+Aucun changement SQL, worker, Supabase, compression ou publication.

@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1142-media-tray-startup-20260929';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1144-publish-gesture-guard-20260929';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -82,7 +82,7 @@ var HAPPYAD_APP_SHELL = [
   './core/global-scroll-coordinator-v868.js?v=869-connection-phase2',
   './core/connection-work-coordinator-v869.js?v=869-connection-phase2',
   './core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical',
-  './core/navigation-master-v668.js?v=1142-media-tray-startup',
+  './core/navigation-master-v668.js?v=1144-publish-gesture-guard',
   './core/home-scroll-priority-master-v863.js?v=869-connection-phase2',
   './core/profile-avatar-master-v855r32.js?v=1031-storage-security',
   './core/follow-master-v855r34.js?v=986-professional-icons-love',

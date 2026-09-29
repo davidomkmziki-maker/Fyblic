@@ -4,7 +4,7 @@
   window.__HAPPYAD_NAVIGATION_MASTER_V668__=true;
   window.__HAPPYAD_NAVIGATION_MASTER_V656__=true;
 
-  var MASTER_VERSION='NAV_MASTER_V1142_MEDIA_TRAY_STARTUP';
+  var MASTER_VERSION='NAV_MASTER_V1144_PUBLISH_GESTURE_GUARD';
   var VISITOR_PROFILE_PRELOAD_URL_V601='modules/visitor-profile.html?deferred=1&v=869-connection-phase2';
   var VISITOR_PROFILE_MESSAGE_V601='HAPPYAD_PROFILE_SHOW_V601';
   var NAV_FLAG='__happyadCoreNavV10';
@@ -435,10 +435,30 @@
         if(st.onPointerUp)window.removeEventListener('pointerup',st.onPointerUp,true);
         if(st.onPointerCancel)window.removeEventListener('pointercancel',st.onPointerCancel,true);
         if(st.onTouchEnd)window.removeEventListener('touchend',st.onTouchEnd,true);
+        if(st.onMouseUp)window.removeEventListener('mouseup',st.onMouseUp,true);
       }
       var sh=document.getElementById(PUBLISH_TAP_SHIELD_ID_V889);if(sh&&sh.parentNode)sh.parentNode.removeChild(sh);
       publishTapShieldStateV889=null;
       window.__HAPPYAD_PUBLISH_TAP_SHIELD_V889={active:false,reason:String(reason||'remove'),at:Date.now()};
+    }catch(_e){}
+  }
+  function schedulePublishTapShieldReleaseV1144(st,reason){
+    try{
+      if(!st||st!==publishTapShieldStateV889)return;
+      if(st.releaseTimer)clearTimeout(st.releaseTimer);
+      var now=Date.now();
+      var untilOpen=Math.max(0,Number(st.minHoldUntil||0)-now);
+      var untilGesture=st.ended?Math.max(0,Number(st.endedAt||now)+140-now):700;
+      var wait=Math.max(120,untilOpen,untilGesture);
+      st.releaseTimer=setTimeout(function(){
+        if(st!==publishTapShieldStateV889)return;
+        if(!st.ended&&!st.gestureAlreadyEnded){
+          st.ended=true;st.endedAt=Date.now();
+          schedulePublishTapShieldReleaseV1144(st,(reason||'publish-ready')+'-gesture-fallback');
+          return;
+        }
+        removePublishTapShieldV889(reason||'publish-ready-v1144');
+      },wait);
     }catch(_e){}
   }
   function beginPublishTapShieldV889(reason,gestureAlreadyEnded){
@@ -446,28 +466,29 @@
       removePublishTapShieldV889('restart');
       injectSkeletonStyle();
       var sh=document.createElement('div');sh.id=PUBLISH_TAP_SHIELD_ID_V889;sh.setAttribute('aria-hidden','true');
-      var st={ended:!!gestureAlreadyEnded,releaseRequested:false,releaseTimer:null,safetyTimer:null,onPointerUp:null,onPointerCancel:null,onTouchEnd:null};
-      function swallow(ev){try{if(ev){ev.preventDefault();ev.stopPropagation();if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();}}catch(_e){}}
-      ['pointerdown','pointermove','click','dblclick','contextmenu','touchstart','touchmove'].forEach(function(type){sh.addEventListener(type,swallow,{capture:true,passive:false});});
+      var now=Date.now();
+      var st={ended:!!gestureAlreadyEnded,gestureAlreadyEnded:!!gestureAlreadyEnded,endedAt:gestureAlreadyEnded?now:0,minHoldUntil:now+420,releaseRequested:false,releaseTimer:null,safetyTimer:null,onPointerUp:null,onPointerCancel:null,onTouchEnd:null,onMouseUp:null};
+      function swallow(ev){try{if(ev){if(ev.cancelable)ev.preventDefault();ev.stopPropagation();if(ev.stopImmediatePropagation)ev.stopImmediatePropagation();}}catch(_e){}}
+      ['pointerdown','pointermove','pointerup','click','dblclick','contextmenu','touchstart','touchmove','touchend','mousedown','mouseup'].forEach(function(type){sh.addEventListener(type,swallow,{capture:true,passive:false});});
       function ended(ev){
-        swallow(ev);st.ended=true;
-        if(st.releaseRequested){if(st.releaseTimer)clearTimeout(st.releaseTimer);st.releaseTimer=setTimeout(function(){removePublishTapShieldV889('gesture-ended-ready');},90);}
+        swallow(ev);st.ended=true;st.endedAt=Date.now();
+        if(st.releaseRequested)schedulePublishTapShieldReleaseV1144(st,'gesture-ended-ready-v1144');
       }
-      st.onPointerUp=ended;st.onPointerCancel=ended;st.onTouchEnd=ended;
+      st.onPointerUp=ended;st.onPointerCancel=ended;st.onTouchEnd=ended;st.onMouseUp=ended;
       window.addEventListener('pointerup',st.onPointerUp,true);
       window.addEventListener('pointercancel',st.onPointerCancel,true);
       window.addEventListener('touchend',st.onTouchEnd,{capture:true,passive:false});
+      window.addEventListener('mouseup',st.onMouseUp,true);
       (document.body||document.documentElement).appendChild(sh);
-      st.safetyTimer=setTimeout(function(){removePublishTapShieldV889('safety-timeout');},6000);
+      st.safetyTimer=setTimeout(function(){removePublishTapShieldV889('safety-timeout-v1144');},2200);
       publishTapShieldStateV889=st;
-      window.__HAPPYAD_PUBLISH_TAP_SHIELD_V889={active:true,reason:String(reason||'publish-open'),at:Date.now()};
+      window.__HAPPYAD_PUBLISH_TAP_SHIELD_V889={active:true,reason:String(reason||'publish-open'),at:now,minHoldUntil:st.minHoldUntil};
     }catch(_e){}
   }
   function releasePublishTapShieldV889(reason){
     try{
       var st=publishTapShieldStateV889;if(!st)return;st.releaseRequested=true;
-      if(st.ended){if(st.releaseTimer)clearTimeout(st.releaseTimer);st.releaseTimer=setTimeout(function(){removePublishTapShieldV889(reason||'publish-ready');},48);}
-      else{if(st.releaseTimer)clearTimeout(st.releaseTimer);st.releaseTimer=setTimeout(function(){removePublishTapShieldV889((reason||'publish-ready')+'-hold-fallback');},550);}
+      schedulePublishTapShieldReleaseV1144(st,reason||'publish-ready-v1144');
     }catch(_e){}
   }
 
