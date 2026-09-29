@@ -1383,36 +1383,41 @@ button:disabled{filter:none;transform:none}
     state.webServerPreviewRevisionV1152=revision;
     state.webServerPreviewPromiseV1152=(async function(){
       var base=String(window.FYBLIC_MEDIA_COMPRESSOR_URL||'').replace(/\/+$/,'');if(!base)return '';
-      /* V1154: transport CORS simple pour l’aperçu uniquement. Aucun Bearer, aucun preflight.
-         Le nom conserve l’extension réelle afin que FFmpeg reconnaisse toujours le conteneur. */
-      var headers={'Content-Type':'text/plain;charset=UTF-8'};
       var controller=typeof AbortController!=='undefined'?new AbortController():null;
       var timeoutMs=Math.max(120000,Math.min(7*60*1000,120000+Math.round(Number(file.size||0)/2500000)*1000));
       var timer=controller?setTimeout(function(){try{controller.abort();}catch(_e){}},timeoutMs):null;
-      var previewUrl=base+'/api/web-preview?name='+encodeURIComponent(file.name||'media')+'&mime='+encodeURIComponent(mediaMimeV1126(file)||'application/octet-stream')+'&v=1154';
-      async function sendPreviewV1154(){
-        return fetch(previewUrl,{method:'POST',headers:headers,body:file,mode:'cors',credentials:'omit',cache:'no-store',redirect:'follow',signal:controller?controller.signal:undefined});
+      var previewUrl=base+'/api/web-preview?response=json&name='+encodeURIComponent(file.name||'media')+'&v=1155';
+      async function viaFetchV1155(){
+        var r=await fetch(previewUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:file,mode:'cors',credentials:'omit',cache:'no-store',redirect:'follow',signal:controller?controller.signal:undefined});
+        if(!r.ok)throw new Error('Aperçu serveur '+r.status);
+        var data=await r.json();
+        if(!data||!data.ok||!/^data:image\/jpeg;base64,/i.test(String(data.preview||'')))throw new Error('Réponse aperçu invalide');
+        return data;
+      }
+      function viaXHRV1155(){
+        return new Promise(function(resolve,reject){
+          try{
+            var x=new XMLHttpRequest();x.open('POST',previewUrl,true);x.responseType='json';x.timeout=timeoutMs;
+            x.setRequestHeader('Content-Type','text/plain;charset=UTF-8');
+            x.onload=function(){var d=x.response;if(x.status>=200&&x.status<300&&d&&d.ok&&/^data:image\/jpeg;base64,/i.test(String(d.preview||'')))resolve(d);else reject(new Error('XHR aperçu '+x.status));};
+            x.onerror=function(){reject(new Error('XHR aperçu réseau'));};x.ontimeout=function(){reject(new Error('XHR aperçu délai'));};x.send(file);
+          }catch(e){reject(e);}
+        });
       }
       try{
-        var response;
-        try{response=await sendPreviewV1154();}catch(firstError){
-          await new Promise(function(resolve){setTimeout(resolve,1200);});
-          response=await sendPreviewV1154();
-        }
-        if(response.status===429||response.status>=500){await new Promise(function(resolve){setTimeout(resolve,1800);});response=await sendPreviewV1154();}
-        if(!response.ok)throw new Error('Aperçu serveur '+response.status);
-        var blob=await response.blob();if(!blob||!blob.size)throw new Error('Aperçu serveur vide');
-        var url=URL.createObjectURL(blob);
-        if((Number(state.selectionRevision)||0)!==Number(revision||0)){try{URL.revokeObjectURL(url);}catch(_e){}return '';}
-        var old=String(state.webServerPreviewUrlV1152||'');if(old&&old!==url&&/^blob:/i.test(old)){try{URL.revokeObjectURL(old);}catch(_e){}}
+        var data;
+        try{data=await viaFetchV1155();}catch(first){data=await viaXHRV1155();}
+        if((Number(state.selectionRevision)||0)!==Number(revision||0))return '';
+        var url=String(data.preview||'');
         state.webServerPreviewUrlV1152=url;state.webServerPreviewRevisionV1152=revision;state.webPreviewHintV1151=url;state.webPreviewRevisionV1151=revision;
-        var d=Number(response.headers.get('X-Fyblic-Preview-Duration')||0);if(Number.isFinite(d)&&d>0)state.videoDuration=d;
+        var d=Number(data.duration||0);if(Number.isFinite(d)&&d>0)state.videoDuration=d;
         if(state.kind==='video')state.detailPoster=url;
         state.previewIssue='';
         try{renderSelectionPreview();}catch(_e){}
         try{if($('step2')&&$('step2').classList.contains('show'))renderDetailsPreview();}catch(_e){}
         return url;
       }catch(error){
+        try{console.warn('[Fyblic V1155] aperçu serveur vidéo impossible',error&&error.message||error);}catch(_e){}
         if((Number(state.selectionRevision)||0)===Number(revision||0))state.previewIssue='decode';
         return '';
       }finally{if(timer)clearTimeout(timer);state.webServerPreviewPromiseV1152=null;}
