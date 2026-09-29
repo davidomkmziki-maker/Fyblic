@@ -4,7 +4,7 @@
   window.__HAPPYAD_NAVIGATION_MASTER_V668__=true;
   window.__HAPPYAD_NAVIGATION_MASTER_V656__=true;
 
-  var MASTER_VERSION='NAV_MASTER_V1140_PUBLISH_PREWARM';
+  var MASTER_VERSION='NAV_MASTER_V1141_ATOMIC_UI';
   var VISITOR_PROFILE_PRELOAD_URL_V601='modules/visitor-profile.html?deferred=1&v=869-connection-phase2';
   var VISITOR_PROFILE_MESSAGE_V601='HAPPYAD_PROFILE_SHOW_V601';
   var NAV_FLAG='__happyadCoreNavV10';
@@ -43,7 +43,7 @@
     video:'modules/video.html?v=986-base-video-text',
     photo:'modules/photo.html',
     message:'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover',
-    publish:'modules/publish.html?v=1140-atomic-preview-startup',
+    publish:'modules/publish.html?v=1141-atomic-ui',
     map:'modules/map.html'
   };
 
@@ -788,7 +788,7 @@
     if(page==='message')return 'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover';
     if(page==='profile')return 'modules/my-profile.html?v=1001-profile-identity-scale';
     if(page==='profile_public')return VISITOR_PROFILE_PRELOAD_URL_V601;
-    if(page==='publish')return 'modules/publish.html?v=1140-atomic-preview-startup';
+    if(page==='publish')return 'modules/publish.html?v=1141-atomic-ui';
     return pages[page]||'index.html';
   }
   function ownerAuthUidHintV855R23(){
@@ -1036,18 +1036,18 @@
     }catch(_e){return false;}
   }
 
-  function isFyblicNativeAndroidV1140(){
-    try{return /FyblicAndroid\/1140\b/i.test(String(navigator.userAgent||''))||/[?&]native_app=android(?:&|$)/i.test(String(location.search||''));}catch(_e){return false;}
+  function isFyblicNativeAndroidV1141(){
+    try{return /FyblicAndroid\/\d+\b/i.test(String(navigator.userAgent||''))||/[?&]native_app=android(?:&|$)/i.test(String(location.search||''));}catch(_e){return false;}
   }
 
-  var publishWarmupTimerV1140=0;
-  function schedulePublishWarmupV1140(delay){
+  var publishWarmupTimerV1141=0;
+  function schedulePublishWarmupV1141(delay){
     try{
-      if(!isFyblicNativeAndroidV1140())return false;
-      clearTimeout(publishWarmupTimerV1140);
+      if(!isFyblicNativeAndroidV1141())return false;
+      clearTimeout(publishWarmupTimerV1141);
       var wait=Math.max(80,Number(delay)||120);
-      publishWarmupTimerV1140=setTimeout(function warmPublish(){
-        publishWarmupTimerV1140=0;
+      publishWarmupTimerV1141=setTimeout(function warmPublish(){
+        publishWarmupTimerV1141=0;
         try{
           if(document.hidden||activePage!=='home')return;
           var existing=document.getElementById(frameId('publish'));
@@ -1059,6 +1059,14 @@
     }catch(_e){return false;}
   }
 
+  window.FyblicNativeHomeReadyV1141=function(){
+    try{
+      window.__FYBLIC_NATIVE_HOME_READY_V1141__=true;
+      return schedulePublishWarmupV1141(40);
+    }catch(_e){return false;}
+  };
+  if(window.__FYBLIC_NATIVE_HOME_READY_V1141__)schedulePublishWarmupV1141(40);
+
   function scheduleMainTabsPreloadV594(){
     try{
       if(window[MAIN_TABS_PRELOAD_FLAG]){
@@ -1068,7 +1076,7 @@
         scheduleMessageDormantWarmupV876(MESSAGE_WARMUP_BOOT_DELAY_MS_V879);
         scheduleOwnerProfileWarmupV864(OWNER_PROFILE_WARMUP_BOOT_DELAY_MS_V880);
         scheduleVideoWarmupV624(VIDEO_WARMUP_BOOT_DELAY_MS_V883);
-        schedulePublishWarmupV1140(90);
+        if(window.__FYBLIC_NATIVE_HOME_READY_V1141__)schedulePublishWarmupV1141(40);
         return true;
       }
       window[MAIN_TABS_PRELOAD_FLAG]=true;
@@ -1080,7 +1088,7 @@
       scheduleMessageDormantWarmupV876(MESSAGE_WARMUP_BOOT_DELAY_MS_V879);
       scheduleOwnerProfileWarmupV864(OWNER_PROFILE_WARMUP_BOOT_DELAY_MS_V880);
       scheduleVideoWarmupV624(VIDEO_WARMUP_BOOT_DELAY_MS_V883);
-      schedulePublishWarmupV1140(90);
+      if(window.__FYBLIC_NATIVE_HOME_READY_V1141__)schedulePublishWarmupV1141(40);
       return true;
     }catch(_e){return false;}
   }
@@ -1734,7 +1742,7 @@
         /* V1140: Publication cold fallback keeps the current painted surface.
            Normally the persistent composer is already warm; if the user taps +
            exceptionally early, never reveal grey/black skeleton blocks. */
-        showSkeleton(page,url,(page==='publish'&&isFyblicNativeAndroidV1140())?false:true);
+        showSkeleton(page,url,(page==='publish'&&isFyblicNativeAndroidV1141())?false:true);
         try{
           /* On suspend le média de la surface précédente, mais on ne la masque pas avant le rendu suivant. */
           root.querySelectorAll('.happyadAppFrame').forEach(function(x){if(x!==fr)pauseFrame(x,'prepare-module-'+page);});

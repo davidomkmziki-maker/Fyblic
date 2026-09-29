@@ -1,0 +1,18 @@
+FYBLIC SITE V1141 — COMPOSER ATOMIC UI
+29/09/2026
+
+1. Composer Publication Android
+- Préchargé seulement après le signal Home réellement prêt.
+- Si le + est touché très tôt, l'Accueil reste peint jusqu'à ce que Publication soit prête; aucun squelette de routeur n'est révélé.
+- L'état vide Android n'affiche plus le carré gris ressemblant à un squelette.
+- Le récent média natif peut être repris même si la frame Publication est créée après son injection.
+
+2. Galerie -> aperçu
+- Overlay thumbnail du NOUVEAU média pendant le handoff natif.
+- L'overlay est retiré uniquement après décodage/peinture du nouveau média.
+- Protection générationnelle contre les posters d'une ancienne sélection.
+
+3. Cache
+- Routes Publication et service worker versionnés V1141.
+
+Aucun SQL. Aucun changement worker/compression/Supabase.
