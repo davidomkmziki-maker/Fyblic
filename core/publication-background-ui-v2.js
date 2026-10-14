@@ -88,8 +88,8 @@
       box.classList.remove('show');return;
     }
     var card=box.firstElementChild,copy=card.querySelector('.fyblicPubV2Copy'),fill=card.querySelector('.fyblicPubV2Fill'),retry=card.querySelector('.fyblicPubV2Retry'),percent=Math.max(0,Math.min(100,Number(detail.progress||0)));
-    clearTimeout(hideTimer);box.classList.add('show');card.classList.remove('fail');fill.style.width=percent+'%';copy.children[0].textContent=detail.stage||'Publication en cours';copy.children[1].textContent=percent+'%';retry.onclick=function(){try{if(window.HappyNavigation&&window.HappyNavigation.open)window.HappyNavigation.open('publish');else location.href='modules/publish.html';}catch(_e){location.href='modules/publish.html';}};
-    if(detail.status==='failed'){card.classList.add('fail');copy.children[0].textContent=safeError(detail.error);copy.children[1].textContent='Échec';forgetOnly(jobId);clearActive(jobId);hideTimer=setTimeout(function(){unmute(jobId);box.classList.remove('show');},1400);}
+    clearTimeout(hideTimer);box.classList.add('show');card.classList.remove('fail');fill.style.width=percent+'%';copy.children[0].textContent=detail.stage||'Publication en cours';copy.children[1].textContent=percent+'%';retry.onclick=function(){try{if(window.HappyNavigation&&window.HappyNavigation.open)window.HappyNavigation.open('modules/publish.html',{page:'publish'});else location.href='modules/publish.html';}catch(_e){location.href='modules/publish.html';}};
+    if(detail.status==='failed'){card.classList.add('fail');copy.children[0].textContent=safeError(detail.error);copy.children[1].textContent='Échec';forgetOnly(jobId);clearActive(jobId);/* V1164: keep the error readable until dismissal or a new attempt. */}
   }
   window.addEventListener('FYBLIC_PUBLICATION_PROGRESS_V2',function(ev){render(ev&&ev.detail);});
   window.addEventListener('message',function(ev){var d=ev&&ev.data;if(d&&d.type==='FYBLIC_PUBLICATION_PROGRESS_V2')render(d.detail);});

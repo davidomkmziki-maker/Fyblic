@@ -1,0 +1,26 @@
+FYBLIC SITE V1164 — Publication Web
+
+Base : site V1163 fourni. Application Android inchangée.
+
+- Progression du transfert pendant l’envoi des octets (XHR/TUS).
+- Conservation des morceaux demandés par le serveur, sans compression supplémentaire.
+- Retour automatique des publications normales après confirmation de tous les médias.
+- En page autonome, attendre la visibilité de la publication avant de quitter le moteur.
+- Une erreur d’interface ne bloque plus le transfert.
+- Délai de 45 secondes sans progression réseau, puis reprises limitées (3).
+- Relecture de la position serveur avant toute reprise, sans renvoyer les octets confirmés.
+- Erreurs permanentes signalées directement ; erreurs d’accueil conservées à l’écran.
+- Brouillon conservé en cas d’échec ; identifiant stable pour réessayer la même sélection.
+- Vérification de disponibilité réutilisée pendant 30 secondes par le moteur.
+- Reconnaissance du type vidéo même quand le navigateur ne fournit pas de MIME.
+- Cache du site actualisé.
+
+Validation : syntaxe JavaScript des 6 fichiers modifiés et scripts HTML ;
+7 scénarios simulés : transfert/progression/retour sûr, erreur UI, réponse PATCH
+perdue, entête absent, réseau figé, refus permanent, type MIME et album.
+Pas de publication réelle avec le compte utilisateur ni de mesure de débit mobile.
+La vitesse dépend du réseau, du navigateur et du traitement serveur.
+
+Déploiement : remplacer les fichiers du site par le contenu du dossier de ce ZIP.
+Aucune migration SQL ni nouvelle version Android n’est requise pour ce correctif.
+Les fichiers assetlinks fournis dans la base sont conservés sans modification.

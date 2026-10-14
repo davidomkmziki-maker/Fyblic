@@ -79,7 +79,7 @@ html[data-fyblic-native-android="1"] .preview.empty:not(.fyNativeRecentV1134):af
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-engine-v1082.js?v=1083-story-tus-anchor"></script>
+<script src="../core/publication-engine-v1082.js?v=1164-upload-safe"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -942,10 +942,10 @@ button:disabled{filter:none;transform:none}
   function failProgress(text){
     clearInterval(progressTimer);
     const label=$("progressText");
-    if(label) label.textContent="Échec";
+    if(label) label.textContent=String(text||"Échec de l’envoi");
     endPublicationV1067R1();
     try{clearHeavyPublicationCaches();localStorage.removeItem('FYBLIC_PUBLICATION_MUTED_V1');}catch(_e){}
-    setTimeout(()=>{ const box=$("publishProgress"); if(box) box.classList.remove("show"); },1400);
+    setTimeout(()=>{ const box=$("publishProgress"); if(box) box.classList.remove("show"); },8000);
   }
 
 
@@ -1023,6 +1023,7 @@ button:disabled{filter:none;transform:none}
   }
 
   function resetPublishComposer(reason){
+    publicationDraftIdV1164='';
     try{if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);}catch(_e){}
     try{releaseMediaLeaseV1126();}catch(_lease){}try{stopCameraV1126();}catch(_camera){}
     clearMultiStripV1142();
@@ -1972,6 +1973,7 @@ button:disabled{filter:none;transform:none}
   }
 
   function setSelectedFile(file,allFiles,leaseInput){
+    publicationDraftIdV1164="";
     if(!file)return false;
     var kind=mediaKindV1126(file);if(!kind){if(leaseInput){try{leaseInput.remove();}catch(_e){}}toast('Choisis uniquement une photo ou une vidéo');return false;}
     var nextUrl='';try{nextUrl=URL.createObjectURL(file);}catch(_e){if(leaseInput){try{leaseInput.remove();}catch(_x){}}toast('Ce média ne peut pas être ouvert');return false;}
@@ -2725,6 +2727,7 @@ return {source:'story',id:storyId};
     }
   }
 
+  var publicationDraftIdV1164='';
   async function savePublish(){
     if(activePublicationV1067R1()){
       toast('Une publication est déjà en cours');
@@ -2742,7 +2745,7 @@ return {source:'story',id:storyId};
     toast("Publication en cours");
     let returnedHomeForStoryV1067R1=false;
     try{
-      const id="p_"+((window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID().replace(/-/g,''):(Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14)));
+      const id=publicationDraftIdV1164||(publicationDraftIdV1164="p_"+((window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID().replace(/-/g,''):(Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14))));
       beginPublicationV1067R1(id,state.mode);
       /* V1080 : le retour Accueil est déclenché par le moteur principal après
          prise en charge du groupe et conservation des File dans la fenêtre mère. */
@@ -2785,7 +2788,7 @@ return {source:'story',id:storyId};
           var publishFiles=(state.mode==='publish'&&state.files&&state.files.length)?state.files.slice(0,18):[state.file];
           if(state.mode==='story')publishFiles=[state.file];
           var isAlbum=state.mode==='publish'&&publishFiles.length>1;
-          var batchId=isAlbum?('grp_'+Date.now()+'_'+String(id).slice(-10)):'';
+          var batchId=isAlbum?('grp_'+id):'';
           var returnedHome=returnedHomeForStoryV1067R1;
           var backgroundTask=durable.submitMany(publishFiles,{
             publicationType:state.mode==='story'?'story':'normal',
@@ -2808,12 +2811,17 @@ return {source:'story',id:storyId};
               beginPublicationV1067R1(group&&group.id||id,state.mode);
               state.completed=true;
               setProgress(1,'Envoi du média');
-              /* V1083 ciblé Story : ne pas quitter Publication avant que Supabase
-                 ait confirmé les premiers octets. Le chemin Normal V1082 reste identique. */
-              if(state.mode!=='story'&&!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('engine-v1082-background',{preserveMedia:true});},120);}
+              /* V1164 : attendre la confirmation de tous les médias normaux avant le retour. */
+              // V1164: keep the file owner visible until every upload is acknowledged.
+            },
+            onUploadsComplete:function(){
+              if(state.mode==='story'||returnedHome)return;
+              returnedHome=true;
+              // A standalone composer must keep its engine alive until primary visibility.
+              if(window.parent!==window)returnHomeAfterPublish('upload-confirmed-v1164',{preserveMedia:true});
             },
             onUploadAnchored:function(group,job,info){
-              if(state.mode!=='story'||returnedHome)return;
+              if(state.mode!=='story'||returnedHome||window.parent===window)return;
               returnedHome=true;
               try{setProgress(Math.max(1,Number(job&&job.progress||progressValue||1)),'Envoi du média');}catch(_p){}
               setTimeout(function(){returnHomeAfterPublish('story-tus-anchor-v1083',{preserveMedia:true});},0);
@@ -2830,6 +2838,7 @@ return {source:'story',id:storyId};
             // La qualité principale est réellement visible : libérer immédiatement
             // le verrou utilisateur. Les variantes continuent sans bloquer un nouveau post.
             endPublicationV1067R1();
+            if(window.parent===window)returnHomeAfterPublish('primary-visible-v1164',{preserveMedia:true});
             try{resetPublishComposer('engine-v1082-visible');}catch(_reset){}
             return backgroundTask.then(function(result){return result&&result.completion;});
           }).then(function(){
@@ -2838,7 +2847,7 @@ return {source:'story',id:storyId};
             console.error('Fyblic engine V1082',error);
             endPublicationV1067R1();
             try{clearHeavyPublicationCaches();}catch(_clean){}
-            state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));try{resetPublishComposer('failed-engine-v1082');}catch(_reset){}updatePublishButtonsState();
+            state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));toast(String(error&&error.message||error).slice(0,160));updatePublishButtonsState();
           });
           return;
         }
@@ -2911,7 +2920,7 @@ return {source:'story',id:storyId};
       const m=(err&&err.message)?err.message:String(err||'Erreur inconnue');
       failProgress('Échec : '+m.slice(0,90));
       toast('Échec publication : '+m.slice(0,120));
-      try{resetPublishComposer('failed-clean-v1067r1');}catch(_reset){}
+      state.completed=false;
       updatePublishButtonsState();
     }
   }
@@ -3027,7 +3036,7 @@ return {source:'story',id:storyId};
       }
       if(d.type!=='HAPPYAD_APP_FRAME_VISIBLE'||String(d.page||'')!=='publish')return;
       var activeV1126=activePublicationV1067R1();
-      if(!state.sessionOpen){if(!activeV1126)resetPublishComposer('frame-visible-fresh');state.sessionOpen=true;}
+      if(!state.sessionOpen){if(!activeV1126&&!publicationDraftIdV1164)resetPublishComposer('frame-visible-fresh');state.sessionOpen=true;}
       setPublishModeV885(d.publishMode||d.mode||state.mode||'publish',d.source||'frame-visible-v885');
       if(FYBLIC_WEB_BROWSER_V1151)setTimeout(rehydrateWebVideoPreviewV1156,0);
       if(activeV1126){toast('Une publication est déjà en cours');return;}

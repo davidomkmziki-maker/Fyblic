@@ -15,6 +15,9 @@
   var REQUIRED_PROTOCOL_VERSION=1082;
   var DIRECT_TUS_CHUNK=6*1024*1024;
   var STORY_FIRST_TUS_CHUNK=1*1024*1024;
+  // UI failures must never stop the transfer owned by the parent window.
+  function notifyUI(fn,args){if(typeof fn==='function'){try{fn.apply(null,args||[]);}catch(error){try{console.warn('Fyblic publication UI:',error);}catch(_e){}}}}
+  function bounded(promise,ms,label){var timer;return Promise.race([promise,new Promise(function(_,reject){timer=setTimeout(function(){reject(new Error(label));},ms);})]).finally(function(){clearTimeout(timer);});}
   var healthCache={at:0,value:false,detail:null};
   var watchers={};
   var terminalJobs={};
@@ -36,7 +39,7 @@
     return m.slice(0,160);
   }
   function client(){try{return window.HappySupabaseClientMasterV972?window.HappySupabaseClientMasterV972.get():(window.happyadSupabase||null);}catch(_e){return null;}}
-  async function auth(){var c=client();if(!c)throw new Error('Session Fyblic indisponible');var r=await c.auth.getSession(),s=r&&r.data&&r.data.session;if(!s||!s.access_token||!s.user)throw new Error('Session Fyblic expirée');return {token:s.access_token,user:s.user};}
+  async function auth(){var c=client();if(!c)throw new Error('Session Fyblic indisponible');var r=await bounded(c.auth.getSession(),15000,'La session ne répond pas. Reconnecte-toi puis réessaie.'),s=r&&r.data&&r.data.session;if(!s||!s.access_token||!s.user)throw new Error('Session Fyblic expirée');return {token:s.access_token,user:s.user};}
   function headers(token,extra){var h=Object.assign({},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
   async function request(route,options,token,timeoutMs){
     options=Object.assign({},options||{});options.headers=headers(token,options.headers);
@@ -83,34 +86,72 @@
       healthCache={at:Date.now(),value:ok,detail:p};return ok;
     }catch(error){healthCache={at:Date.now(),value:false,detail:{schemaError:error&&error.message||'Service média indisponible'}};return false;}
   }
-  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1082 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1082 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
+  function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(e&&d.schemaVersion==null)return publicError(e);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1082 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1082 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
   function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0',apikey:clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY)},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
   async function directFetch(url,options,timeoutMs){var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}}
-  async function tusOffset(upload,token){var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},120000);if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}var offset=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(offset)||offset<0)throw new Error('Position de reprise invalide');return offset;}
-  async function uploadDirect(file,created,currentAuth,onProgress,transferOptions){
-    transferOptions=transferOptions&&typeof transferOptions==='object'?transferOptions:{};
-    var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct V1082 absente');
-    var token=currentAuth.token,offset=await tusOffset(upload,token),retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
-    var firstChunkBytes=Number(transferOptions.firstChunkBytes||0);if(!Number.isSafeInteger(firstChunkBytes)||firstChunkBytes<0)firstChunkBytes=0;if(firstChunkBytes>chunkBytes)firstChunkBytes=chunkBytes;
-    var anchored=offset>0;
-    function reportAnchored(){if(!anchored)return;if(typeof transferOptions.onAnchored==='function'){try{transferOptions.onAnchored(Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/Math.max(1,file.size)*44))),stage:'Envoi du média'}),{offset:offset,fileSize:file.size});}catch(uiError){try{console.warn('Fyblic Story TUS anchor UI ignorée:',uiError&&uiError.message||uiError);}catch(_e){}}transferOptions.onAnchored=null;}}
-    if(anchored)reportAnchored();
-    while(offset<file.size){
-      var step=(!anchored&&firstChunkBytes>0)?firstChunkBytes:chunkBytes;
-      var end=Math.min(offset+step,file.size),blob=file.slice(offset,end);
+  function readOffset(value){
+    if(value==null||!/^\d+$/.test(String(value)))throw new Error('Confirmation du transfert absente. Réessaie.');
+    var n=Number(value);if(!Number.isSafeInteger(n))throw new Error('Position de reprise invalide');return n;
+  }
+  async function tusOffset(upload,token){
+    var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token)},20000);
+    if(!response.ok){var e=new Error('Reprise directe refusée ('+response.status+')');e.status=response.status;throw e;}
+    return readOffset(response.headers.get('Upload-Offset'));
+  }
+  // Keep the server's TUS chunk size. An idle timeout, rather than a short
+  // total timeout, allows slow connections to continue while bytes are moving.
+  function sendChunk(upload,token,offset,blob,onBytes){
+    return new Promise(function(resolve,reject){
+      var xhr=new XMLHttpRequest(),timer=null,settled=false,lastLoaded=0;
+      function finish(error,value){if(settled)return;settled=true;clearTimeout(timer);if(error)reject(error);else resolve(value);}
+      function idle(){clearTimeout(timer);timer=setTimeout(function(){finish(new Error('Envoi sans réponse depuis 45 secondes. Vérifie ta connexion puis réessaie.'));try{xhr.abort();}catch(_e){}},45000);}
       try{
-        var response=await directFetch(upload.url,{method:'PATCH',headers:directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'}),body:blob},600000);
-        if(!response.ok){var rejected=new Error('Envoi direct refusé ('+response.status+')');rejected.status=response.status;throw rejected;}
-        var next=Number(response.headers.get('Upload-Offset'));if(!Number.isSafeInteger(next)||next<=offset||next>end)throw new Error('Confirmation directe incohérente');
-        offset=next;retries=0;
-        if(!anchored&&offset>0){anchored=true;reportAnchored();}
-        var uploadState=Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.min(44,Math.round(offset/file.size*44))),stage:'Envoi du média'});
-        if(onProgress)onProgress(uploadState);
+        xhr.open('PATCH',upload.url,true);
+        var h=directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'});
+        Object.keys(h).forEach(function(k){xhr.setRequestHeader(k,h[k]);});
+        xhr.upload.onprogress=function(event){if(event.loaded>lastLoaded){lastLoaded=event.loaded;idle();notifyUI(onBytes,[Math.min(blob.size,event.loaded)]);}};
+        xhr.upload.onload=function(){idle();};
+        xhr.onload=function(){
+          if(xhr.status<200||xhr.status>=300){var e=new Error('Envoi direct refusé ('+xhr.status+')');e.status=xhr.status;finish(e);return;}
+          try{finish(null,readOffset(xhr.getResponseHeader('Upload-Offset')));}catch(e){finish(e);}
+        };
+        xhr.onerror=function(){finish(new Error('Envoi réseau impossible. Vérifie ta connexion ou l’accès au fichier puis réessaie.'));};
+        xhr.onabort=function(){finish(new Error('Envoi interrompu. Réessaie.'));};
+        idle();xhr.send(blob);
+      }catch(error){finish(error);}
+    });
+  }
+  async function uploadDirect(file,created,currentAuth,onProgress,transferOptions){
+    transferOptions=transferOptions||{};
+    var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct V1082 absente');
+    var token=currentAuth.token,offset=await tusOffset(upload,token),retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);
+    if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
+    if(offset>file.size)throw new Error('Position de reprise invalide');
+    var firstChunkBytes=Number(transferOptions.firstChunkBytes||0),anchored=offset>0;
+    if(!Number.isSafeInteger(firstChunkBytes)||firstChunkBytes<0)firstChunkBytes=0;firstChunkBytes=Math.min(firstChunkBytes,chunkBytes);
+    function report(bytes,confirmed){
+      // Network progress is provisional; 44% is reserved for all bytes acknowledged.
+      var percent=Math.max(1,Math.min(confirmed?44:43,Math.floor(bytes/Math.max(1,file.size)*44)));
+      if(onProgress)onProgress(Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:percent,stage:'Envoi du média'}));
+    }
+    function anchor(){if(anchored&&transferOptions.onAnchored){notifyUI(transferOptions.onAnchored,[Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.floor(offset/Math.max(1,file.size)*44))}),{offset:offset,fileSize:file.size}]);transferOptions.onAnchored=null;}}
+    anchor();
+    while(offset<file.size){
+      var end=Math.min(offset+(!anchored&&firstChunkBytes>0?firstChunkBytes:chunkBytes),file.size);
+      try{
+        var next=await sendChunk(upload,token,offset,file.slice(offset,end),function(bytes){report(offset+bytes,false);});
+        if(next<=offset||next>end)throw new Error('Confirmation directe incohérente');
+        offset=next;retries=0;anchored=true;anchor();report(offset,true);
       }catch(error){
-        retries++;if(retries>12)throw new Error('Envoi interrompu après 12 reprises automatiques');
-        if(error&&(error.status===401||error.status===403)){try{currentAuth=await auth();token=currentAuth.token;}catch(_authError){}}
-        try{offset=await tusOffset(upload,token);if(!anchored&&offset>0){anchored=true;reportAnchored();}}catch(_offsetError){}
-        await sleep(Math.min(10000,retries*900));
+        if(error&&error.name==='NotReadableError')throw new Error('Le téléphone ne peut plus lire ce média. Sélectionne-le à nouveau.');
+        if(error&&[400,404,410,413,415,422].indexOf(error.status)>=0)throw error;
+        if(++retries>3)throw new Error('Envoi interrompu après 3 reprises : '+String(error&&error.message||error));
+        if(error&&(error.status===401||error.status===403)){var refreshed=await auth();currentAuth.token=refreshed.token;token=refreshed.token;}
+        // Reconcile before another PATCH, including a lost response after success.
+        var resumed=await tusOffset(upload,token);
+        if(resumed>file.size)throw new Error('Position de reprise invalide');
+        offset=resumed;if(offset>0){anchored=true;anchor();report(offset,true);}
+        if(offset<file.size)await sleep(Math.min(3000,retries*900));
       }
     }
     return offset;
@@ -127,6 +168,7 @@
     var created=visibleJob((await request('/api/v2/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       filename:file.name||'media',size:file.size,mime:inferredMime(file),kind:options.kind||inferredKind(file)||'photo',publicationType:options.publicationType||'normal',postId:options.postId,payload:options.payload||{},fingerprint:fingerprint(file),groupId:options.groupId||options.postId,assetIndex:options.assetIndex||0,assetCount:options.assetCount||1
     })},currentAuth.token,45000)).body);
+    if(created&&created.id&&!terminalStatus(created.status)&&terminalJobs[created.id]==='failed')delete terminalJobs[created.id];
     rememberJob(created,options.groupId||'');
     if(typeof options.onCreated==='function')options.onCreated(created);
     if(created.primary_ready===true||created.status==='published'){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(created,{offset:file.size,fileSize:file.size,reused:true});}catch(_anchorUi){}}return created;}
@@ -137,7 +179,7 @@
     }
     return created;
   }
-  function kindOf(file){return /^video\//i.test(clean(file&&file.type))?'video':'photo';}
+  function kindOf(file){return inferredKind(file)||'photo';}
   function aggregate(group,states){
     var count=states.length||1,total=0,allPrimary=true,allPublished=true,failed=null,canceled=false,anyUploading=false;
     states.forEach(function(job){job=job||{};total+=Math.max(0,Math.min(100,Number(job.progress||0)));if(!primaryVisible(job))allPrimary=false;if(job.status!=='published')allPublished=false;if(job.status==='failed'&&!failed)failed=job;if(job.status==='canceled')canceled=true;if(job.status==='uploading')anyUploading=true;});
@@ -147,15 +189,15 @@
   async function submitMany(files,options){
     options=options||{};files=Array.prototype.slice.call(files||[]).filter(Boolean);if(!files.length)throw new Error('Média absent');
     if(options.publicationType==='story'&&files.length!==1)throw new Error('Une Story accepte un seul média.');
-    if(!(await available(true)))return {used:false,reason:'engine-v1082-unavailable'};
+    if(!(await available(false)))return {used:false,reason:'engine-v1082-unavailable'};
     var a=await auth();
     var group={id:clean(options.groupId)||('pub_'+uid().replace(/-/g,'')),postId:clean(options.postId)||('p_'+uid().replace(/-/g,'')),publicationType:clean(options.publicationType)||'normal',assetCount:files.length,children:[],createdAt:new Date().toISOString()};
     rememberGroup(group);activateGroup(group);
     var states=new Array(files.length).fill(null).map(function(){return {status:'uploading',progress:0,primary_ready:false};});
     var queuedJobs=new Array(files.length);
-    function emit(index,job){states[index]=mergeJobState(states[index],job||{});var d=aggregate(group,states);dispatch(d);if(typeof options.onProgress==='function'){if(group.publicationType==='story'){try{options.onProgress(d,states.slice());}catch(uiError){try{console.warn('Fyblic Story progression UI ignorée:',uiError&&uiError.message||uiError);}catch(_e){}}}else options.onProgress(d,states.slice());}}
+    function emit(index,job){states[index]=mergeJobState(states[index],job||{});var d=aggregate(group,states);dispatch(d);notifyUI(options.onProgress,[d,states.slice()]);}
     dispatch(aggregate(group,states));
-    if(typeof options.onGroupCreated==='function'){if(group.publicationType==='story'){try{options.onGroupCreated(group);}catch(uiError){try{console.warn('Fyblic Story création UI ignorée:',uiError&&uiError.message||uiError);}catch(_e){}}}else options.onGroupCreated(group);}
+    notifyUI(options.onGroupCreated,[group]);
 
     var cursor=0,concurrency=Math.max(1,Math.min(Number(options.uploadConcurrency||2)||2,3));
     async function runner(){
@@ -171,6 +213,7 @@
     }
     var uploads=[];for(var i=0;i<Math.min(concurrency,files.length);i++)uploads.push(runner());
     try{await Promise.all(uploads);}catch(error){clearActive(group.id);throw error;}
+    notifyUI(options.onUploadsComplete,[group]);
 
     var visiblePromises=queuedJobs.map(function(job,index){return watch(job.id,a.token,function(current){emit(index,current);},true);});
     var fullPromises=queuedJobs.map(function(job,index){return watch(job.id,a.token,function(current){emit(index,current);},false);});
@@ -193,6 +236,6 @@
     group.children.forEach(function(id,index){watch(id,session.token,function(job){states[index]=mergeJobState(states[index],job);dispatch(aggregate(group,states));},false).catch(function(error){states[index]={status:'failed',progress:Number(states[index]&&states[index].progress||45),error_message:error.message};dispatch(aggregate(group,states));});});
   }
 
-  var api={version:'1126.1-media-lease-mime',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
+  var api={version:'1164-upload-progress-safe-return',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();
