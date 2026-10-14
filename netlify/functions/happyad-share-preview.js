@@ -63,12 +63,14 @@ exports.handler=async function(event){
   const rev=parsed.rev||'r21';
   const image=origin+'/share-image/'+encodeURIComponent(postId)+'/r21?type='+encodeURIComponent(type);
   const target=directTarget(origin,postId,type),canonical=origin+'/s/'+(type==='video'?'v':'p')+'/'+encodeURIComponent(postId)+'/'+encodeURIComponent(rev);
-  const structured=JSON.stringify({'@context':'https://schema.org','@type':'SocialMediaPosting','headline':publicationTitle,'publisher':{'@type':'Organization','name':'Fyblic'},'image':[image],'url':canonical}).replace(/</g,'\\u003c');
+  const logo=origin+'/icons/fyblic-app-icon-v1046-512.png';
+  const structured=JSON.stringify({'@context':'https://schema.org','@type':'SocialMediaPosting','headline':publicationTitle,'publisher':{'@type':'Organization','name':'Fyblic','logo':{'@type':'ImageObject','url':logo}},'image':[image],'url':canonical}).replace(/</g,'\\u003c');
   const html='<!doctype html><html lang="fr"><head><meta charset="utf-8">'+
     '<meta name="viewport" content="width=device-width,initial-scale=1"><title>Fyblic</title><meta name="description" content="'+esc(publicationTitle)+'">'+
+    '<link rel="icon" type="image/png" sizes="192x192" href="'+esc(logo)+'"><link rel="shortcut icon" href="'+esc(logo)+'"><link rel="apple-touch-icon" href="'+esc(logo)+'">'+
     '<meta property="og:type" content="'+(type==='video'?'video.other':'article')+'"><meta property="og:site_name" content="Fyblic"><meta property="og:title" content="Fyblic"><meta property="og:description" content="'+esc(publicationTitle)+'"><meta property="og:url" content="'+esc(canonical)+'">'+
     '<meta property="og:image" content="'+esc(image)+'"><meta property="og:image:url" content="'+esc(image)+'"><meta property="og:image:secure_url" content="'+esc(image)+'"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="900"><meta property="og:image:alt" content="'+esc(publicationTitle)+'">'+
-    '<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Fyblic"><meta name="twitter:description" content="'+esc(publicationTitle)+'"><meta name="twitter:image" content="'+esc(image)+'">'+
+    '<meta property="og:logo" content="'+esc(logo)+'"><meta itemprop="logo" content="'+esc(logo)+'"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Fyblic"><meta name="twitter:description" content="'+esc(publicationTitle)+'"><meta name="twitter:image" content="'+esc(image)+'">'+
     '<meta name="robots" content="noindex,nofollow"><script type="application/ld+json">'+structured+'</script></head>'+
     '<body style="margin:0;background:#03070d"><script>location.replace('+JSON.stringify(target)+');<\/script></body></html>';
   return {statusCode:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'public, max-age=120, s-maxage=300','X-Robots-Tag':'noindex'},body:method==='HEAD'?'':html};

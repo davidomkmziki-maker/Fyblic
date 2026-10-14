@@ -131,7 +131,7 @@
     if(typeof options.onCreated==='function')options.onCreated(created);
     if(created.primary_ready===true||created.status==='published'){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(created,{offset:file.size,fileSize:file.size,reused:true});}catch(_anchorUi){}}return created;}
     if(created.status==='uploading'){
-      await uploadDirect(file,created,currentAuth,function(job){rememberJob(job,options.groupId||'');if(onProgress)onProgress(job);},{firstChunkBytes:STORY_FIRST_TUS_CHUNK,onAnchored:options.onUploadAnchored||null});
+      await uploadDirect(file,created,currentAuth,function(job){rememberJob(job,options.groupId||'');if(onProgress)onProgress(job);},{firstChunkBytes:options.publicationType==='story'?STORY_FIRST_TUS_CHUNK:0,onAnchored:options.publicationType==='story'?options.onUploadAnchored:null});
       created=visibleJob((await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},currentAuth.token,45000)).body);
       rememberJob(created,options.groupId||'');if(onProgress)onProgress(created);
     }
@@ -164,7 +164,7 @@
         var file=files[index],postId=typeof options.postIdForAsset==='function'?options.postIdForAsset(index,file):((files.length===1)?group.postId:(group.postId+'_'+(index+1)));
         var payload=typeof options.payloadForAsset==='function'?options.payloadForAsset(index,file):(options.payload||{});
         try{
-          var queued=await createAndUpload(file,{kind:kindOf(file),publicationType:group.publicationType==='normal'&&files.length>1?'album':group.publicationType,postId:postId,payload:payload,groupId:group.id,assetIndex:index,assetCount:files.length,onCreated:function(job){if(job&&job.id&&group.children.indexOf(job.id)<0){group.children.push(job.id);rememberGroup(group);updateActiveChildren(group);}emit(index,job);},onUploadAnchored:function(job,info){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(group,job,info||{});}catch(uiError){try{console.warn('Fyblic ancrage du transfert ignoré:',uiError&&uiError.message||uiError);}catch(_e){}}}}},a,function(job){emit(index,job);});
+          var queued=await createAndUpload(file,{kind:kindOf(file),publicationType:group.publicationType==='normal'&&files.length>1?'album':group.publicationType,postId:postId,payload:payload,groupId:group.id,assetIndex:index,assetCount:files.length,onCreated:function(job){if(job&&job.id&&group.children.indexOf(job.id)<0){group.children.push(job.id);rememberGroup(group);updateActiveChildren(group);}emit(index,job);},onUploadAnchored:group.publicationType==='story'?function(job,info){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(group,job,info||{});}catch(uiError){try{console.warn('Fyblic Story ancrage UI ignoré:',uiError&&uiError.message||uiError);}catch(_e){}}}}:null},a,function(job){emit(index,job);});
           queuedJobs[index]=queued;emit(index,queued);
         }catch(error){states[index]=Object.assign({},states[index],{status:'failed',error_message:error&&error.message||String(error)});emit(index,states[index]);throw error;}
       }

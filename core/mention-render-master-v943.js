@@ -126,31 +126,13 @@
   }
   function visualLabel(pair,fallback){var rec=cachedRecord(pair),name=rec&&cleanName(rec.name);if(!name&&pair&&pair.name)name=cleanName(pair.name);return name?('@'+name):fallback;}
 
-  /* V1159: rendre uniquement les URL http(s) explicites ouvrables, sans exécuter de HTML. */
-  function htmlExternalLink(url){
-    var cleanUrl=String(url||'').replace(/[.,!?;:]+$/,'');
-    var trail=String(url||'').slice(cleanUrl.length);
-    try{
-      var parsed=new URL(cleanUrl);
-      if(!/^https?:$/.test(parsed.protocol)||!parsed.hostname)return esc(url);
-      return '<a class="fyblicExternalLinkV1159" href="'+esc(parsed.href)+'" target="_blank" rel="noopener noreferrer nofollow ugc" onclick="event.stopPropagation()">'+esc(cleanUrl)+'</a>'+esc(trail);
-    }catch(_e){return esc(url);}
-  }
-  function plainExternalLinks(source){
-    return String(source||'').split(/(https?:\/\/[^\s<>"']+)/gi).map(function(part){return /^https?:\/\//i.test(part)?htmlExternalLink(part):esc(part);}).join('');
-  }
   function html(text,post){
     var source=String(text==null?'':text),list=identities(post).slice();
     if(source&&!list.length)mentionTokens(source).forEach(function(h){list.push({uid:'',handle:h,key:h.toLowerCase(),source:'text-fallback',name:''});});
     list.sort(function(a,b){return b.handle.length-a.handle.length;});
-    if(!source||!list.length)return plainExternalLinks(source);
+    if(!source||!list.length)return esc(source);
     var lower=source.toLowerCase(),out='',last=0,i=0;
     while(i<source.length){
-      // URLs ont priorité : un @ à l'intérieur d'un lien ne devient jamais une mention.
-      if(/^https?:\/\//i.test(source.slice(i,i+8))&&boundaryBefore(source,i)){
-        var urlHit=/^https?:\/\/[^\s<>"']+/i.exec(source.slice(i));
-        if(urlHit){out+=esc(source.slice(last,i))+htmlExternalLink(urlHit[0]);i+=urlHit[0].length;last=i;continue;}
-      }
       if(source.charAt(i)!=='@'||!boundaryBefore(source,i)){i++;continue;}
       var found=null;
       for(var k=0;k<list.length;k++){var raw='@'+list[k].handle,rl=raw.toLowerCase();if(lower.slice(i,i+rl.length)===rl&&boundaryAfter(source,i+rl.length)){found={pair:list[k],len:raw.length};break;}}
@@ -330,7 +312,7 @@
     ['pointerdown','mousedown','touchstart'].forEach(function(type){window.addEventListener(type,function(e){var el=closestMention(e.target);if(!el)return;try{e.stopPropagation();}catch(_e){}try{if(e.stopImmediatePropagation)e.stopImmediatePropagation();}catch(_e2){}},true);});
   }
 
-  function ensureStyle(){if(document.getElementById('happyad-mention-blue-v941-style'))return;var st=document.createElement('style');st.id='happyad-mention-blue-v941-style';st.textContent='.'+CLASS_NAME+'{color:#1689ff!important;font-weight:inherit!important;text-decoration:none!important;pointer-events:auto!important;cursor:pointer!important;touch-action:manipulation;-webkit-tap-highlight-color:transparent;} .'+CLASS_NAME+':focus{outline:none!important;} .fyblicExternalLinkV1159{color:#4b9fff!important;text-decoration:underline!important;overflow-wrap:anywhere!important;cursor:pointer!important;pointer-events:auto!important;}';(document.head||document.documentElement).appendChild(st);}
+  function ensureStyle(){if(document.getElementById('happyad-mention-blue-v941-style'))return;var st=document.createElement('style');st.id='happyad-mention-blue-v941-style';st.textContent='.'+CLASS_NAME+'{color:#1689ff!important;font-weight:inherit!important;text-decoration:none!important;pointer-events:auto!important;cursor:pointer!important;touch-action:manipulation;-webkit-tap-highlight-color:transparent;} .'+CLASS_NAME+':focus{outline:none!important;}';(document.head||document.documentElement).appendChild(st);}
   function observe(){
     if(observer||!document.documentElement)return;
     try{observer=new MutationObserver(function(muts){var has=false;muts.forEach(function(m){if(has)return;for(var i=0;i<m.addedNodes.length;i++){var n=m.addedNodes[i];if(n&&n.nodeType===1&&(n.classList&&n.classList.contains(CLASS_NAME)||n.querySelector&&n.querySelector('.'+CLASS_NAME))){has=true;break;}}});if(has){applyCached(document);allVisible(false);scheduleBatch(35);}});observer.observe(document.documentElement,{childList:true,subtree:true});}catch(_e){}
