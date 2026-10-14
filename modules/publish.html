@@ -79,7 +79,7 @@ html[data-fyblic-native-android="1"] .preview.empty:not(.fyNativeRecentV1134):af
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-engine-v1082.js?v=1164-upload-safe"></script>
+<script src="../core/publication-engine-v1082.js?v=1165-tus-cancel"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -928,7 +928,7 @@ button:disabled{filter:none;transform:none}
     clearInterval(progressTimer);
     progressTimer=null;
     progressValue=0;
-    setProgress(1,text||"Préparation de la publication");
+    setProgress(0,text||"Préparation de la publication");
   }
   function finishProgress(text){
     clearInterval(progressTimer);
@@ -2810,7 +2810,7 @@ return {source:'story',id:storyId};
               window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1=String(group&&group.id||id);
               beginPublicationV1067R1(group&&group.id||id,state.mode);
               state.completed=true;
-              setProgress(1,'Envoi du média');
+              setProgress(0,'Initialisation TUS…');
               /* V1164 : attendre la confirmation de tous les médias normaux avant le retour. */
               // V1164: keep the file owner visible until every upload is acknowledged.
             },
@@ -2838,7 +2838,7 @@ return {source:'story',id:storyId};
             // La qualité principale est réellement visible : libérer immédiatement
             // le verrou utilisateur. Les variantes continuent sans bloquer un nouveau post.
             endPublicationV1067R1();
-            if(window.parent===window)returnHomeAfterPublish('primary-visible-v1164',{preserveMedia:true});
+            if(window.parent===window)returnHomeAfterPublish('primary-visible-v1165',{preserveMedia:true});
             try{resetPublishComposer('engine-v1082-visible');}catch(_reset){}
             return backgroundTask.then(function(result){return result&&result.completion;});
           }).then(function(){
@@ -2846,6 +2846,7 @@ return {source:'story',id:storyId};
           }).catch(function(error){
             console.error('Fyblic engine V1082',error);
             endPublicationV1067R1();
+            if(error&&error.code==='FYBLIC_CANCELED'){try{resetPublishComposer('cancel-transfer-v1165');}catch(_reset){}return;}
             try{clearHeavyPublicationCaches();}catch(_clean){}
             state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));toast(String(error&&error.message||error).slice(0,160));updatePublishButtonsState();
           });

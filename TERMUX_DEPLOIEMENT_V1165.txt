@@ -1,0 +1,18 @@
+Le ZIP doit d'abord être téléchargé dans Download sur Android.
+Après avoir ouvert Termux, coller les lignes suivantes ; indiquer le chemin
+ABSOLU du dépôt GIT existant du SITE, pas celui de l'application Android.
+
+cd ~/storage/downloads
+printf 'Chemin absolu du depot GIT du SITE : '
+read -r DEPOT
+if [ -d "$DEPOT/.git" ]; then
+  unzip -o FYBLIC_SITE_V1165_TUS_X_ANNULATION_REPRISE.zip -d "$DEPOT" && \
+  cd "$DEPOT" && \
+  git add -A && \
+  git commit -m 'Fyblic site V1165 TUS cancellation et progression' && \
+  git push origin HEAD
+else
+  echo 'Depot non trouve. Utiliser le chemin ABSOLU de votre clone du site.'
+fi
+
+Le fichier assetlinks et le depot de l'APK ne doivent pas etre modifies.
