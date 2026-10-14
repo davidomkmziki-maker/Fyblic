@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.fyblic.nativeapp",
+      "sha256_cert_fingerprints": [
+        "2C:53:A8:A2:91:75:93:D3:BA:94:9D:88:D7:57:22:4B:D7:0D:00:FB:D9:43:FA:05:B8:41:85:E1:19:D6:F1:A9"
+      ]
+    }
+  }
+]
