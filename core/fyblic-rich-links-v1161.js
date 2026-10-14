@@ -109,7 +109,7 @@
       window.location.assign(href);
     }
   },true);
-  window.FyblicRichLinksV1161={version:'1161',normalized:normalized,refresh:function(){queue(document.body);}};
+  window.FyblicRichLinksV1161={version:'1162',normalized:normalized,refresh:function(){queue(document.body);}};
   window.FyblicRichLinksV1160=window.FyblicRichLinksV1161;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

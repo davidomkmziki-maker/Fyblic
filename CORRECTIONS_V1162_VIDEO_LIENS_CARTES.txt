@@ -1,0 +1,5 @@
+FYBLIC SITE V1162
+- Correction des chemins de script/style de liens dans tous les modules, particulièrement modules/video.html, qui référençait une version inexistante.
+- Liens des descriptions vidéo ouvrables vers les sites externes plutôt que le profil.
+- Photos horizontales courtes sans ratio stocké : ajustement au ratio naturel après décodage, sans affecter les vidéos ou les recadrages choisis.
+- Partage, aperçus et routes /s inchangés.

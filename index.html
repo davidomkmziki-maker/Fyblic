@@ -3801,6 +3801,24 @@ function happyadApplyCardFitV981(box,p,w,h){
       var ratio=happyadV1159FixedRatio(p,video,box);
       box.style.setProperty('aspect-ratio',String(ratio),'important');
       box.dataset.happyadCardRatioLockedV1159='1';
+      box.dataset.happyadCardRatioWasFallbackV1162=(happyadV1159RatioFromPost(p,video)>0)?'0':'1';
+    }else if(!video&&box.dataset.happyadCardRatioWasFallbackV1162==='1'&&Number(w)>0&&Number(h)>0){
+      /* V1162 : petite photo horizontale non déclarée au départ.
+         Ne pas conserver le cadre vertical 3:4 après décodage.
+         Les recadrages utilisateurs, albums et vidéos gardent leur géométrie. */
+      var natural=Number(w)/Number(h), cropped=false;
+      try{cropped=typeof happyadResolveCardCropV855R90==='function'&&!!happyadResolveCardCropV855R90(p);}catch(_crop){}
+      if(!cropped&&isFinite(natural)&&natural>=1.15&&natural<=4){
+        var mediaRect=box.getBoundingClientRect(), beforeHeight=mediaRect.height;
+        box.style.setProperty('aspect-ratio',String(Math.max(1.15,Math.min(3.4,natural))),'important');
+        box.dataset.happyadCardRatioWasFallbackV1162='0';
+        // Keep the current screen anchored if this already-decoded image is above it.
+        if(mediaRect.bottom<0&&beforeHeight>0){
+          var afterHeight=box.getBoundingClientRect().height;
+          var delta=afterHeight-beforeHeight;
+          if(Math.abs(delta)>0.5)window.scrollBy(0,delta);
+        }
+      }
     }
     return tall?'cover':'contain';
   }catch(_e){return '';} 
