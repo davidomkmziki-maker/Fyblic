@@ -23,3 +23,7 @@ a.fyblic-rich-link-v1160:focus-visible{outline:2px solid #339fff;outline-offset:
 
 /* Bio propriétaire et visiteur : bleu fin même après retour externe. */
 #profileBio a.fyblic-rich-link-v1160,.haProfileBio a.fyblic-rich-link-v1160{color:#339fff!important;-webkit-text-fill-color:#339fff!important;font-weight:400!important;pointer-events:auto!important}
+
+/* V1170 : logos uniquement dans la bio. */
+#profileBio a.fyblic-bio-icon,.haProfileBio a.fyblic-bio-icon{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;vertical-align:middle;margin:0 3px;text-decoration:none!important}
+a.fyblic-bio-icon img{display:block;width:24px;height:24px;object-fit:contain;pointer-events:none}

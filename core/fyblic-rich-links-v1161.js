@@ -14,6 +14,24 @@
     }catch(_){return '';}
   }
   function makeAnchor(label,href){const a=document.createElement('a');a.textContent=label;a.href=href;a.rel='noopener noreferrer';a.target='_blank';a.className='fyblic-rich-link-v1160';a.dataset.fyblicRichLink='1';return a;}
+  const bioIconRoot=new URL('../icons/bio-links/',document.currentScript ? document.currentScript.src : new URL('/core/fyblic-rich-links-v1161.js',location.href)).href;
+  function bioBrand(host){
+    const domains={youtube:['youtube.com','youtu.be'],instagram:['instagram.com'],tiktok:['tiktok.com'],facebook:['facebook.com','fb.watch','fb.com'],whatsapp:['whatsapp.com','wa.me'],telegram:['telegram.org','t.me'],x:['x.com','twitter.com'],fyblic:['fyblic.com']};
+    host=host.toLowerCase();
+    for(const name of Object.keys(domains))if(domains[name].some(d=>host===d||host.endsWith('.'+d)))return name;
+    return '';
+  }
+  function bioAnchor(label,href){
+    const a=makeAnchor(label,href),url=new URL(href),brand=bioBrand(url.hostname);
+    const names={youtube:'YouTube',instagram:'Instagram',tiktok:'TikTok',facebook:'Facebook',whatsapp:'WhatsApp',telegram:'Telegram',x:'X',fyblic:'Fyblic'};
+    a.classList.add('fyblic-bio-icon');a.textContent='';
+    a.title=(names[brand]||url.hostname)+' — '+href;
+    a.setAttribute('aria-label','Ouvrir '+(names[brand]||url.hostname)+' : '+label);
+    const img=document.createElement('img');img.alt='';img.width=24;img.height=24;img.referrerPolicy='no-referrer';
+    img.onerror=function(){img.onerror=null;img.src=bioIconRoot+'globe.png';};
+    img.src=brand ? bioIconRoot+brand+'.png' : url.origin+'/favicon.ico';
+    a.appendChild(img);return a;
+  }
   function linkifyNode(n){
     if(!n||n.nodeType!==3||!n.parentElement||!n.nodeValue)return;
     const parent=n.parentElement;
@@ -27,7 +45,7 @@
       if(!match[2]){const trimmed=raw.replace(/[.,!?;:]+$/,'');const removed=raw.length-trimmed.length;raw=trimmed;label=trimmed;end-=removed;}
       const href=normalized(raw);if(!href||!label)continue;
       frag.appendChild(document.createTextNode(src.slice(last,match.index)));
-      frag.appendChild(makeAnchor(label,href));last=end;changed=true;
+      frag.appendChild(parent.closest('#profileBio,.haProfileBio') ? bioAnchor(label,href) : makeAnchor(label,href));last=end;changed=true;
     }
     if(!changed)return;frag.appendChild(document.createTextNode(src.slice(last)));n.replaceWith(frag);
   }
@@ -118,7 +136,7 @@
   function recheckVisibleLinks(){if(!document.hidden)queue(document.body);}
   window.addEventListener('pageshow',recheckVisibleLinks,{passive:true});
   document.addEventListener('visibilitychange',recheckVisibleLinks,{passive:true});
-  window.FyblicRichLinksV1161={version:'1169',normalized:normalized,refresh:recheckVisibleLinks};
+  window.FyblicRichLinksV1161={version:'1170',normalized:normalized,refresh:recheckVisibleLinks};
   window.FyblicRichLinksV1160=window.FyblicRichLinksV1161;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

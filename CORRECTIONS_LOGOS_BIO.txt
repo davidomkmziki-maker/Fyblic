@@ -1,0 +1,10 @@
+V1170 SITE / V209 ANDROID — LOGOS DANS LA BIO UNIQUEMENT
+Les liens de la bio deviennent des logos cliquables (profils propriétaire et visiteur).
+YouTube, Instagram, TikTok, Facebook, WhatsApp, Telegram, X et Fyblic : icônes locales.
+Autres domaines : favicon /favicon.ico ; globe si indisponible.
+Le texte ordinaire, les retours à la ligne, les adresses complètes enregistrées et les paramètres des liens sont conservés.
+Les liens des publications, commentaires et stories ne changent pas.
+Édition : la bio garde les URL complètes et le bouton d’insertion de lien.
+Aucune modification SQL. Réduction du logo des cartes partagées conservée.
+Vérifications : syntaxe JS et tests ciblés de détection, destination, affichage bio et absence d’effet sur publications.
+Compilation Android et test visuel sur téléphone restent à effectuer.
