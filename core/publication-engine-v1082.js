@@ -21,26 +21,35 @@
   var healthCache={at:0,value:false,detail:null};
   var watchers={};
   var terminalJobs={};
-  var inflightGroups={};
-  var CANCELED_KEY='FYBLIC_PUBLICATION_CANCELLED_V1165';
-  function canceledIds(){return readList(CANCELED_KEY).map(function(v){return typeof v==='string'?v:v&&v.id||'';});}
-  function isCanceled(id){return !!id&&canceledIds().indexOf(String(id))>=0;}
-  function markCanceled(id){var list=readList(CANCELED_KEY).filter(function(x){return x&&Date.now()-Number(x.at||0)<48*3600000&&String(x.id)!==String(id);});list.unshift({id:String(id),at:Date.now()});writeList(CANCELED_KEY,list,30);}
-  function canceledError(){var error=new Error('Envoi annulé par l’utilisateur.');error.code='FYBLIC_CANCELED';return error;}
-  function assertActive(ctx){if(ctx&&ctx.canceled)throw canceledError();}
-  function reportDiagnostic(step,error){try{console.warn('[Fyblic TUS V1165]',step,error&&error.message||error);}catch(_e){}}
+  var groupCancels={};
+  var runningXhrs={};
+  var RECOVERY_KEY='FYBLIC_PUBLICATION_RECOVERY_V1165';
+  var RECOVERY_DB='fyblic-publication-resume-v1165';
+  var RESTART_MAX_BYTES=32*1024*1024; // IndexedDB is best effort, not a guarantee for large videos.
+  function recoveryPlan(){try{var p=JSON.parse(localStorage.getItem(RECOVERY_KEY)||'null');if(!p||!p.id)return null;if(Date.now()-Number(p.at||0)>48*3600000){localStorage.removeItem(RECOVERY_KEY);resumeFileDelete(p.id);return null;}return p;}catch(_e){return null;}}
+  function openResumeDb(){return new Promise(function(resolve,reject){if(!window.indexedDB)return reject(new Error('Stockage hors ligne indisponible'));var r=indexedDB.open(RECOVERY_DB,1);r.onupgradeneeded=function(){if(!r.result.objectStoreNames.contains('files'))r.result.createObjectStore('files');};r.onsuccess=function(){resolve(r.result);};r.onerror=function(){reject(r.error||new Error('IndexedDB inaccessible'));};});}
+  async function resumeFileStore(groupId,files){
+    var db=await openResumeDb();try{await new Promise(function(resolve,reject){var tx=db.transaction('files','readwrite');tx.objectStore('files').put(files,groupId);tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error||new Error('Cache indisponible'));};tx.onabort=function(){reject(tx.error||new Error('Cache annulé'));};});}finally{db.close();}
+  }
+  async function resumeFileRead(groupId){
+    var db=await openResumeDb();try{return await new Promise(function(resolve,reject){var tx=db.transaction('files','readonly'),r=tx.objectStore('files').get(groupId);r.onsuccess=function(){resolve(r.result||null);};r.onerror=function(){reject(r.error);};});}finally{db.close();}
+  }
+  async function resumeFileDelete(groupId){try{var db=await openResumeDb();await new Promise(function(resolve,reject){var tx=db.transaction('files','readwrite');tx.objectStore('files').delete(groupId);tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error);};});db.close();}catch(_e){}}
+  function discardRecovery(groupId){var p=recoveryPlan();if(p&&String(p.id)===String(groupId)){try{localStorage.removeItem(RECOVERY_KEY);}catch(_e){}resumeFileDelete(groupId);}}
+  function filesMatchPlan(files,plan){return !!(plan&&Array.isArray(plan.assets)&&files&&files.length===plan.assets.length&&Array.prototype.every.call(files,function(file,i){var saved=plan.assets[i];return saved&&file.name===saved.name&&file.size===saved.size&&inferredMime(file)===saved.mime; }));}
+  function pendingForFiles(files){var p=recoveryPlan();return filesMatchPlan(files,p)?p:null;}
+  async function storeRecovery(group,files,options,userId){
+    var plan={id:group.id,postId:group.postId,publicationType:group.publicationType,owner:userId,at:Date.now(),assets:files.map(function(file,index){return {name:file.name,size:file.size,mime:inferredMime(file),lastModified:Number(file.lastModified||0),fingerprint:fingerprint(file),postId:typeof options.postIdForAsset==='function'?options.postIdForAsset(index,file):(files.length===1?group.postId:group.postId+'_'+(index+1)),payload:typeof options.payloadForAsset==='function'?options.payloadForAsset(index,file):(options.payload||{})};})};
+    try{localStorage.setItem(RECOVERY_KEY,JSON.stringify(plan));}catch(_e){}
+    if(files.reduce(function(n,f){return n+f.size;},0)>RESTART_MAX_BYTES)return;
+    try{await resumeFileStore(group.id,files);}catch(error){try{console.warn('Fyblic : copie locale facultative indisponible',error.message);}catch(_e){}}
+  }
+  function isCanceled(groupId){return !!(groupCancels[groupId]&&groupCancels[groupId].canceled);}
+  function assertNotCanceled(groupId){if(isCanceled(groupId)){var err=new Error('Publication annulée');err.canceled=true;throw err;}}
+  function cancelError(error){return !!(error&&error.canceled);}
+
 
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
-  function cancellableSleep(ms,ctx){
-    if(!ctx)return sleep(ms);
-    return new Promise(function(resolve,reject){
-      if(ctx.canceled){reject(canceledError());return;}
-      var t;
-      function cancel(){clearTimeout(t);ctx.waiters.delete(cancel);reject(canceledError());}
-      ctx.waiters.add(cancel);
-      t=setTimeout(function(){ctx.waiters.delete(cancel);resolve();},ms);
-    });
-  }
   function clean(v){return String(v==null?'':v).trim();}
   function inferredMime(file){
     var raw=clean(file&&file.type).toLowerCase();if(raw&&raw!=='application/octet-stream')return raw;
@@ -75,7 +84,7 @@
   function publicStage(job){var status=clean(job&&job.status);if(status==='uploading')return 'Envoi du média';if(status==='failed')return 'Échec';if(status==='canceled')return 'Publication annulée';if(status==='published')return 'Publication terminée';if(job&&job.primary_ready===true)return 'Publication visible · optimisation';return 'Publication en cours';}
   function terminalStatus(status){status=clean(status);return status==='failed'||status==='canceled'||status==='published';}
   function guardJob(job){if(!job||!job.id)return job;var id=String(job.id),known=terminalJobs[id];if(known&&!terminalStatus(job.status))return null;if(terminalStatus(job.status))terminalJobs[id]=job.status;return job;}
-  function mergeJobState(previous,next){previous=previous||{};next=guardJob(next);if(!next)return previous;var out=Object.assign({},previous,next);if(!terminalStatus(next.status))out.progress=Math.max(Number(previous.progress||0),Number(next.progress||0));return out;}
+  function mergeJobState(previous,next){previous=previous||{};next=guardJob(next);if(!next)return previous;var out=Object.assign({},previous,next);if(next.status==='uploading'&&!Number.isFinite(Number(next.progress)))out.progress=Number(previous.progress||0);return out;}
   function visibleJob(job){if(!job||typeof job!=='object')return job;var copy=Object.assign({},job);copy.stage=publicStage(copy);return copy;}
   function active(){try{var value=JSON.parse(localStorage.getItem(ACTIVE_KEY)||'null');return value&&value.id?value:null;}catch(_e){return null;}}
   function activateGroup(group){try{localStorage.setItem(ACTIVE_KEY,JSON.stringify({id:group.id,postId:group.postId||'',mode:group.publicationType||'normal',children:(group.children||[]).slice(),at:Date.now()}));}catch(_e){}}
@@ -105,103 +114,92 @@
     }catch(error){healthCache={at:Date.now(),value:false,detail:{schemaError:error&&error.message||'Service média indisponible'}};return false;}
   }
   function readinessMessage(){var d=healthCache.detail||{},e=clean(d.schemaError);if(e&&d.schemaVersion==null)return publicError(e);if(Number(d.schemaVersion||0)<REQUIRED_SCHEMA_VERSION||/1082|migration|schema|schéma/i.test(e))return 'Mise à jour SQL V1082 requise avant de publier.';if(Number(d.protocolVersion||0)<REQUIRED_PROTOCOL_VERSION||d.uploadMode!=='direct-tus-binary')return 'Mise à jour du worker V1082 requise avant de publier.';if(e)return publicError(e);return 'Système de publication momentanément indisponible.';}
-  function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0',apikey:clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY)},extra||{});if(token)h.Authorization='Bearer '+token;return h;}
-  async function directFetch(url,options,timeoutMs,ctx){
-    assertActive(ctx);
-    var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;
-    options=Object.assign({},options||{});
-    if(controller){options.signal=controller.signal;if(ctx)ctx.controllers.add(controller);timer=setTimeout(function(){controller.abort();},timeoutMs||30000);}
-    try{return await fetch(url,options);}
-    catch(error){if(ctx&&ctx.canceled)throw canceledError();if(error&&error.name==='AbortError')throw new Error('Délai réseau dépassé pendant la vérification TUS');throw error;}
-    finally{if(timer)clearTimeout(timer);if(ctx&&controller)ctx.controllers.delete(controller);}
-  }
+  function directHeaders(upload,token,extra){var h=Object.assign({'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0'},extra||{}),key=clean(upload&&upload.apiKey||window.HAPPYAD_SUPABASE_KEY);if(key)h.apikey=key;if(token)h.Authorization='Bearer '+token;return h;}
+  async function directFetch(url,options,timeoutMs){var controller=typeof AbortController!=='undefined'?new AbortController():null,timer=null;options=Object.assign({},options||{});if(controller){options.signal=controller.signal;timer=setTimeout(function(){controller.abort();},timeoutMs||600000);}try{return await fetch(url,options);}catch(error){if(error&&error.name==='AbortError')throw new Error('Le morceau a dépassé le délai réseau');throw error;}finally{if(timer)clearTimeout(timer);}}
   function readOffset(value){
-    if(value==null||!/^\d+$/.test(String(value)))throw new Error('En-tête Upload-Offset inaccessible : vérifier CORS/TUS du Storage Supabase.');
+    if(value==null||!/^\d+$/.test(String(value)))throw new Error('Confirmation du transfert absente. Réessaie.');
     var n=Number(value);if(!Number.isSafeInteger(n))throw new Error('Position de reprise invalide');return n;
   }
-  async function tusOffset(upload,token,ctx){
-    var response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token),cache:'no-store'},25000,ctx);
-    if(!response.ok){var e=new Error('Reprise TUS refusée (HTTP '+response.status+')');e.status=response.status;throw e;}
-    return readOffset(response.headers.get('Upload-Offset'));
+  async function tusOffset(upload,token){
+    var response;
+    try{response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token),cache:'no-store'},20000);}
+    catch(error){throw new Error('HEAD TUS inaccessible (réseau ou CORS) : '+String(error&&error.message||error));}
+    if(!response.ok){var e=new Error('HEAD TUS refusé ('+response.status+')');e.status=response.status;throw e;}
+    var exposed=response.headers.get('Upload-Offset');
+    if(exposed==null)throw new Error('HEAD TUS : en-tête Upload-Offset invisible. Vérifier Access-Control-Expose-Headers sur Supabase/worker.');
+    return readOffset(exposed);
   }
-  function sendChunk(upload,token,offset,blob,onBytes,ctx){
+  // Keep the server's TUS chunk size. An idle timeout, rather than a short
+  // total timeout, allows slow connections to continue while bytes are moving.
+  function sendChunk(upload,token,offset,blob,onBytes,groupId){
     return new Promise(function(resolve,reject){
-      if(ctx&&ctx.canceled){reject(canceledError());return;}
       var xhr=new XMLHttpRequest(),timer=null,settled=false,lastLoaded=0;
-      if(ctx)ctx.xhrs.add(xhr);
-      function finish(error,value){if(settled)return;settled=true;clearTimeout(timer);if(ctx)ctx.xhrs.delete(xhr);if(error)reject(error);else resolve(value);}
-      function idle(){clearTimeout(timer);timer=setTimeout(function(){try{xhr.abort();}catch(_e){}finish(new Error('Aucune progression TUS depuis 90 secondes.'));},90000);}
+      if(isCanceled(groupId))return reject(Object.assign(new Error('Publication annulée'),{canceled:true}));
+      (runningXhrs[groupId]||(runningXhrs[groupId]=[])).push(xhr);
+      function finish(error,value){if(settled)return;settled=true;clearTimeout(timer);runningXhrs[groupId]=(runningXhrs[groupId]||[]).filter(function(x){return x!==xhr;});if(error)reject(error);else resolve(value);}
+      function idle(){clearTimeout(timer);timer=setTimeout(function(){finish(new Error('Envoi sans réponse depuis 45 secondes. Vérifie ta connexion puis réessaie.'));try{xhr.abort();}catch(_e){}},45000);}
       try{
         xhr.open('PATCH',upload.url,true);
         var h=directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'});
         Object.keys(h).forEach(function(k){xhr.setRequestHeader(k,h[k]);});
-        xhr.upload.onprogress=function(event){if(ctx&&ctx.canceled)return;if(event.loaded>lastLoaded){lastLoaded=event.loaded;idle();notifyUI(onBytes,[Math.min(blob.size,event.loaded)]);}};
+        xhr.upload.onprogress=function(event){if(event.loaded>lastLoaded){lastLoaded=event.loaded;idle();notifyUI(onBytes,[Math.min(blob.size,event.loaded)]);}};
         xhr.upload.onload=function(){idle();};
         xhr.onload=function(){
-          if(ctx&&ctx.canceled){finish(canceledError());return;}
-          if(xhr.status<200||xhr.status>=300){var e=new Error('Envoi TUS refusé (HTTP '+xhr.status+'). Vérifier CORS, session et Storage.');e.status=xhr.status;finish(e);return;}
-          try{finish(null,readOffset(xhr.getResponseHeader('Upload-Offset')));}catch(e){finish(e);}
+          if(xhr.status<200||xhr.status>=300){var e=new Error('PATCH TUS refusé ('+xhr.status+')');e.status=xhr.status;finish(e);return;}
+          try{var confirmed=xhr.getResponseHeader('Upload-Offset');if(confirmed==null)throw new Error('PATCH TUS : Upload-Offset non exposé au navigateur (CORS).');finish(null,readOffset(confirmed));}catch(e){finish(e);}
         };
-        xhr.onerror=function(){finish(ctx&&ctx.canceled?canceledError():new Error('Réseau ou CORS interdit le PATCH vers Supabase Storage.'));};
-        xhr.onabort=function(){finish(ctx&&ctx.canceled?canceledError():new Error('Envoi TUS interrompu.'));};
+        xhr.onerror=function(){finish(new Error('PATCH TUS inaccessible (réseau, OPTIONS/CORS ou authentification).'));};
+        xhr.onabort=function(){finish(isCanceled(groupId)?Object.assign(new Error('Publication annulée'),{canceled:true}):new Error('Envoi interrompu. Réessaie.'));};
         idle();xhr.send(blob);
       }catch(error){finish(error);}
     });
   }
-  async function retryAuth(currentAuth){
-    var c=client();if(c&&c.auth&&typeof c.auth.refreshSession==='function'){
-      try{var r=await bounded(c.auth.refreshSession(),15000,'Rafraîchissement de session expiré');var s=r&&r.data&&r.data.session;if(s&&s.access_token&&s.user&&s.user.id===currentAuth.user.id){currentAuth.token=s.access_token;return s.access_token;}}catch(error){reportDiagnostic('refresh-session',error);}
-    }
-    var a=await auth();if(a.user.id!==currentAuth.user.id)throw new Error('Le compte a changé pendant la publication.');currentAuth.token=a.token;return a.token;
-  }
-  async function uploadDirect(file,created,currentAuth,onProgress,transferOptions,ctx){
+  async function uploadDirect(file,created,currentAuth,onProgress,transferOptions){
     transferOptions=transferOptions||{};
     var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct V1082 absente');
-    var token=currentAuth.token,offset=0,retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);
+    var groupId=clean(transferOptions.groupId||created.publication_group_id||''),token=currentAuth.token,offset=0,retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);
+    // A HEAD failure is NOT proof that a remote file disappeared. Retry HEAD, never issue PATCH at a guessed offset.
+    for(var h=0;;h++){
+      assertNotCanceled(groupId);
+      try{offset=await tusOffset(upload,token);break;}
+      catch(error){if(error&&(error.status===401||error.status===403)){var refreshed=await auth();currentAuth.token=refreshed.token;token=refreshed.token;}
+        if(error&&[400,404,410,413,415,422].indexOf(error.status)>=0||h>=11)throw error;
+        await sleep(Math.min(10000,(h+1)*900));}
+    }
     if(!Number.isSafeInteger(chunkBytes)||chunkBytes<=0)chunkBytes=DIRECT_TUS_CHUNK;
-    chunkBytes=Math.min(chunkBytes,10*1024*1024);
-    var firstChunkBytes=Number(transferOptions.firstChunkBytes||0),anchored=false;
+    if(offset>file.size)throw new Error('Position de reprise invalide');
+    var firstChunkBytes=Number(transferOptions.firstChunkBytes||0),anchored=offset>0;
     if(!Number.isSafeInteger(firstChunkBytes)||firstChunkBytes<0)firstChunkBytes=0;firstChunkBytes=Math.min(firstChunkBytes,chunkBytes);
-    function report(bytes){
-      // L'interface présente uniquement les octets confirmés par Upload-Offset, jamais 1 % fictif.
-      var percent=Math.min(44,Math.floor(bytes/Math.max(1,file.size)*44));
-      if(onProgress)onProgress(Object.assign({},created,{status:'uploading',uploaded_bytes:bytes,progress:percent,stage:'Envoi du média confirmé'}));
+    function report(bytes,confirmed){
+      // Network progress is provisional; 44% is reserved for all bytes acknowledged.
+      var percent=Math.max(1,Math.min(confirmed?44:43,Math.floor(bytes/Math.max(1,file.size)*44)));
+      if(onProgress)onProgress(Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:percent,stage:'Envoi du média'}));
     }
-    function anchor(){if(anchored&&transferOptions.onAnchored){notifyUI(transferOptions.onAnchored,[Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.floor(offset/Math.max(1,file.size)*44)}),{offset:offset,fileSize:file.size}]);transferOptions.onAnchored=null;}}
-    // HEAD fait partie du circuit de reprises, comme PATCH. Ne jamais envoyer sans position vérifiée.
-    for(;;){
-      assertActive(ctx);
-      try{offset=await tusOffset(upload,token,ctx);if(offset>file.size)throw new Error('Position de reprise invalide');break;}
-      catch(error){assertActive(ctx);reportDiagnostic('tus-head-initial',error);if(error&&[400,404,410,413,415,422].indexOf(error.status)>=0)throw error;if(++retries>6)throw new Error('Vérification TUS impossible après 6 tentatives : '+String(error&&error.message||error));if(error&&(error.status===401||error.status===403))token=await retryAuth(currentAuth);await cancellableSleep(Math.min(6000,retries*700),ctx);}
-    }
-    anchored=offset>0;anchor();report(offset);retries=0;
+    function anchor(){if(anchored&&transferOptions.onAnchored){notifyUI(transferOptions.onAnchored,[Object.assign({},created,{status:'uploading',uploaded_bytes:offset,progress:Math.max(1,Math.floor(offset/Math.max(1,file.size)*44))}),{offset:offset,fileSize:file.size}]);transferOptions.onAnchored=null;}}
+    anchor();
     while(offset<file.size){
-      assertActive(ctx);
+      assertNotCanceled(groupId);
       var end=Math.min(offset+(!anchored&&firstChunkBytes>0?firstChunkBytes:chunkBytes),file.size);
       try{
-        // Le JWT peut changer pendant un long transfert, sans changer de propriétaire.
-        if(retries===0&&Date.now()-Number(currentAuth.checkedAt||0)>5*60000){var a=await auth();if(a.user.id!==currentAuth.user.id)throw new Error('Compte différent');token=currentAuth.token=a.token;currentAuth.checkedAt=Date.now();}
-        var next=await sendChunk(upload,token,offset,file.slice(offset,end),null,ctx);
-        assertActive(ctx);
+        assertNotCanceled(groupId);
+        var next=await sendChunk(upload,token,offset,file.slice(offset,end),function(bytes){report(offset+bytes,false);},groupId);
+        assertNotCanceled(groupId);
         if(next<=offset||next>end)throw new Error('Confirmation directe incohérente');
-        offset=next;retries=0;anchored=true;anchor();report(offset);
+        offset=next;retries=0;anchored=true;anchor();report(offset,true);
       }catch(error){
-        assertActive(ctx);reportDiagnostic('tus-patch',error);
+        if(cancelError(error)||isCanceled(groupId))throw Object.assign(new Error('Publication annulée'),{canceled:true});
         if(error&&error.name==='NotReadableError')throw new Error('Le téléphone ne peut plus lire ce média. Sélectionne-le à nouveau.');
         if(error&&[400,404,410,413,415,422].indexOf(error.status)>=0)throw error;
         if(++retries>12)throw new Error('Envoi interrompu après 12 reprises : '+String(error&&error.message||error));
-        if(error&&(error.status===401||error.status===403))token=await retryAuth(currentAuth);
-        // IMPORTANT : on ne renvoie jamais un morceau si la position HEAD est inconnue.
-        var checked=false;
-        try{var resumed=await tusOffset(upload,token,ctx);if(resumed>file.size)throw new Error('Position de reprise invalide');offset=resumed;checked=true;}
-        catch(headError){assertActive(ctx);reportDiagnostic('tus-head-reconcile',headError);if(headError&&(headError.status===401||headError.status===403))token=await retryAuth(currentAuth);}
-        if(checked){if(offset>0){anchored=true;anchor();report(offset);}await cancellableSleep(Math.min(10000,retries*900),ctx);}
-        else { // La boucle recommence par HEAD; jamais de PATCH à offset potentiellement périmé.
-          for(;;){assertActive(ctx);if(++retries>12)throw new Error('Position TUS impossible à vérifier : le serveur ne confirme pas les octets.');await cancellableSleep(Math.min(10000,retries*900),ctx);try{offset=await tusOffset(upload,token,ctx);if(offset>file.size)throw new Error('Position de reprise invalide');report(offset);anchored=offset>0;anchor();break;}catch(headError){assertActive(ctx);reportDiagnostic('tus-head-after-patch',headError);if(headError&&(headError.status===401||headError.status===403))token=await retryAuth(currentAuth);}}
-        }
+        if(error&&(error.status===401||error.status===403)){var refreshed=await auth();currentAuth.token=refreshed.token;token=refreshed.token;}
+        // Reconcile before another PATCH, including a lost response after success.
+        // If HEAD also fails, retry reconciliation. Never PATCH again using a speculative offset.
+        try{var resumed=await tusOffset(upload,token);if(resumed>file.size)throw new Error('Position de reprise invalide');offset=resumed;if(offset>0){anchored=true;anchor();report(offset,true);}}
+        catch(headError){if(retries>=12)throw headError;}
+        if(offset<file.size)await sleep(Math.min(10000,retries*900));
       }
     }
-    assertActive(ctx);return offset;
+    return offset;
   }
   function fingerprint(file){return [file.name||'media',file.size||0,file.lastModified||0,inferredMime(file)].join(':');}
   async function status(id,token){var job=visibleJob((await request('/api/v2/publications/'+id,{},token,30000)).body);return guardJob(job)||job;}
@@ -211,21 +209,23 @@
     watchers[key]=(async function(){try{for(;;){var job=await status(id,token);job=guardJob(job);if(!job){await sleep(800);continue;}rememberJob(job,job.publication_group_id||'');if(onProgress)onProgress(job);if(['failed','canceled'].indexOf(job.status)>=0)return job;if(untilPrimary&&primaryVisible(job))return job;if(job.status==='published'&&(!untilPrimary||job.publication_type!=='album'||(job.result&&job.result.group_visible===true)))return job;await sleep(job.status==='uploading'?2200:850);}}finally{delete watchers[key];}})();
     return watchers[key];
   }
-  async function createAndUpload(file,options,currentAuth,onProgress,ctx){
-    assertActive(ctx);
+  async function createAndUpload(file,options,currentAuth,onProgress){
+    assertNotCanceled(options.groupId);
     var created=visibleJob((await request('/api/v2/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      filename:file.name||'media',size:file.size,mime:inferredMime(file),kind:options.kind||inferredKind(file)||'photo',publicationType:options.publicationType||'normal',postId:options.postId,payload:options.payload||{},fingerprint:fingerprint(file),groupId:options.groupId||options.postId,assetIndex:options.assetIndex||0,assetCount:options.assetCount||1
+      filename:file.name||'media',size:file.size,mime:inferredMime(file),kind:options.kind||inferredKind(file)||'photo',publicationType:options.publicationType||'normal',postId:options.postId,payload:options.payload||{},fingerprint:options.savedFingerprint||fingerprint(file),groupId:options.groupId||options.postId,assetIndex:options.assetIndex||0,assetCount:options.assetCount||1
     })},currentAuth.token,45000)).body);
     if(created&&created.id&&!terminalStatus(created.status)&&terminalJobs[created.id]==='failed')delete terminalJobs[created.id];
-    if(created&&created.status==='uploading'&&Number(created.uploaded_bytes||0)===0)created.progress=0;
     rememberJob(created,options.groupId||'');
     if(typeof options.onCreated==='function')options.onCreated(created);
-    assertActive(ctx);
+    if(isCanceled(options.groupId)&&created&&created.id&&created.status==='uploading'){try{await request('/api/v2/publications/'+encodeURIComponent(created.id)+'/cancel',{method:'POST'},currentAuth.token,20000);}catch(_cancelError){}}
+    assertNotCanceled(options.groupId);
+    if(created.status==='failed'||created.status==='canceled')throw new Error(created.error_message||'Travail distant déjà terminé en échec ou annulé');
     if(created.primary_ready===true||created.status==='published'){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(created,{offset:file.size,fileSize:file.size,reused:true});}catch(_anchorUi){}}return created;}
     if(created.status==='uploading'){
-      await uploadDirect(file,created,currentAuth,function(job){rememberJob(job,options.groupId||'');if(onProgress)onProgress(job);},{firstChunkBytes:options.publicationType==='story'?STORY_FIRST_TUS_CHUNK:0,onAnchored:options.publicationType==='story'?options.onUploadAnchored:null},ctx);
-      assertActive(ctx);
-      created=visibleJob((await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},currentAuth.token,45000)).body);
+      await uploadDirect(file,created,currentAuth,function(job){rememberJob(job,options.groupId||'');if(onProgress)onProgress(job);},{firstChunkBytes:options.publicationType==='story'?STORY_FIRST_TUS_CHUNK:0,onAnchored:options.publicationType==='story'?options.onUploadAnchored:null,groupId:options.groupId});
+      assertNotCanceled(options.groupId);
+      // Reconcile a lost /complete response by querying the existing job (never create a duplicate publication).
+      for(var attempt=0;;attempt++){try{created=visibleJob((await request('/api/v2/publications/'+created.id+'/complete',{method:'POST'},currentAuth.token,45000)).body);break;}catch(error){assertNotCanceled(options.groupId);if(attempt>=5||error&&[400,404,410,413,415,422].indexOf(error.status)>=0)throw error;try{var prior=await status(created.id,currentAuth.token);if(prior&&prior.status!=='uploading'){created=prior;break;}}catch(_check){}await sleep(Math.min(10000,(attempt+1)*1000));}}
       rememberJob(created,options.groupId||'');if(onProgress)onProgress(created);
     }
     return created;
@@ -242,117 +242,136 @@
     if(options.publicationType==='story'&&files.length!==1)throw new Error('Une Story accepte un seul média.');
     if(!(await available(false)))return {used:false,reason:'engine-v1082-unavailable'};
     var a=await auth();
-    var group={id:clean(options.groupId)||('pub_'+uid().replace(/-/g,'')),postId:clean(options.postId)||('p_'+uid().replace(/-/g,'')),publicationType:clean(options.publicationType)||'normal',assetCount:files.length,children:[],createdAt:new Date().toISOString()};
-    var ctx={id:group.id,canceled:false,xhrs:new Set(),controllers:new Set(),waiters:new Set(),runners:[],confirming:false};
-    inflightGroups[group.id]=ctx;
+    var resume=options.recoveryPlan||null;
+    if(resume&&(!filesMatchPlan(files,resume)||String(resume.owner)!==String(a.user.id)))throw new Error('Reprise refusée : compte ou fichiers différents.');
+    var group={id:resume?resume.id:(clean(options.groupId)||('pub_'+uid().replace(/-/g,''))),postId:resume?resume.postId:(clean(options.postId)||('p_'+uid().replace(/-/g,''))),publicationType:resume?resume.publicationType:(clean(options.publicationType)||'normal'),assetCount:files.length,children:[],createdAt:new Date().toISOString()};
+    // Preserve already-created jobs across an upload retry.
+    var known=readList(GROUPS_KEY).find(function(g){return g&&String(g.id)===String(group.id);});
+    if(known&&Array.isArray(known.children))group.children=known.children.slice();
+    assertNotCanceled(group.id);
+    groupCancels[group.id]={canceled:false};
     rememberGroup(group);activateGroup(group);
+    if(!resume)await storeRecovery(group,files,options,a.user.id);
     var states=new Array(files.length).fill(null).map(function(){return {status:'uploading',progress:0,primary_ready:false};});
     var queuedJobs=new Array(files.length);
-    function emit(index,job){if(ctx.canceled)return;states[index]=mergeJobState(states[index],job||{});var d=aggregate(group,states);dispatch(d);notifyUI(options.onProgress,[d,states.slice()]);}
+    function emit(index,job){states[index]=mergeJobState(states[index],job||{});var d=aggregate(group,states);dispatch(d);notifyUI(options.onProgress,[d,states.slice()]);}
     dispatch(aggregate(group,states));
     notifyUI(options.onGroupCreated,[group]);
 
     var cursor=0,concurrency=Math.max(1,Math.min(Number(options.uploadConcurrency||2)||2,3));
     async function runner(){
       for(;;){
-        assertActive(ctx);var index=cursor++;if(index>=files.length)return;
-        var file=files[index],postId=typeof options.postIdForAsset==='function'?options.postIdForAsset(index,file):((files.length===1)?group.postId:(group.postId+'_'+(index+1)));
-        var payload=typeof options.payloadForAsset==='function'?options.payloadForAsset(index,file):(options.payload||{});
+        var index=cursor++;if(index>=files.length)return;
+        assertNotCanceled(group.id);
+        var file=files[index],postId=resume?resume.assets[index].postId:(typeof options.postIdForAsset==='function'?options.postIdForAsset(index,file):((files.length===1)?group.postId:(group.postId+'_'+(index+1))));
+        var payload=resume?resume.assets[index].payload:(typeof options.payloadForAsset==='function'?options.payloadForAsset(index,file):(options.payload||{}));
         try{
-          var queued=await createAndUpload(file,{kind:kindOf(file),publicationType:group.publicationType==='normal'&&files.length>1?'album':group.publicationType,postId:postId,payload:payload,groupId:group.id,assetIndex:index,assetCount:files.length,onCreated:function(job){if(job&&job.id&&group.children.indexOf(job.id)<0){group.children.push(job.id);rememberGroup(group);updateActiveChildren(group);}emit(index,job);},onUploadAnchored:group.publicationType==='story'?function(job,info){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(group,job,info||{});}catch(uiError){try{console.warn('Fyblic Story ancrage UI ignoré:',uiError&&uiError.message||uiError);}catch(_e){}}}}:null},a,function(job){emit(index,job);},ctx);
+          var queued=await createAndUpload(file,{kind:kindOf(file),publicationType:group.publicationType==='normal'&&files.length>1?'album':group.publicationType,postId:postId,payload:payload,groupId:group.id,assetIndex:index,assetCount:files.length,savedFingerprint:resume&&resume.assets[index].fingerprint,onCreated:function(job){if(job&&job.id&&group.children.indexOf(job.id)<0){group.children.push(job.id);rememberGroup(group);updateActiveChildren(group);}emit(index,job);},onUploadAnchored:group.publicationType==='story'?function(job,info){if(typeof options.onUploadAnchored==='function'){try{options.onUploadAnchored(group,job,info||{});}catch(uiError){try{console.warn('Fyblic Story ancrage UI ignoré:',uiError&&uiError.message||uiError);}catch(_e){}}}}:null},a,function(job){emit(index,job);});
           queuedJobs[index]=queued;emit(index,queued);
-        }catch(error){if(ctx.canceled)throw canceledError();states[index]=Object.assign({},states[index],{status:'failed',error_message:error&&error.message||String(error)});emit(index,states[index]);throw error;}
+        }catch(error){states[index]=Object.assign({},states[index],{status:cancelError(error)||isCanceled(group.id)?'canceled':'failed',error_message:error&&error.message||String(error)});emit(index,states[index]);throw error;}
       }
     }
     var uploads=[];for(var i=0;i<Math.min(concurrency,files.length);i++)uploads.push(runner());
-    ctx.runners=uploads;
-    try{await Promise.all(uploads);}catch(error){if(!ctx.canceled){clearActive(group.id);delete inflightGroups[group.id];}throw ctx.canceled?canceledError():error;}
-    assertActive(ctx);notifyUI(options.onUploadsComplete,[group]);
+    try{await Promise.all(uploads);}catch(error){if(cancelError(error)||isCanceled(group.id)){discardRecovery(group.id);forgetGroup(group.id);clearActive(group.id);}else{dispatch({jobId:group.id,groupId:group.id,publicationType:group.publicationType,status:'paused',progress:0,stage:'Envoi interrompu · réessaie avec les mêmes médias',error:publicError(error&&error.message||error)});}throw error;}
+    notifyUI(options.onUploadsComplete,[group]);
 
     var visiblePromises=queuedJobs.map(function(job,index){return watch(job.id,a.token,function(current){emit(index,current);},true);});
     var fullPromises=queuedJobs.map(function(job,index){return watch(job.id,a.token,function(current){emit(index,current);},false);});
     var visibleCompletion=Promise.all(visiblePromises).then(function(rows){var bad=rows.find(function(j){return j&&['failed','canceled'].indexOf(j.status)>=0;});if(bad)throw new Error(bad.error_message||'Publication échouée');return rows;});
-    var fullCompletion=Promise.all(fullPromises).then(function(rows){var bad=rows.find(function(j){return j&&['failed','canceled'].indexOf(j.status)>=0;});if(bad)throw new Error(bad.error_message||'Publication échouée');clearActive(group.id);forgetGroup(group.id);delete inflightGroups[group.id];dispatch(aggregate(group,rows));return rows;}).catch(function(error){if(!ctx.canceled)clearActive(group.id);delete inflightGroups[group.id];throw error;});
+    var fullCompletion=Promise.all(fullPromises).then(function(rows){var bad=rows.find(function(j){return j&&['failed','canceled'].indexOf(j.status)>=0;});if(bad)throw new Error(bad.error_message||'Publication échouée');clearActive(group.id);forgetGroup(group.id);discardRecovery(group.id);dispatch(aggregate(group,rows));return rows;}).catch(function(error){clearActive(group.id);throw error;});
     return {used:true,group:group,jobs:queuedJobs,visibleCompletion:visibleCompletion,completion:fullCompletion};
   }
   async function submit(file,options){
-    options=options||{};var result=await submitMany([file],{groupId:options.groupId||options.postId,postId:options.postId,publicationType:options.publicationType||'normal',payload:options.payload||{},onGroupCreated:function(group){if(typeof options.onCreated==='function')options.onCreated({id:group.id,post_id:group.postId,publication_type:group.publicationType,status:'uploading',progress:0});},onProgress:function(detail){if(typeof options.onProgress==='function')options.onProgress(detail);}});
+    options=options||{};var result=await submitMany([file],{groupId:options.groupId||options.postId,postId:options.postId,publicationType:options.publicationType||'normal',payload:options.payload||{},onGroupCreated:function(group){if(typeof options.onCreated==='function')options.onCreated({id:group.id,post_id:group.postId,publication_type:group.publicationType,status:'uploading',progress:1});},onProgress:function(detail){if(typeof options.onProgress==='function')options.onProgress(detail);}});
     if(!result||!result.used)return result;
     return {used:true,group:result.group,jobs:result.jobs,job:result.jobs[0],visibleCompletion:result.visibleCompletion.then(function(rows){return rows[0];}),completion:result.completion.then(function(rows){return rows[0];})};
   }
-  async function cancel(id){
-    var a=await auth(),state=null;
-    // Ne pas effacer un média ou un post déjà visible / publié.
-    try{state=await status(id,a.token);}catch(error){reportDiagnostic('cancel-status',error);}
-    if(state&&['canceled','cancelled'].indexOf(state.status)>=0)return state;
-    if(state&&(state.status==='published'||state.primary_ready===true))throw new Error('Publication déjà visible : elle ne peut pas être annulée depuis la barre de transfert.');
-    var job=(await request('/api/v2/publications/'+encodeURIComponent(id)+'/cancel',{method:'POST'},a.token,30000)).body;
-    if(!job||['canceled','cancelled'].indexOf(String(job.status))<0)throw new Error('Le serveur ne confirme pas l’annulation du média '+id+'.');
-    rawEvent(job,job.publication_group_id||'',true);return job;
-  }
+  async function cancel(id){var a=await auth(),job=(await request('/api/v2/publications/'+encodeURIComponent(id)+'/cancel',{method:'POST'},a.token,30000)).body;rawEvent(job,job.publication_group_id||'',true);return job;}
   async function cancelGroup(id){
-    id=clean(id||(active()&&active().id));if(!id)throw new Error('Publication introuvable.');
-    var ctx=inflightGroups[id];
-    if(ctx){ctx.canceled=true;ctx.waiters.forEach(function(cancel){try{cancel();}catch(_e){}});ctx.xhrs.forEach(function(xhr){try{xhr.abort();}catch(_e){}});ctx.controllers.forEach(function(controller){try{controller.abort();}catch(_e){}});}
-    markCanceled(id);
-    dispatch({jobId:id,groupId:id,status:'canceling',progress:0,stage:'Annulation et suppression en cours…'});
-    if(ctx&&ctx.runners.length)await Promise.allSettled(ctx.runners);
+    id=String(id||'');if(!id)return false;
+    (groupCancels[id]||(groupCancels[id]={})).canceled=true;
+    (runningXhrs[id]||[]).slice().forEach(function(xhr){try{xhr.abort();}catch(_e){}});
     var group=readList(GROUPS_KEY).find(function(x){return x&&String(x.id)===id;});
-    var ids=Array.from(new Set([].concat((group&&group.children)||[],(active()&&String(active().id)===id&&active().children)||[]).filter(Boolean)));
-    var errors=[],done=[];
-    if(!ids.length){
-      // Aucun job créé ; aucun média serveur à supprimer.
-      if(ctx){delete inflightGroups[id];}
-      forgetGroup(id);clearActive(id);
-      dispatch({jobId:id,groupId:id,status:'canceled',progress:0,stage:'Envoi annulé'});
-      return {ok:true,canceled:0};
+    var rec=recoveryPlan(),children=(group&&group.children||active()&&active().id===id&&active().children||[]).slice();
+    if(children.length){
+      var currentAuth=null;try{currentAuth=await auth();}catch(_auth){}
+      if(currentAuth){for(var i=0;i<children.length;i++){
+        var childId=children[i];try{
+          var job=await status(childId,currentAuth.token);
+          // Never ask the server to delete an already visible/finalized media object.
+          if(job&&job.status==='uploading'&&!job.primary_ready){
+            await request('/api/v2/publications/'+encodeURIComponent(childId)+'/cancel',{method:'POST'},currentAuth.token,30000);
+          }
+        }catch(error){try{console.warn('Fyblic annulation distante non confirmée',childId,error.message);}catch(_e){}}
+      }}
     }
-    for(var i=0;i<ids.length;i++){
-      var childId=ids[i];try{await cancel(childId);done.push(childId);}catch(error){errors.push(String(error&&error.message||error));reportDiagnostic('cancel-job',error);}
-    }
-    if(errors.length){
-      dispatch({jobId:id,groupId:id,status:'cancel_error',progress:0,error:errors.join(' | '),stage:'Annulation non confirmée · réessayer X'});
-      return {ok:false,canceled:done.length,error:errors.join(' | ')};
-    }
-    ids.forEach(forgetJob);forgetGroup(id);clearActive(id);delete inflightGroups[id];
-    dispatch({jobId:id,groupId:id,status:'canceled',progress:0,stage:'Envoi annulé et suppression demandée au serveur'});
-    return {ok:true,canceled:done.length};
+    clearActive(id);forgetGroup(id);discardRecovery(id);
+    dispatch({jobId:id,groupId:id,publicationType:group&&group.publicationType||rec&&rec.publicationType||'normal',status:'canceled',progress:0,stage:'Publication annulée'});
+    return true;
   }
-  function forget(id){forgetJob(id);forgetGroup(id);clearActive(id);}
+  function forget(id){forgetJob(id);forgetGroup(id);clearActive(id);discardRecovery(id);}
+  var resumeStarted=false;
   async function resumeTracking(){
-    var a=active();if(!a||!a.id)return;
-    if(isCanceled(a.id)){
-      dispatch({jobId:a.id,groupId:a.id,postId:a.postId||'',publicationType:a.mode||'normal',status:'cancel_error',progress:0,error:'Annulation serveur en attente de confirmation.',stage:'Annulation non confirmée · appuie sur X pour réessayer'});
+    // The parent owns network transfers; an embedded publish iframe must not launch duplicates.
+    if(resumeStarted||window.parent&&window.parent!==window&&window.parent.FyblicPublicationEngineV1082)return;
+    resumeStarted=true;
+    var a=active(),p=recoveryPlan(),groupId=a&&a.id||p&&p.id;
+    if(!groupId||groupCancels[groupId]&&!groupCancels[groupId].canceled)return;
+    var known=readList(GROUPS_KEY).find(function(g){return g&&String(g.id)===String(groupId);});
+    var children=a&&a.children&&a.children.length?a.children:(known&&known.children||[]);
+    var session;try{session=await auth();}catch(_e){return;}
+    if(p&&p.owner!==session.user.id)return; // Never resume another account's media.
+    if(p&&p.id===groupId){
+      var files=null;try{files=await resumeFileRead(groupId);}catch(_e){}
+      if(filesMatchPlan(files,p)){
+        try{var resumed=await submitMany(files,{recoveryPlan:p,uploadConcurrency:2});
+          if(resumed&&resumed.used){await resumed.completion;return;}
+        }catch(error){try{console.warn('Fyblic reprise:',error.message);}catch(_e){}}
+      }
+    }
+    var group={id:groupId,postId:a&&a.postId||known&&known.postId||p&&p.postId||'',publicationType:known&&known.publicationType||p&&p.publicationType||'normal',children:children.slice()};
+    var states=children.map(function(){return {status:'uploading',progress:0,primary_ready:false};});
+    if(!children.length){dispatch({jobId:group.id,groupId:group.id,publicationType:group.publicationType,status:'paused',progress:0,stage:'Envoi interrompu · sélectionne à nouveau le média'});return;}
+    var jobs=await Promise.all(children.map(function(id){return status(id,session.token).catch(function(){return null;});}));
+    jobs.forEach(function(job,index){if(job)states[index]=job;});
+    // Remote-first recovery: before asking for a File, determine whether Supabase
+    // already acknowledged its *entire* length. Never trust the nominal 45% status.
+    if(p&&p.id===groupId&&p.owner===session.user.id){
+      for(var i=0;i<jobs.length;i++){
+        var old=jobs[i];if(!old||old.status!=='uploading')continue;
+        var asset=p.assets.length===1?p.assets[0]:p.assets.find(function(asset){return asset.postId===old.post_id;});
+        if(!asset)continue;
+        try{
+          var created=(await request('/api/v2/publications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:asset.name,size:asset.size,mime:asset.mime,kind:asset.mime.indexOf('video/')===0?'video':'photo',publicationType:p.publicationType==='normal'&&p.assets.length>1?'album':p.publicationType,postId:asset.postId,payload:asset.payload,fingerprint:asset.fingerprint,groupId:p.id,assetIndex:p.assets.indexOf(asset),assetCount:p.assets.length})},session.token,30000)).body;
+          // A changed job ID means no verified reuse: do not finalize or delete it.
+          if(!created||String(created.id)!==String(children[i]))continue;
+          if(created.status==='published'||created.primary_ready===true){jobs[i]=created;states[i]=created;continue;}
+          if(!created.upload||created.upload.mode!=='direct-binary')continue;
+          var remoteOffset=await tusOffset(created.upload,session.token);
+          if(remoteOffset>asset.size)throw new Error('TUS : taille distante incohérente');
+          if(remoteOffset===asset.size){
+            var completed=(await request('/api/v2/publications/'+encodeURIComponent(created.id)+'/complete',{method:'POST'},session.token,45000)).body;
+            if(completed){jobs[i]=completed;states[i]=completed;}
+          }else{states[i]=Object.assign({},old,{uploaded_bytes:remoteOffset,size:asset.size,progress:Math.floor(remoteOffset/Math.max(1,asset.size)*44)});}
+        }catch(error){try{console.warn('Fyblic vérification distante non aboutie',error.message);}catch(_e){}}
+      }
+    }
+    var allDone=jobs.length>0&&jobs.every(function(job){return job&&(job.status==='published'||job.primary_ready===true);});
+    if(allDone){dispatch(aggregate(group,states));clearActive(group.id);forgetGroup(group.id);discardRecovery(group.id);return;}
+    var failed=jobs.find(function(job){return job&&['failed','canceled'].indexOf(job.status)>=0;});
+    if(failed){dispatch(aggregate(group,states));return;}
+    if(jobs.every(function(job){return job&&job.status!=='uploading';})){
+      // Bytes have already reached the server: observe processing, no File needed.
+      dispatch(aggregate(group,states));
+      children.forEach(function(id,index){watch(id,session.token,function(job){states[index]=job;dispatch(aggregate(group,states));if(states.every(function(j){return j&&j.status==='published';})){clearActive(group.id);forgetGroup(group.id);discardRecovery(group.id);}},false).catch(function(error){dispatch({jobId:group.id,groupId:group.id,publicationType:group.publicationType,status:'paused',progress:0,stage:'Suivi distant momentanément indisponible',error:error.message});});});
       return;
     }
-    if(!Array.isArray(a.children)||!a.children.length)return;
-    var session;try{session=await auth();}catch(_e){return;}
-    var group={id:a.id,postId:a.postId||'',publicationType:a.mode||'normal',children:a.children.slice(),assetCount:a.children.length};
-    var states=new Array(group.children.length).fill(null).map(function(){return {status:'processing',progress:0,primary_ready:false};});
-    group.children.forEach(async function(id,index){
-      try{
-        var job=await status(id,session.token);if(isCanceled(group.id))return;
-        if(job.status==='uploading'){
-          var received=Number(job.uploaded_bytes||0),size=Number(job.size||job.total_bytes||0);
-          // Sans File local, le navigateur ne peut reprendre un PATCH après actualisation.
-          // Ne jamais inventer 45 %, et ne pas laisser un polling éternel.
-          if(size>0&&received>=size){
-            try{job=visibleJob((await request('/api/v2/publications/'+encodeURIComponent(id)+'/complete',{method:'POST'},session.token,45000)).body);}
-            catch(error){reportDiagnostic('resume-complete',error);}
-          }
-          if(job.status==='uploading'){
-            states[index]={status:'failed',progress:size>0?Math.floor(Math.min(1,received/size)*44):0,error_message:'Envoi interrompu après actualisation. Le média local doit être sélectionné à nouveau; utilise X pour annuler et nettoyer cette tentative.'};
-            dispatch(aggregate(group,states));return;
-          }
-        }
-        states[index]=mergeJobState(states[index],job);dispatch(aggregate(group,states));
-        if(!terminalStatus(job.status)&&!primaryVisible(job)){
-          await watch(id,session.token,function(updated){if(isCanceled(group.id))return;states[index]=mergeJobState(states[index],updated);dispatch(aggregate(group,states));},false);
-        }
-      }catch(error){if(isCanceled(group.id))return;states[index]={status:'failed',progress:0,error_message:'Vérification serveur impossible : '+String(error&&error.message||error)};dispatch(aggregate(group,states));}
-    });
+    // We cannot reconstruct lost File bytes from localStorage after a page refresh.
+    // Show a paused state rather than pretending that 45% of the upload was confirmed.
+    var confirmedPercent=states.every(function(j){return Number(j.size||j.total_bytes||0)>0&&Number.isFinite(Number(j.uploaded_bytes));})?Math.floor(states.reduce(function(n,j){return n+Math.max(0,Math.min(1,Number(j.uploaded_bytes||0)/Number(j.size||j.total_bytes)));},0)/Math.max(1,states.length)*44):0;
+    dispatch({jobId:group.id,groupId:group.id,postId:group.postId,publicationType:group.publicationType,status:'paused',progress:confirmedPercent,stage:'Envoi interrompu · sélectionne les mêmes médias pour reprendre'});
   }
 
-  var api={version:'1165-tus-cancel-confirmed',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,cancelGroup:cancelGroup,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
+  var api={version:'1165-tus-recovery-cancel-safe',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,cancelGroup:cancelGroup,pendingForFiles:pendingForFiles,pendingPlan:recoveryPlan,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();

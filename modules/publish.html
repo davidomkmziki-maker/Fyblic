@@ -79,7 +79,7 @@ html[data-fyblic-native-android="1"] .preview.empty:not(.fyNativeRecentV1134):af
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-engine-v1082.js?v=1165-tus-cancel"></script>
+<script src="../core/publication-engine-v1082.js?v=1165-tus-recovery"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -126,7 +126,7 @@ textarea.field{min-height:136px;resize:vertical;line-height:1.45}
 .publishBtn:disabled,.next:disabled{opacity:.55}
 .card{border:1px solid #28303c;background:#10151e;border-radius:22px;padding:16px}.summary{color:#cfd3dc;font-size:13px;line-height:1.45}
 .toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100;background:#11151d;border:1px solid rgba(255,138,0,.55);padding:12px 16px;border-radius:999px;font-weight:1000;display:none;max-width:92%;text-align:center}.toast.show{display:block}
-.publishProgress{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:22px}.publishProgress.show{display:flex}.progressBox{width:min(420px,94vw);border:1px solid rgba(255,138,0,.45);background:linear-gradient(180deg,#151922,#0b0d12);border-radius:26px;padding:22px;box-shadow:0 18px 60px rgba(0,0,0,.55);text-align:center}.progressTitle{font-size:22px;font-weight:1000;margin-bottom:8px}.progressText{color:#cfd3dc;font-weight:800;margin-bottom:16px}.progressTrack{height:16px;border-radius:999px;background:#262b35;overflow:hidden;border:1px solid rgba(255,255,255,.08)}.progressFill{height:100%;width:0%;border-radius:999px;background:linear-gradient(135deg,var(--orange),var(--orange2));transition:width .25s ease}.progressNum{font-size:36px;font-weight:1000;margin-top:14px;color:#fff}.progressHint{font-size:13px;color:#9fa6b5;margin-top:8px;line-height:1.35}
+.publishProgress{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:22px}.publishProgress.show{display:flex}.progressBox{position:relative;width:min(420px,94vw);border:1px solid rgba(255,138,0,.45);background:linear-gradient(180deg,#151922,#0b0d12);border-radius:26px;padding:22px;box-shadow:0 18px 60px rgba(0,0,0,.55);text-align:center}.progressTitle{font-size:22px;font-weight:1000;margin-bottom:8px}.progressText{color:#cfd3dc;font-weight:800;margin-bottom:16px}.progressTrack{height:16px;border-radius:999px;background:#262b35;overflow:hidden;border:1px solid rgba(255,255,255,.08)}.progressFill{height:100%;width:0%;border-radius:999px;background:linear-gradient(135deg,var(--orange),var(--orange2));transition:width .25s ease}.publishProgressCancelV1165{position:absolute;right:12px;top:10px;border:0;background:transparent;color:#eee;font:750 24px/30px system-ui;min-width:34px;min-height:34px}.progressNum{font-size:36px;font-weight:1000;margin-top:14px;color:#fff}.progressHint{font-size:13px;color:#9fa6b5;margin-top:8px;line-height:1.35}
 .haIcon{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;vertical-align:-5px;margin-right:7px;color:currentColor}.haIcon svg{width:100%;height:100%;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.cameraChoice .haIcon{width:24px;height:24px;margin-right:7px}.svgPreviewIcon{width:58px;height:58px;margin:auto;color:#fff}.svgPreviewIcon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
 
@@ -644,11 +644,12 @@ button:disabled{filter:none;transform:none}
 <div id="toast" class="toast"></div>
 <div id="publishProgress" class="publishProgress" aria-live="polite">
   <div class="progressBox">
+    <button type="button" id="publishProgressCancelV1165" class="publishProgressCancelV1165" aria-label="Annuler le transfert">×</button>
     <div class="progressTitle">Publication en cours</div>
     <div id="progressText" class="progressText">Préparation...</div>
     <div class="progressTrack"><div id="progressFill" class="progressFill"></div></div>
     <div id="progressNum" class="progressNum">0%</div>
-    <div class="progressHint">Ne ferme pas cette page pendant la publication.</div>
+    <div class="progressHint">Tu peux annuler avec le X. Évite d’actualiser pendant le transfert.</div>
   </div>
 </div>
 <div class="app">
@@ -911,7 +912,7 @@ button:disabled{filter:none;transform:none}
   function activePublicationV1067R1(){
     try{var value=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');if(!value||!value.id)return null;var age=Date.now()-Number(value.at||0);if(age>2*60*60*1000){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}if(age>2*60*1000){var jobs=JSON.parse(localStorage.getItem('FYBLIC_PUBLICATION_JOBS_V1080')||'[]');var found=Array.isArray(jobs)&&jobs.some(function(job){return job&&(String(job.id)===String(value.id)||String(job.groupId||'')===String(value.id))&&['published','failed','canceled'].indexOf(String(job.status||''))<0;});if(!found){localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);return null;}}return value;}catch(_e){try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_x){}return null;}
   }
-  function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');try{localStorage.setItem(ACTIVE_PUBLICATION_KEY_V1067R1,JSON.stringify({id:activePublicationIdV1067R1,mode:String(mode||'publish'),at:Date.now()}));}catch(_e){}}
+  function beginPublicationV1067R1(id,mode){activePublicationIdV1067R1=String(id||'');try{var previous=JSON.parse(localStorage.getItem(ACTIVE_PUBLICATION_KEY_V1067R1)||'null');var record=previous&&String(previous.id)===activePublicationIdV1067R1?previous:{};record.id=activePublicationIdV1067R1;record.mode=String(mode||record.mode||'publish');record.at=Date.now();localStorage.setItem(ACTIVE_PUBLICATION_KEY_V1067R1,JSON.stringify(record));}catch(_e){}}
   function endPublicationV1067R1(){activePublicationIdV1067R1='';try{localStorage.removeItem(ACTIVE_PUBLICATION_KEY_V1067R1);}catch(_e){}}
   function simpleProgressMessage(text,value){var raw=String(text||'');if(/échec|echec|failed|erreur/i.test(raw))return 'Échec';if(/termin|publiée|publiee|published/i.test(raw))return 'Publication terminée';if(Number(value||0)<=45||/envoi|upload/i.test(raw))return 'Envoi du média';return 'Publication en cours';}
   /* V1082 : le moteur unique est la seule source globale de progression Story. */
@@ -2728,9 +2729,16 @@ return {source:'story',id:storyId};
   }
 
   var publicationDraftIdV1164='';
+  var publicationAttemptV1165=0;
   async function savePublish(){
-    if(activePublicationV1067R1()){
-      toast('Une publication est déjà en cours');
+    // Same file after reload => resume the existing TUS job, never create a duplicate post.
+    var engineForResume=null;
+    try{engineForResume=(window.parent&&window.parent!==window&&window.parent.FyblicPublicationEngineV1082)||window.FyblicPublicationEngineV1082;}catch(_e){}
+    var candidateFiles=(state.mode==='story')?[state.file]:((state.files&&state.files.length)?state.files.slice(0,18):[state.file]);
+    var pendingPlan=engineForResume&&typeof engineForResume.pendingForFiles==='function'?engineForResume.pendingForFiles(candidateFiles):null;
+    var currentInFlight=activePublicationV1067R1();
+    if(currentInFlight&&(!pendingPlan||String(pendingPlan.id)!==String(currentInFlight.id))){
+      toast('Une publication est déjà en cours. Utilise le X de sa progression pour annuler.');
       return;
     }
     const validation=validatePublishForm();
@@ -2740,12 +2748,14 @@ return {source:'story',id:storyId};
       return;
     }
     if(!state.file){toast("Aucun média sélectionné");return;}
+    var thisAttempt=++publicationAttemptV1165;
     $("publishBtn").disabled=true; $("publishBtnTop").disabled=true;
     startProgress("Préparation de la publication...");
     toast("Publication en cours");
     let returnedHomeForStoryV1067R1=false;
     try{
-      const id=publicationDraftIdV1164||(publicationDraftIdV1164="p_"+((window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID().replace(/-/g,''):(Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14))));
+      const id=pendingPlan?pendingPlan.postId:(publicationDraftIdV1164||('p_'+((window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID().replace(/-/g,''):(Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14)))));
+      if(!pendingPlan)publicationDraftIdV1164=id;
       beginPublicationV1067R1(id,state.mode);
       /* V1080 : le retour Accueil est déclenché par le moteur principal après
          prise en charge du groupe et conservation des File dans la fenêtre mère. */
@@ -2785,16 +2795,19 @@ return {source:'story',id:storyId};
         try{durable=(window.parent&&window.parent!==window&&window.parent.FyblicPublicationEngineV1082)||window.FyblicPublicationEngineV1082;}catch(_master){durable=window.FyblicPublicationEngineV1082;}
         if(!durable||typeof durable.available!=='function'||typeof durable.submitMany!=='function')throw new Error('Système de publication V1082 indisponible.');
         if(await durable.available(true)){
+          if(thisAttempt!==publicationAttemptV1165)return;
           var publishFiles=(state.mode==='publish'&&state.files&&state.files.length)?state.files.slice(0,18):[state.file];
           if(state.mode==='story')publishFiles=[state.file];
           var isAlbum=state.mode==='publish'&&publishFiles.length>1;
           var batchId=isAlbum?('grp_'+id):'';
           var returnedHome=returnedHomeForStoryV1067R1;
+          if(thisAttempt!==publicationAttemptV1165)return;
           var backgroundTask=durable.submitMany(publishFiles,{
             publicationType:state.mode==='story'?'story':'normal',
             groupId:id,
             postId:id,
             uploadConcurrency:2,
+            recoveryPlan:pendingPlan||null,
             postIdForAsset:function(index){return isAlbum?id+'_'+(index+1):id;},
             payloadForAsset:function(index){
               var pid=isAlbum?id+'_'+(index+1):id;
@@ -2810,7 +2823,7 @@ return {source:'story',id:storyId};
               window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1=String(group&&group.id||id);
               beginPublicationV1067R1(group&&group.id||id,state.mode);
               state.completed=true;
-              setProgress(0,'Initialisation TUS…');
+              setProgress(0,'Connexion au transfert TUS');
               /* V1164 : attendre la confirmation de tous les médias normaux avant le retour. */
               // V1164: keep the file owner visible until every upload is acknowledged.
             },
@@ -2838,7 +2851,7 @@ return {source:'story',id:storyId};
             // La qualité principale est réellement visible : libérer immédiatement
             // le verrou utilisateur. Les variantes continuent sans bloquer un nouveau post.
             endPublicationV1067R1();
-            if(window.parent===window)returnHomeAfterPublish('primary-visible-v1165',{preserveMedia:true});
+            if(window.parent===window)returnHomeAfterPublish('primary-visible-v1164',{preserveMedia:true});
             try{resetPublishComposer('engine-v1082-visible');}catch(_reset){}
             return backgroundTask.then(function(result){return result&&result.completion;});
           }).then(function(){
@@ -2846,7 +2859,6 @@ return {source:'story',id:storyId};
           }).catch(function(error){
             console.error('Fyblic engine V1082',error);
             endPublicationV1067R1();
-            if(error&&error.code==='FYBLIC_CANCELED'){try{resetPublishComposer('cancel-transfer-v1165');}catch(_reset){}return;}
             try{clearHeavyPublicationCaches();}catch(_clean){}
             state.completed=false;failProgress('Échec : '+String(error&&error.message||error).slice(0,90));toast(String(error&&error.message||error).slice(0,160));updatePublishButtonsState();
           });
@@ -2998,6 +3010,21 @@ return {source:'story',id:storyId};
     try{location.replace("../index.html?happyad_publish_cancel=1&t="+Date.now());}catch(_e){try{location.href="../index.html";}catch(_e2){}}
     return false;
   }
+  bind('publishProgressCancelV1165','click',async function(){
+    if(!window.confirm('Annuler cet envoi ? Le transfert en cours sera arrêté. Les médias déjà publiés ne seront pas effacés.'))return;
+    publicationAttemptV1165++;
+    var pending=activePublicationV1067R1();var groupId=String(pending&&pending.id||activePublicationIdV1067R1||'');
+    var engine=null;
+    try{engine=(window.parent&&window.parent!==window&&window.parent.FyblicPublicationEngineV1082)||window.FyblicPublicationEngineV1082;}catch(_e){}
+    var btn=$('publishProgressCancelV1165');if(btn)btn.disabled=true;
+    try{
+      if(groupId&&engine&&typeof engine.cancelGroup==='function')await engine.cancelGroup(groupId);
+      endPublicationV1067R1();
+      resetPublishComposer('cancel-progress-v1165');
+      returnHomeAfterPublish('user-canceled-v1165');
+    }catch(error){toast('Annulation non confirmée : '+String(error&&error.message||error));}
+    finally{if(btn)btn.disabled=false;}
+  });
   bind("publishCloseBtn","click",closePublishModule);
   bind("nextBtn","click",openDetails);
   bind("continuePickV901","click",openDetails);
