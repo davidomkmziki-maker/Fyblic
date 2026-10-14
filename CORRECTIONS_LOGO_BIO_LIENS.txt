@@ -1,0 +1,14 @@
+CORRECTIONS LOGO ET BIO — 14/10/2026
+- Logo sur aperçu de partage réduit de 25 % (118 → 89 pixels arrondis).
+- Photo/vidéo principale et bouton lecture conservés.
+- Liens HTTP/HTTPS dans les bios, bleus et cliquables, profils propriétaire et visiteur.
+- Bouton 🔗 dans la modification de bio pour attacher une adresse à un mot.
+- Format partagé site/application : [Mon site](https://exemple.com).
+- Limite de 600 caractères conservée ; insertion refusée si dépassement.
+- Nouvelles adresses de partage r23 pour renouveler les aperçus.
+Déployer le site V1169 puis compiler/installer l’application V208.
+Le logo des cartes partagées par l’application est produit par le serveur du site.
+Les cartes déjà envoyées peuvent conserver l’ancienne image dans le cache de la messagerie.
+Aucun SQL ni nouvel assetlinks requis si le package et la signature de l’application restent identiques.
+Vérifications : syntaxe JavaScript et génération réelle d’une carte JPEG 1200×900 validées.
+Limites : compilation Android et essai sur téléphone non exécutés ici ; navigateur de test absent.

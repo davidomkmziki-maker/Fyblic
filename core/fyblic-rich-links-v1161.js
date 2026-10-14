@@ -3,9 +3,9 @@
 (function(){
   'use strict';
   if(window.FyblicRichLinksV1161)return;
-  const TARGETS='.miniDesc,.miniTitle,.haHomeFsDesc,.haHomeFsTitle,.haCommentList p,.haCommentText,.commentText,.commentBody,.commentContent,.post-description,[data-post-description],.haStoryCaption,.storyDescription,.storyCaption,.storyDesc,.profilePostDesc,.profilePostTitle,.slideInfo .desc,.slideInfo .title,.info .desc,.info .title,.reelCaption,.reelDescription,.haPostDescription,.haPhotoDesc,.haPhotoCaption,.happyadInlineDescV991,.happyadStoryDescription,#hsvCaption,.hsvCaption';
+  const TARGETS='#profileBio,.haProfileBio,.miniDesc,.miniTitle,.haHomeFsDesc,.haHomeFsTitle,.haCommentList p,.haCommentText,.commentText,.commentBody,.commentContent,.post-description,[data-post-description],.haStoryCaption,.storyDescription,.storyCaption,.storyDesc,.profilePostDesc,.profilePostTitle,.slideInfo .desc,.slideInfo .title,.info .desc,.info .title,.reelCaption,.reelDescription,.haPostDescription,.haPhotoDesc,.haPhotoCaption,.happyadInlineDescV991,.happyadStoryDescription,#hsvCaption,.hsvCaption';
   const FORMAT=/\[([^\]\n]{1,100})\]\((https?:\/\/[^\s<>)]+)\)|https?:\/\/[^\s<>"']+/gi;
-  const editorSelector='textarea.haCommentInputV905,textarea#haPostEditDescV63,textarea[placeholder*="description" i],textarea[aria-label*="description" i],textarea[name*="description" i],textarea[name*="caption" i]';
+  const editorSelector='textarea#profileEditBio,textarea.haCommentInputV905,textarea#haPostEditDescV63,textarea[placeholder*="description" i],textarea[aria-label*="description" i],textarea[name*="description" i],textarea[name*="caption" i]';
   const linkSelectors='a,[role="link"],button,script,style,code,pre,textarea,input,[contenteditable="true"],[data-fyblic-rich-link],.happyadMentionBlueV941,.happyadCommentMentionV992,[data-happyad-mention-handle],[data-happyad-comment-mention-v992]';
   function normalized(url){
     try{const u=new URL(String(url||''));if(!/^https?:$/.test(u.protocol)||!u.hostname||u.username||u.password)return '';
@@ -55,7 +55,9 @@
       const url=window.prompt('Adresse du site ou de l’application (https://...)','https://');if(url===null)return;
       const safe=normalized(url.trim());if(!safe){window.alert('Adresse invalide : utilisez un lien HTTP ou HTTPS public.');return;}
       const shown=label.trim().replace(/[\]\[\n]/g,' ').slice(0,100);if(!shown)return;
-      const mark='['+shown+']('+safe+')';input.setRangeText(mark,a,b,'end');
+      const mark='['+shown+']('+safe+')';
+      if(input.maxLength>=0 && input.value.length-(b-a)+mark.length>input.maxLength){window.alert('Le lien dépasse la limite de '+input.maxLength+' caractères. Raccourcissez la bio ou le texte du lien.');return;}
+      input.setRangeText(mark,a,b,'end');
       input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();
     });
     input.parentNode.insertBefore(btn,input);
@@ -116,7 +118,7 @@
   function recheckVisibleLinks(){if(!document.hidden)queue(document.body);}
   window.addEventListener('pageshow',recheckVisibleLinks,{passive:true});
   document.addEventListener('visibilitychange',recheckVisibleLinks,{passive:true});
-  window.FyblicRichLinksV1161={version:'1163',normalized:normalized,refresh:recheckVisibleLinks};
+  window.FyblicRichLinksV1161={version:'1169',normalized:normalized,refresh:recheckVisibleLinks};
   window.FyblicRichLinksV1160=window.FyblicRichLinksV1161;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
