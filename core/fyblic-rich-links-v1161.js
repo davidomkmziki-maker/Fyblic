@@ -109,7 +109,14 @@
       window.location.assign(href);
     }
   },true);
-  window.FyblicRichLinksV1161={version:'1162',normalized:normalized,refresh:function(){queue(document.body);}};
+  /* V1163 : au retour du navigateur externe, le WebView peut restaurer un DOM
+     venant du back-forward cache, ou certaines pages peuvent repeindre leurs
+     descriptions/commentaires. Re-synchroniser uniquement les noeuds textuels,
+     sans naviguer et sans modifier le contenu stocké. */
+  function recheckVisibleLinks(){if(!document.hidden)queue(document.body);}
+  window.addEventListener('pageshow',recheckVisibleLinks,{passive:true});
+  document.addEventListener('visibilitychange',recheckVisibleLinks,{passive:true});
+  window.FyblicRichLinksV1161={version:'1163',normalized:normalized,refresh:recheckVisibleLinks};
   window.FyblicRichLinksV1160=window.FyblicRichLinksV1161;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

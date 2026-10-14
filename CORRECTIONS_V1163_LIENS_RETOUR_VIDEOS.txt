@@ -1,0 +1,6 @@
+FYBLIC SITE V1163 — 14 octobre 2026
+1) Centrale vidéo : une fusion avec données partielles ne remplace plus une description déjà connue par une valeur vide. Les modifications explicites restent supportées.
+2) Accueil : vidéo horizontale dont les dimensions réelles arrivent après la première image : la carte adopte le ratio natif au lieu de rester en 3:4. Pas de modification du lecteur ou du partage.
+3) Au retour depuis un navigateur externe : nouvelle vérification non destructive des liens dans descriptions et commentaires, bleu forcé dans les zones de texte de la Centrale vidéo.
+4) Pas de changement de manifeste Android, système partage, routes /s, ni de fichier assetlinks. Si le dépôt du site possède .well-known/assetlinks.json, le conserver au déploiement.
+Tests nécessaires sur un navigateur réel : retour depuis YouTube, commentaire avec URL, vidéo horizontale courte, et partage /s.

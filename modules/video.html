@@ -535,7 +535,11 @@ function happyadVideoMergePostKeepRich(a,b){
   const out=Object.assign({},a);
   Object.keys(b).forEach(function(k){
     const nv=b[k], ov=out[k];
-    if(['visibility','privacy','audience','status','is_private','private','private_at','privated_at','deleted_at','comments_disabled','hide_like_count','mentioned_user_ids','mention_handles','title','desc','description'].indexOf(k)>=0){out[k]=nv;return;}
+    if(['visibility','privacy','audience','status','is_private','private','private_at','privated_at','deleted_at','comments_disabled','hide_like_count','mentioned_user_ids','mention_handles'].indexOf(k)>=0){out[k]=nv;return;}
+    /* V1163 : un cache/synchronisation partiel ne doit jamais remplacer une
+       description connue par undefined, null ou chaîne vide. Les modifications
+       explicites passent déjà par HAPPYAD_POST_MUTATED_V613E. */
+    if(['title','desc','description','caption'].indexOf(k)>=0){if(happyadVideoValueFilled(nv))out[k]=nv;return;}
     if(!happyadVideoValueFilled(nv))return;
     if(!happyadVideoValueFilled(ov)){out[k]=nv;return;}
     if(/^(mediaUrl|media_url|homeMediaUrl|home_media_url|videoUrl|video_url|mediaPath|media_path|thumbnailUrl|thumbnail_url|posterUrl|poster_url|coverUrl|cover_url|avatar|avatar_url|author_avatar|creatorName|display_name|creator_name|full_name|handle|username|badge|title|desc|description|created_at|createdAt|adaptiveVariantsV1087|adaptive_variants|video_variants|imageCrop|image_crop|marketplaceMedia|marketplace_media|marketplaceCoverIndex|marketplace_cover_index)$/i.test(k)){out[k]=nv;}
@@ -1355,8 +1359,12 @@ async function loadVideoActionsFromSupabase(input,options){
     if(Array.isArray(comments)){
       try{var filterApi=window.HappyFilteringPrivacyV855R55;if(filterApi&&filterApi.filterComments)comments=await filterApi.filterComments(id,comments,function(r){return r&&(r.text||r.comment_text||r.body)||'';});}catch(_filter){}
       let tree=happyadVideoCommentTree(comments,uid,commentLikes);try{tree=await enrichVideoCommentProfiles(tree);}catch(_e){}
-      tree=mergeVideoPendingComments(id,tree);a.commentsList=tree;
-      var treeCount=countComments(tree);
+      tree=mergeVideoPendingComments(id,tree);
+      /* Si un endpoint renvoie une liste vide alors qu'un décompte positif
+         subsiste, préserver les commentaires déjà visibles pendant la reprise.
+         Le décompte confirmé à zéro permet la suppression réelle. */
+      if(tree.length||(exactCommentCount!==null&&Number(exactCommentCount)===0)||!(Array.isArray(base.commentsList)&&base.commentsList.length))a.commentsList=tree;
+      var treeCount=countComments(a.commentsList||tree);
       if(exactCommentCount!==null)a.comments=happyadVideoMutationRecentV68(id,'comments')?Math.max(Number(a.comments||0),Number(exactCommentCount||0),treeCount):Math.max(Number(exactCommentCount||0),treeCount);
       else a.comments=Math.max(Number(a.comments||0),treeCount);
     }else if(exactCommentCount!==null){a.comments=happyadVideoMutationRecentV68(id,'comments')?Math.max(Number(a.comments||0),Number(exactCommentCount||0)):Number(exactCommentCount||0);}
@@ -3307,7 +3315,7 @@ body.happyadVideoCommentsOpenV1009 .topBar{opacity:0!important;pointer-events:no
   #happyadVideoQualitySheetV1099 .haVqBox{margin-bottom:calc(62px + env(safe-area-inset-bottom,0px))!important;max-height:calc(100dvh - 76px)!important;}
 }
 </style>
-<link rel="stylesheet" href="../core/fyblic-rich-links-v1161.css?v=1162">
-<script src="../core/fyblic-rich-links-v1161.js?v=1162" defer></script>
+<link rel="stylesheet" href="../core/fyblic-rich-links-v1161.css?v=1163">
+<script src="../core/fyblic-rich-links-v1161.js?v=1163" defer></script>
 </body>
 </html>

@@ -4,3 +4,19 @@ a.fyblic-rich-link-v1160:focus-visible{outline:2px solid #339fff;outline-offset:
 .fyblic-insert-link-v1160{font:inherit;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:29px;height:30px;padding:0;border:none;border-radius:9px;background:transparent;color:#339fff;cursor:pointer;vertical-align:middle}
 
 .miniDesc a.fyblic-rich-link-v1160,.haHomeFsDesc a.fyblic-rich-link-v1160,.hsvCaption a.fyblic-rich-link-v1160,.reelDescription a.fyblic-rich-link-v1160,.reelCaption a.fyblic-rich-link-v1160 {color:#339fff!important;-webkit-text-fill-color:#339fff!important;text-decoration:none!important}
+
+/* V1163 : les titres/reels/commentaires ont parfois un text-fill-color
+   hérité blanc lors de la restauration WebView (retour d'un site externe). */
+.reel .info .desc a.fyblic-rich-link-v1160,
+.reel .info .title a.fyblic-rich-link-v1160,
+.commentText a.fyblic-rich-link-v1160,
+.commentBody a.fyblic-rich-link-v1160,
+.commentContent a.fyblic-rich-link-v1160,
+.haCommentText a.fyblic-rich-link-v1160,
+.miniDesc a.fyblic-rich-link-v1160,
+.happyadInlineDescV991 a.fyblic-rich-link-v1160 {
+  color:#339fff!important;
+  -webkit-text-fill-color:#339fff!important;
+  text-decoration:none!important;
+  pointer-events:auto!important;
+}
