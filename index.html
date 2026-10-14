@@ -307,10 +307,21 @@ html.happyadRadarBootUserV599 #happyadGuestRadarStableV599{display:none!importan
 </style>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover,interactive-widget=resizes-content"><title>Fyblic</title>
 <!-- Fyblic V16ZJ — actualisation garde la page ouverte sans flash accueil -->
-<link rel="manifest" href="manifest.webmanifest?v=1159-logo-compresseur">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/fyblic-app-icon-v1159-192.png?v=1159">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/fyblic-app-icon-v1159-180.png?v=1159">
-<link rel="apple-touch-icon" sizes="192x192" href="icons/fyblic-app-icon-v1159-192.png?v=1159">
+<link rel="manifest" href="manifest.webmanifest?v=1160-vrai-logo">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/fyblic-app-icon-v1160-192.png?v=1160">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/fyblic-app-icon-v1160-180.png?v=1160">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/fyblic-app-icon-v1160-192.png?v=1160">
+<style id="fyblic-home-short-media-preload-v1160">
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoSquare{aspect-ratio:1/1!important;height:auto!important;}
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoWide{aspect-ratio:4/3!important;height:auto!important;}
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoPanorama{aspect-ratio:16/9!important;height:auto!important;}
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoSquare > img,
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoWide > img,
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoPanorama > img,
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoSquare > img.happyadCropImg,
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoWide > img.happyadCropImg,
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoPanorama > img.happyadCropImg{object-fit:contain!important;object-position:center center!important;}
+</style>
 <style>
 :root{--bg:#030303;--card:#11151d;--line:#2a303b;--muted:#aeb3c0;--orange:#ff8a00;--orange2:#ff4b22}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:#030303;color:#fff;font-family:Arial,Helvetica,sans-serif;overflow-x:hidden}body{max-width:520px;margin:auto;min-height:100dvh;background:radial-gradient(circle at 18% -10%,rgba(255,138,0,.22),transparent 32%),linear-gradient(180deg,#07080b,#020202 72%)}
@@ -10604,8 +10615,8 @@ body[data-happyad-main-page="message"] #happyadInstallAppBtn{display:none!import
 #happyadPwaGuide .haPwaNote{margin-top:10px!important;color:#aeb5c4!important;font-size:10.5px!important;font-weight:800!important;line-height:1.25!important;text-align:center!important}
 @media(max-width:380px){#happyadPwaGuide .haPwaBtns{grid-template-columns:1fr!important}#happyadInstallAppBtn{grid-template-columns:38px minmax(0,1fr) auto 26px!important;gap:7px!important;padding:9px 8px 9px 9px!important;border-radius:20px!important}#happyadInstallAppBtn .haInstallIcon{width:38px!important;height:38px!important;border-radius:14px!important}#happyadInstallAppBtn .haInstallText b{font-size:12px!important}#happyadInstallAppBtn .haInstallText small{font-size:9.5px!important}#happyadInstallAppBtn .haInstallAction{height:30px!important;padding:0 9px!important;font-size:10px!important}#happyadInstallAppBtn .haInstallClose{width:26px!important;height:26px!important;min-width:26px!important;font-size:18px!important}#happyadPwaGuide .haPwaBox{padding:14px!important;border-radius:22px!important}#happyadPwaGuide .haPwaSteps li{font-size:12px!important}}
 </style>
-<div id="happyadInstallAppBtn" role="status" aria-label="Application Fyblic disponible au téléchargement"><span class="haInstallIcon" aria-hidden="true"><img src="icons/fyblic-app-icon-v1159-192.png?v=1159" alt=""></span><span class="haInstallText"><b>Télécharger l’application Fyblic</b><small>Disponible avec Chrome, Samsung, Edge, Brave, Firefox...</small></span><button class="haInstallAction" id="happyadInstallActionBtn" type="button">Télécharger</button><button class="haInstallClose" id="happyadInstallCloseBtn" type="button" aria-label="Fermer la notification d’installation">×</button></div>
-<div id="happyadPwaGuide" aria-hidden="true"><div class="haPwaBox" role="dialog" aria-modal="true" aria-label="Installation Fyblic"><div class="haPwaTop"><img class="haPwaLogo" src="icons/fyblic-app-icon-v1159-192.png?v=1159" alt=""><span class="haPwaTitle"><b>Installer Fyblic</b><small id="happyadPwaGuideSub">Choisis ton navigateur puis suis les étapes.</small></span></div><ul class="haPwaSteps" id="happyadPwaGuideSteps"><li><b>1.</b> Ouvre le menu du navigateur.</li><li><b>2.</b> Choisis “Installer l’application” ou “Ajouter à l’écran d’accueil”.</li><li><b>3.</b> Confirme avec “Installer” ou “Ajouter”.</li></ul><div class="haPwaBtns"><button type="button" class="haPwaBtn" id="happyadPwaGuideClose">Fermer</button><button type="button" class="haPwaBtn" id="happyadPwaAlreadyInstalled">Déjà installé</button><button type="button" class="haPwaBtn primary" id="happyadPwaCopyLink">Copier le lien</button></div><div class="haPwaNote">Si Fyblic est déjà installé, ouvre l’icône de l’application. La notification d’installation sera cachée automatiquement.</div></div></div>
+<div id="happyadInstallAppBtn" role="status" aria-label="Application Fyblic disponible au téléchargement"><span class="haInstallIcon" aria-hidden="true"><img src="icons/fyblic-app-icon-v1160-192.png?v=1160" alt=""></span><span class="haInstallText"><b>Télécharger l’application Fyblic</b><small>Disponible avec Chrome, Samsung, Edge, Brave, Firefox...</small></span><button class="haInstallAction" id="happyadInstallActionBtn" type="button">Télécharger</button><button class="haInstallClose" id="happyadInstallCloseBtn" type="button" aria-label="Fermer la notification d’installation">×</button></div>
+<div id="happyadPwaGuide" aria-hidden="true"><div class="haPwaBox" role="dialog" aria-modal="true" aria-label="Installation Fyblic"><div class="haPwaTop"><img class="haPwaLogo" src="icons/fyblic-app-icon-v1160-192.png?v=1160" alt=""><span class="haPwaTitle"><b>Installer Fyblic</b><small id="happyadPwaGuideSub">Choisis ton navigateur puis suis les étapes.</small></span></div><ul class="haPwaSteps" id="happyadPwaGuideSteps"><li><b>1.</b> Ouvre le menu du navigateur.</li><li><b>2.</b> Choisis “Installer l’application” ou “Ajouter à l’écran d’accueil”.</li><li><b>3.</b> Confirme avec “Installer” ou “Ajouter”.</li></ul><div class="haPwaBtns"><button type="button" class="haPwaBtn" id="happyadPwaGuideClose">Fermer</button><button type="button" class="haPwaBtn" id="happyadPwaAlreadyInstalled">Déjà installé</button><button type="button" class="haPwaBtn primary" id="happyadPwaCopyLink">Copier le lien</button></div><div class="haPwaNote">Si Fyblic est déjà installé, ouvre l’icône de l’application. La notification d’installation sera cachée automatiquement.</div></div></div>
 <script id="happyad-v945-pwa-install-download-dismiss">
 (function(){
   'use strict';
@@ -11203,7 +11214,7 @@ body.happyadPhotoSurfaceV591 #happyadAppShell{inset:0!important;width:100vw!impo
 </style>
 <script src="core/internal-return-master-v694.js?v=930-photo-profile-exact-return"></script>
 <script src="core/home-photo-fullscreen-master-v591.js?v=1104-search-photo-atomic-return"></script>
-<script src="core/share-master.js?v=1158-real-share-image"></script>
+<script src="core/share-master.js?v=1160-real-share-logo"></script>
 <script src="core/share-button-bridge.js?v=938-guest-share-gate"></script>
 <script src="core/share-count-master.js?v=share-count-v567"></script>
 <script src="core/notification-home-comment-center.js?v=929-notification-post-passive-route"></script>
@@ -12642,13 +12653,16 @@ body.haHomeCommentLock #happyadHomePhotoFullscreen{pointer-events:none!important
 <!-- Fyblic V1006 — verrou final compteurs/actions -->
 <link id="happyad-action-counters-global-v1006" rel="stylesheet" href="core/action-counters-global-v1006.css?v=1006-counts-15-video-home-size">
 
-<!-- Fyblic V1159 : adapter uniquement les cartes photo courtes comme l'application. -->
-<style id="fyblic-home-short-media-adaptive-v1159">
+<!-- Fyblic V1160 : adapter immédiatement les cartes photo courtes comme l'application. -->
+<style id="fyblic-home-short-media-adaptive-v1160">
 html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoSquare {aspect-ratio:1 / 1!important;height:auto!important;}
 html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoWide {aspect-ratio:4 / 3!important;height:auto!important;}
 html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoPanorama {aspect-ratio:16 / 9!important;height:auto!important;}
 html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoSquare > img,
 html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoWide > img,
-html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoPanorama > img {object-fit:contain!important;object-position:center!important;}
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoPanorama > img,
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoSquare > img.happyadCropImg,
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoWide > img.happyadCropImg,
+html body #list.homeTimeline > .miniCard:not(.videoCard):not(.haAlbumFullPagerCard) > .miniCardFrame > .miniMedia.haPhotoPanorama > img.happyadCropImg {object-fit:contain!important;object-position:center!important;}
 </style>
 </body></html>

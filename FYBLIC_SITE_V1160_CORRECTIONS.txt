@@ -1,0 +1,5 @@
+FYBLIC SITE V1160
+- Remplacement du logo intégré dans la carte de partage par le vrai logo Fyblic boucle orange/rose.
+- Remplacement des anciennes icônes héritées pour éviter le retour du logo Happyad.
+- Adaptation des petites cartes photo de l'accueil dès l'ouverture.
+- Aperçu réel du média conservé.

@@ -19,7 +19,7 @@ var HAPPYAD_APP_SHELL = [
   './icons/fyblic-app-icon-v1159-96.png',
   './icons/fyblic-app-icon-v1159-192.png',
   './icons/fyblic-app-icon-v1159-512.png',
-  './core/share-master.js?v=1158-real-share-image',
+  './core/share-master.js?v=1160-real-share-logo',
   './modules/share-center.html?v=1041-first-open-ready',
   './icons/share-apps/whatsapp.png?v=555',
   './icons/share-apps/facebook.png',
