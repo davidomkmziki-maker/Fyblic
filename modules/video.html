@@ -1492,8 +1492,43 @@ function happyadPauseVideo(v){
 function happyadStopOtherVideos(except){
   document.querySelectorAll('.reel video').forEach(x=>{if(x!==except)happyadPauseVideo(x)})
 }
+/* V1167 : les ouvertures de vidéos partagées ne doivent ni produire deux
+   pistes audio ni redémarrer en parallèle le même lecteur. Le mode exclusif
+   est limité aux premières 30 secondes de l'ouverture ciblée. */
+function happyadSharedAudioTargetV1167(v){
+  try{
+    var reel=v&&v.closest&&v.closest('.reel'),id=String(reel&&reel.dataset&&reel.dataset.id||'');
+    if(!id)return false;
+    var q=new URLSearchParams(location.search);
+    var direct=String(q.get('from')||'')==='shared_link'||String(q.get('from')||'')==='message_share';
+    if(direct)return String(q.get('post')||id)===id;
+    var ctx=JSON.parse(sessionStorage.getItem('FYBLIC_SHARED_VIDEO_AUDIO_HANDOFF_V1167')||'null');
+    if(!ctx||!ctx.id||Date.now()-Number(ctx.at)>30000)return false;
+    return String(ctx.id)===id;
+  }catch(_e){return false;}
+}
+function happyadSilenceOtherAudioV1167(v){
+  try{document.querySelectorAll('video,audio').forEach(function(other){
+    if(other===v)return;
+    try{other.pause();}catch(_e){}
+  });}catch(_e){}
+  try{if(window.parent&&window.parent!==window){
+    var reel=v&&v.closest&&v.closest('.reel'),id=String(reel&&reel.dataset&&reel.dataset.id||'');
+    window.parent.postMessage({type:'FYBLIC_SHARED_VIDEO_AUDIO_ACTIVE_V1167',postId:id},'*');
+  }}catch(_e){}
+}
+document.addEventListener('play',function(ev){
+  try{var v=ev.target;if(v&&v.tagName==='VIDEO'&&happyadSharedAudioTargetV1167(v))happyadSilenceOtherAudioV1167(v);}catch(_e){}
+},true);
 function happyadPlayVideo(v,fromStart){
   if(!v)return;
+  var sharedExclusiveV1167=happyadSharedAudioTargetV1167(v);
+  if(sharedExclusiveV1167){
+    /* Les rappels du chargement et de la navigation peuvent viser la même vidéo. */
+    if(v.__fyblicSharedPlayPendingV1167||(!v.paused&&!v.ended))return;
+    v.__fyblicSharedPlayPendingV1167=true;
+    happyadSilenceOtherAudioV1167(v);
+  }
   try{
     if(window.parent&&window.parent!==window&&window.__HAPPYAD_VIDEO_TAB_VISIBLE_V594!==true){
       var actuallyVisible=false;
@@ -1501,6 +1536,7 @@ function happyadPlayVideo(v,fromStart){
       if(actuallyVisible)window.__HAPPYAD_VIDEO_TAB_VISIBLE_V594=true;
       else{
         window.__HAPPYAD_VIDEO_PENDING_PLAY_V621B=true;
+        if(sharedExclusiveV1167)v.__fyblicSharedPlayPendingV1167=false;
         v.pause();v.muted=true;setPausedUI(v);return;
       }
     }
@@ -1519,12 +1555,14 @@ function happyadPlayVideo(v,fromStart){
   const playReel=v.closest&&v.closest('.reel');
   try{if(playReel){playReel.classList.add('videoStarting');playReel.classList.remove('paused');}}catch(_spin){}
   function started(){
+    if(sharedExclusiveV1167)v.__fyblicSharedPlayPendingV1167=false;
     try{if(playReel)playReel.classList.remove('videoStarting')}catch(_spin){}
     try{happyadStopOtherVideos(v)}catch(_e){}
     const t=v.closest('.reel')?.querySelector('.tapSound');if(t)t.style.display='none';
     activeVideo=v;setPausedUI(v);
   }
   function failed(){
+    if(sharedExclusiveV1167)v.__fyblicSharedPlayPendingV1167=false;
     try{if(playReel)playReel.classList.remove('videoStarting')}catch(_spin){}
     const t=v.closest('.reel')?.querySelector('.tapSound');if(t)t.style.display='block';
     if(previous){activeVideo=previous;setPausedUI(previous)}
@@ -2817,6 +2855,11 @@ function pauseOne(v,manual){
   function startTargetVideo(reel){
     if(!targetAutoplayRequested()||!reel)return;
     var video=reel.querySelector('video');if(!video)return;
+    var sharedExclusiveV1167=happyadSharedAudioTargetV1167(video);
+    if(sharedExclusiveV1167){
+      if(video.__fyblicSharedInitialStartV1167)return;
+      video.__fyblicSharedInitialStartV1167=true;
+    }
     try{video.dataset.happyadManualPause='0';video.muted=false;video.volume=1;}catch(_e){}
     var start=function(){
       try{
@@ -2825,7 +2868,9 @@ function pauseOne(v,manual){
         else{var p=video.play();if(p&&p.catch)p.catch(function(){try{video.muted=true;video.play().catch(function(){})}catch(_e){}})}
       }catch(_e){}
     };
-    start();setTimeout(start,90);setTimeout(start,260);
+    start();
+    /* Le triple démarrage historique fait repartir le son à 0 ms sur un lien partagé. */
+    if(!sharedExclusiveV1167){setTimeout(start,90);setTimeout(start,260);}
   }
   function focusNow(id){
     id=clean(id||pending);if(!id)return false;

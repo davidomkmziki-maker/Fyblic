@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1166-tus-proxy-20261014';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1167-shared-video-audio-20261014';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -19,7 +19,7 @@ var HAPPYAD_APP_SHELL = [
   './icons/fyblic-app-icon-v1046-96.png',
   './icons/fyblic-app-icon-v1046-192.png',
   './icons/fyblic-app-icon-v1046-512.png',
-  './core/share-master.js?v=1159-logo-r22-cards',
+  './core/share-master.js?v=1167-shared-video-single-audio',
   './modules/share-center.html?v=1041-first-open-ready',
   './icons/share-apps/whatsapp.png?v=555',
   './icons/share-apps/facebook.png',
@@ -67,7 +67,7 @@ var HAPPYAD_APP_SHELL = [
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
   './modules/assistance.html?v=974-p1-module-lifecycle-registry',
-  './modules/video.html?v=1104-quality-clean',
+  './modules/video.html?v=1167-audio-partage',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
   './modules/publish.html?v=1166-tus-proxy',

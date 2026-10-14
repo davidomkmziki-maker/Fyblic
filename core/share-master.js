@@ -1133,6 +1133,37 @@
     },36);
     return !!seeded;
   }
+  /* V1167 — liens de vidéos partagées : un seul flux sonore actif.
+     Les lecteurs des autres surfaces restent en cache pour préserver le retour. */
+  var SHARED_AUDIO_KEY_V1167='FYBLIC_SHARED_VIDEO_AUDIO_HANDOFF_V1167';
+  function silenceSharedBackgroundV1167(doc){
+    try{(doc||document).querySelectorAll('video,audio').forEach(function(m){try{m.pause();}catch(_m){}});}catch(_e){}
+  }
+  function prepareSharedVideoAudioV1167(id){
+    try{sessionStorage.setItem(SHARED_AUDIO_KEY_V1167,JSON.stringify({id:clean(id),at:Date.now()}));}catch(_e){}
+    silenceSharedBackgroundV1167(document);
+    try{document.querySelectorAll('iframe').forEach(function(fr){
+      try{if(fr.contentDocument)silenceSharedBackgroundV1167(fr.contentDocument);}catch(_doc){}
+      /* Les autres frames ne doivent pas conserver de piste audio active. */
+      if(fr.getAttribute('data-happyad-page')==='video')return;
+      try{fr.contentWindow&&fr.contentWindow.postMessage({type:'HAPPYAD_PAUSE_ALL_MEDIA',reason:'shared-video-audio-v1167'},'*');}catch(_post){}
+    });}catch(_frames){}
+  }
+  window.addEventListener('message',function(event){
+    try{
+      if(!event.data||event.data.type!=='FYBLIC_SHARED_VIDEO_AUDIO_ACTIVE_V1167')return;
+      var vf=document.getElementById('happyadAppFrame_video');
+      if(!vf||event.source!==vf.contentWindow)return;
+      var ctx=JSON.parse(sessionStorage.getItem(SHARED_AUDIO_KEY_V1167)||'null');
+      if(!ctx||Date.now()-Number(ctx.at)>30000||clean(ctx.id)!==clean(event.data.postId))return;
+      silenceSharedBackgroundV1167(document);
+      document.querySelectorAll('iframe').forEach(function(fr){
+        if(fr===vf)return;
+        try{if(fr.contentDocument)silenceSharedBackgroundV1167(fr.contentDocument);}catch(_doc){}
+        try{fr.contentWindow&&fr.contentWindow.postMessage({type:'HAPPYAD_PAUSE_ALL_MEDIA',reason:'shared-video-playing-v1167'},'*');}catch(_post){}
+      });
+    }catch(_e){}
+  },true);
   async function openSharedPost(detail,sourceWin){
     detail=detail&&detail.detail?detail.detail:detail||{};
     var id=clean(detail.post_id||detail.postId||detail.id);if(!id)return false;
@@ -1145,6 +1176,7 @@
       }catch(_resolveDirect){}
     }
     if(type==='video'){
+      prepareSharedVideoAudioV1167(id);
       var fromMessage=directExternal?false:prepareSharedVideoFromMessageV709(id,sourceWin);
       var url='modules/video.html?post='+encodeURIComponent(id)+(directExternal?'&autoplay=1&from=shared_link&direct=1':'&from=message_share');
       var opened=false,directAsyncAccepted=false;
