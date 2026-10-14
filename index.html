@@ -3733,37 +3733,77 @@ function happyadFinalizeHomePhotoRatioV925(box,cls,source){
    décider du fit : toute couverture vidéo verticale remplit la carte ; une
    couverture horizontale reste entière sur fond noir. Les photos gardent le
    seuil exact du viewport 3:4. */
+/* FYBLIC V1159 — Ratio dynamique du flux, comme Android V203.
+   Ne jamais déduire le ratio vidéo du poster : il peut être carré alors que la
+   vidéo source est en format vertical. Le premier rendu est verrouillé pour
+   éviter les sauts de hauteur lors du défilement et du décodage. */
+function happyadV1159RatioFromPost(p,video){
+  p=p||{};
+  var pairs=video?[
+    [p.video_width||p.videoWidth,p.video_height||p.videoHeight],
+    [p.source_video_width||p.sourceVideoWidth,p.source_video_height||p.sourceVideoHeight],
+    [p.media_width,p.media_height],
+    [p.original_width,p.original_height]
+  ]:[
+    [p.media_width,p.media_height],[p.image_width,p.image_height],
+    [p.natural_width,p.natural_height],[p.original_width,p.original_height],
+    [p.width,p.height]
+  ];
+  try{if(!video){var cm=p.imageCrop||p.image_crop||null;
+    if(typeof cm==='string')cm=JSON.parse(cm);
+    if(cm&&typeof cm==='object')pairs.unshift([cm.source_width||cm.sourceWidth,cm.source_height||cm.sourceHeight]);
+  }}catch(_meta){}
+  for(var i=0;i<pairs.length;i++){
+    var w=Number(pairs[i][0]||0),h=Number(pairs[i][1]||0);
+    if(isFinite(w)&&isFinite(h)&&w>0&&h>0)return w/h;
+  }
+  if(video){
+    var declared=happyadRatioNumberV984(p.__happyadVideoAspectV984||p.video_aspect_ratio||p.videoAspectRatio||p.media_aspect_ratio||p.aspect_ratio||p.ratio);
+    if(declared>0)return declared;
+    var orient=String(p.video_orientation||p.videoOrientation||p.orientation||'').toLowerCase();
+    if(/landscape|horizontal/.test(orient))return 16/9;
+    if(/portrait|vertical/.test(orient))return 9/16;
+  }else{
+    var ar=happyadRatioNumberV984(p.aspect_ratio||p.media_aspect_ratio||p.image_aspect_ratio||p.ratio);
+    if(ar>0)return ar;
+    try{var row=happyadReadHomeRatioCacheV765()[String(p.id||'')];
+      if(row&&Number(row.w)>0&&Number(row.h)>0&&String(row.sig||'')===happyadHomePhotoSignatureV925(p))return Number(row.w)/Number(row.h);
+    }catch(_cache){}
+  }
+  return 0;
+}
+function happyadV1159FixedRatio(p,video,box){
+  var crop=false;
+  try{crop=!video&&typeof happyadResolveCardCropV855R90==='function'&&!!happyadResolveCardCropV855R90(p);}catch(_crop){}
+  if(crop)return 1;
+  var r=happyadV1159RatioFromPost(p,video);
+  if(r>.82)return Math.max(.82,Math.min(3.4,r));
+  return .75; // portrait/long et valeurs inconnues : 3:4 sans saut.
+}
 function happyadApplyCardFitV981(box,p,w,h){
   try{
     if(!box)return '';
     p=p||{};
     var mediaKind=String(p.mediaType||p.media_type||p.kind||p.type||'').toLowerCase();
     var video=/video|reel|clip/.test(mediaKind);
-    /* Les publications historiques ne portent pas toutes mediaType. Le maître
-       isVideo sait aussi reconnaître leurs URL/champs hérités. */
-    try{if(typeof window.isVideo==='function')video=!!window.isVideo(p)||video;}catch(_videoKind){}
-    var r=0;
-    if(video){
-      /* V984 : une miniature carrée ne remplace jamais le ratio appris depuis
-         la vidéo source. Cette branche est strictement réservée aux vidéos. */
-      w=Number(p.video_width||p.videoWidth||p.source_video_width||p.sourceVideoWidth||w||p.media_width||p.natural_width||p.width||0);
-      h=Number(p.video_height||p.videoHeight||p.source_video_height||p.sourceVideoHeight||h||p.media_height||p.natural_height||p.height||0);
-      r=happyadRatioNumberV984(p.__happyadVideoAspectV984||p.video_aspect_ratio||p.videoAspectRatio||p.media_aspect_ratio||p.aspect_ratio||p.ratio||0);
-    }else{
-      /* Contrat photo V983 conservé exactement. */
-      w=Number(w||p.media_width||p.natural_width||p.width||0);
-      h=Number(h||p.media_height||p.natural_height||p.height||0);
-      r=Number(p.aspect_ratio||0);
-    }
-    if(!(r>0)&&w>0&&h>0)r=w/h;
-    var tall=!!(r>0&&(video?r<1:r<0.75));
+    try{if(typeof window.isVideo==='function')video=!!window.isVideo(p)||video;}catch(_kind){}
+    var r=happyadV1159RatioFromPost(p,video);
+    /* Pour la photo décodée, on peut apprendre le cadrage sans redimensionner
+       cette carte déjà visible; son ratio sera utilisé à la prochaine insertion. */
+    if(!(r>0)&&!video&&Number(w)>0&&Number(h)>0)r=Number(w)/Number(h);
+    var tall=!!(r>0&&(video?r<1:r<.75));
     box.classList.toggle('haCardTallCropV981',tall);
     box.classList.toggle('haCardContainV981',!tall);
     box.classList.toggle('haCardVideoVerticalV983',video&&tall);
     box.classList.toggle('haCardVideoHorizontalV983',video&&!tall&&r>0);
     if(r>0)box.dataset.happyadCardAspectV981=String(r);
+    if(box.dataset.happyadCardRatioLockedV1159!=='1'){
+      var ratio=happyadV1159FixedRatio(p,video,box);
+      box.style.setProperty('aspect-ratio',String(ratio),'important');
+      box.dataset.happyadCardRatioLockedV1159='1';
+    }
     return tall?'cover':'contain';
-  }catch(_e){return '';}
+  }catch(_e){return '';} 
 }
 function happyadPrepareHomePhotoRatioV765(box,p){
   try{
@@ -4142,6 +4182,15 @@ function happyadPrepareAlbumShellV772(card,p){
     /* V981 : un groupe = UNE carte. Seul le viewport média glisse horizontalement.
        Header, description et actions restent uniques et ne changent jamais de taille. */
     card.innerHTML='<div class="miniCardFrame"><div class="miniTop"><div class="avatar"'+avatarAttrs+'>'+av+'</div><div class="creator'+(creatorSubline?'':' haCreatorSingleLineV984')+'"><b>'+esc(name)+badgeMarkHtml(owner.badge)+'</b>'+(creatorSubline?'<span>'+esc(creatorSubline)+'</span>':'')+'</div><div class="miniPostDate">'+esc(ago)+'</div></div><div class="haAlbumMediaViewportV981"><div class="haAlbumFullTrack">'+slides+'</div><div class="haAlbumFullDots">'+dotHtml+'</div></div>'+happyadAlbumBodyHtmlV772(p,p)+happyadAlbumActionHtmlV772()+'</div>';
+    /* V1159 — hauteur du groupe calée sur le premier média connu. On conserve
+       cette géométrie pendant le swipe entre diapositives pour préserver le scroll. */
+    try{
+      var albumViewport=card.querySelector('.haAlbumMediaViewportV981');
+      if(albumViewport){
+        var albumRatio=happyadV1159FixedRatio(items[0]||p,false,albumViewport);
+        albumViewport.style.setProperty('aspect-ratio',String(albumRatio),'important');
+      }
+    }catch(_albumRatio){}
     happyadBindAlbumInlineMoreV991(card);
     card.dataset.happyadAlbumShellV772='1';
     card.dataset.happyadAlbumShellV981='1';
@@ -11203,7 +11252,7 @@ body.happyadPhotoSurfaceV591 #happyadAppShell{inset:0!important;width:100vw!impo
 </style>
 <script src="core/internal-return-master-v694.js?v=930-photo-profile-exact-return"></script>
 <script src="core/home-photo-fullscreen-master-v591.js?v=1104-search-photo-atomic-return"></script>
-<script src="core/share-master.js?v=1158-real-share-image"></script>
+<script src="core/share-master.js?v=1159-logo-r22-cards"></script>
 <script src="core/share-button-bridge.js?v=938-guest-share-gate"></script>
 <script src="core/share-count-master.js?v=share-count-v567"></script>
 <script src="core/notification-home-comment-center.js?v=929-notification-post-passive-route"></script>

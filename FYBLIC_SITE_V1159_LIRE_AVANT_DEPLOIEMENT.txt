@@ -1,0 +1,11 @@
+FYBLIC SITE V1159 — aperçu, carte Accueil, Android App Links
+
+1) Aperçus photo et vidéo : les images réelles et l’algorithme Netlify V1158 sont préservés. Seul le logo intégré de 118x118 est remplacé par le vrai logo 4 pétales FYBLIC, transparent et sans disque noir.
+2) Partages nouveaux r22 : le site et Android V204 utilisent r22. Les liens anciens r21 continuent de fonctionner, mais WhatsApp peut conserver leurs aperçus en cache.
+3) Accueil du site : portrait et long 3:4 ; les médias carrés et horizontaux adoptent leur rapport naturel quand il est enregistré. Une hauteur de carte déjà affichée ne bouge pas après décodage. Dans les albums, le cadre est stable durant les glissements.
+4) Ouverture Android : le manifeste V203/V204 sait déjà reconnaître /s/p/... et /s/v/... ; Android nécessite l'association HTTPS du domaine au certificat de l’APK installé.
+   L’application GitHub Actions produit le fichier FYBLIC-V204-ASSETLINKS après compilation.
+   Décompresser cet artifact et placer le fichier assetlinks.json dans .well-known/ à la racine du site. Si plusieurs signatures (Play / APK test) sont nécessaires, fusionner les empreintes avant publication.
+   Le fichier assetlinks.json ne peut pas être créé correctement sans connaître la vraie signature de l’APK : aucun certificat n’est inventé dans cet archive.
+5) Déployer le site via le dépôt GitHub/Netlify, en conservant netlify.toml, package.json et les fonctions Netlify.
+6) Pas de SQL. Vérification réseau réelle sur téléphone et WhatsApp à réaliser après déploiement.

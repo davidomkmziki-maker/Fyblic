@@ -18,7 +18,7 @@ function publicPathParts(event){
 }
 function parseShareRequest(event){
   const q=(event&&event.queryStringParameters)||{};
-  let postId=decodePart(q.post),hint=clean(q.type).toLowerCase(),rev=clean(q.v)||'r21';
+  let postId=decodePart(q.post),hint=clean(q.type).toLowerCase(),rev=clean(q.v)||'r22';
   const parts=publicPathParts(event);
   if(!postId&&parts.length){
     const first=clean(parts[0]).toLowerCase();
@@ -60,8 +60,8 @@ exports.handler=async function(event){
     return response;
   }
   const publicationTitle=sharePublicationTitle(row);
-  const rev=parsed.rev||'r21';
-  const image=origin+'/share-image/'+encodeURIComponent(postId)+'/r21?type='+encodeURIComponent(type);
+  const rev=parsed.rev||'r22';
+  const image=origin+'/share-image/'+encodeURIComponent(postId)+'/r22?type='+encodeURIComponent(type);
   const target=directTarget(origin,postId,type),canonical=origin+'/s/'+(type==='video'?'v':'p')+'/'+encodeURIComponent(postId)+'/'+encodeURIComponent(rev);
   const logo=origin+'/icons/fyblic-app-icon-v1046-512.png';
   const structured=JSON.stringify({'@context':'https://schema.org','@type':'SocialMediaPosting','headline':publicationTitle,'publisher':{'@type':'Organization','name':'Fyblic','logo':{'@type':'ImageObject','url':logo}},'image':[image],'url':canonical}).replace(/</g,'\\u003c');
