@@ -1,0 +1,16 @@
+FYBLIC SITE V1166 - RELAIS TUS WEB
+================================
+Base: SITE V1165, conservant toutes ses corrections.
+
+- Envoi direct navigateur -> Supabase toujours prioritaire.
+- Si HEAD TUS direct n'est pas accessible, reprise via le proxy Railway.
+- Si le PATCH direct échoue au niveau réseau/CORS, passage au worker Railway avec la MEME session TUS et le MEME job (pas de nouveau média ni publication).
+- Une vérification HEAD confirme les octets déjà reçus, y compris quand la réponse PATCH a été perdue.
+- Le retour de succès final continue via /api/v2/publications/:id/complete.
+- Suppression/annulation/reprise et données déjà présentes dans Supabase préservées.
+- Version PWA modifiée pour actualiser le cache du moteur.
+
+OBLIGATOIRE : Déployer le worker V1159 AVANT le site V1166.
+Aucun SQL requis. Ne pas changer l'application Android V207.
+Tests simulés: échec PATCH direct puis relais; PATCH direct fonctionnel; perte d'accusé de réception après transfert, sans renvoi en double.
+Limite : pas de validation réseau réelle Supabase/Railway. Si le fallback échoue, lire le code HTTP dans les journaux Railway.

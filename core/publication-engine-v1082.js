@@ -120,9 +120,10 @@
     if(value==null||!/^\d+$/.test(String(value)))throw new Error('Confirmation du transfert absente. Réessaie.');
     var n=Number(value);if(!Number.isSafeInteger(n))throw new Error('Position de reprise invalide');return n;
   }
-  async function tusOffset(upload,token){
+  function proxyTusUrl(jobId){return BASE+'/api/v2/publications/'+encodeURIComponent(jobId)+'/tus';}
+  async function tusOffset(upload,token,jobId,useProxy){
     var response;
-    try{response=await directFetch(upload.url,{method:'HEAD',headers:directHeaders(upload,token),cache:'no-store'},20000);}
+    try{response=await directFetch(useProxy?proxyTusUrl(jobId):upload.url,{method:'HEAD',headers:useProxy?headers(token,{'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0'}):directHeaders(upload,token),cache:'no-store'},20000);}
     catch(error){throw new Error('HEAD TUS inaccessible (réseau ou CORS) : '+String(error&&error.message||error));}
     if(!response.ok){var e=new Error('HEAD TUS refusé ('+response.status+')');e.status=response.status;throw e;}
     var exposed=response.headers.get('Upload-Offset');
@@ -131,16 +132,16 @@
   }
   // Keep the server's TUS chunk size. An idle timeout, rather than a short
   // total timeout, allows slow connections to continue while bytes are moving.
-  function sendChunk(upload,token,offset,blob,onBytes,groupId){
+  function sendChunk(upload,token,offset,blob,onBytes,groupId,jobId,useProxy){
     return new Promise(function(resolve,reject){
       var xhr=new XMLHttpRequest(),timer=null,settled=false,lastLoaded=0;
       if(isCanceled(groupId))return reject(Object.assign(new Error('Publication annulée'),{canceled:true}));
       (runningXhrs[groupId]||(runningXhrs[groupId]=[])).push(xhr);
       function finish(error,value){if(settled)return;settled=true;clearTimeout(timer);runningXhrs[groupId]=(runningXhrs[groupId]||[]).filter(function(x){return x!==xhr;});if(error)reject(error);else resolve(value);}
-      function idle(){clearTimeout(timer);timer=setTimeout(function(){finish(new Error('Envoi sans réponse depuis 45 secondes. Vérifie ta connexion puis réessaie.'));try{xhr.abort();}catch(_e){}},45000);}
+      function idle(){clearTimeout(timer);timer=setTimeout(function(){var error=new Error('Envoi sans réponse depuis 45 secondes. Vérifie ta connexion puis réessaie.');error.transportUnavailable=true;finish(error);try{xhr.abort();}catch(_e){}},45000);}
       try{
-        xhr.open('PATCH',upload.url,true);
-        var h=directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'});
+        xhr.open('PATCH',useProxy?proxyTusUrl(jobId):upload.url,true);
+        var h=useProxy?headers(token,{'Tus-Resumable':clean(upload&&upload.tusVersion)||'1.0.0','Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'}):directHeaders(upload,token,{'Upload-Offset':String(offset),'Content-Type':'application/offset+octet-stream'});
         Object.keys(h).forEach(function(k){xhr.setRequestHeader(k,h[k]);});
         xhr.upload.onprogress=function(event){if(event.loaded>lastLoaded){lastLoaded=event.loaded;idle();notifyUI(onBytes,[Math.min(blob.size,event.loaded)]);}};
         xhr.upload.onload=function(){idle();};
@@ -148,8 +149,8 @@
           if(xhr.status<200||xhr.status>=300){var e=new Error('PATCH TUS refusé ('+xhr.status+')');e.status=xhr.status;finish(e);return;}
           try{var confirmed=xhr.getResponseHeader('Upload-Offset');if(confirmed==null)throw new Error('PATCH TUS : Upload-Offset non exposé au navigateur (CORS).');finish(null,readOffset(confirmed));}catch(e){finish(e);}
         };
-        xhr.onerror=function(){finish(new Error('PATCH TUS inaccessible (réseau, OPTIONS/CORS ou authentification).'));};
-        xhr.onabort=function(){finish(isCanceled(groupId)?Object.assign(new Error('Publication annulée'),{canceled:true}):new Error('Envoi interrompu. Réessaie.'));};
+        xhr.onerror=function(){var error=new Error('PATCH TUS inaccessible (réseau, OPTIONS/CORS ou authentification).');error.transportUnavailable=true;finish(error);};
+        xhr.onabort=function(){var canceled=isCanceled(groupId),error=canceled?Object.assign(new Error('Publication annulée'),{canceled:true}):new Error('Envoi interrompu. Réessaie.');if(!canceled)error.transportUnavailable=true;finish(error);};
         idle();xhr.send(blob);
       }catch(error){finish(error);}
     });
@@ -157,12 +158,13 @@
   async function uploadDirect(file,created,currentAuth,onProgress,transferOptions){
     transferOptions=transferOptions||{};
     var upload=created&&created.upload;if(!upload||upload.mode!=='direct-binary'||!/^https:\/\//i.test(clean(upload.url)))throw new Error('Session d’envoi direct V1082 absente');
-    var groupId=clean(transferOptions.groupId||created.publication_group_id||''),token=currentAuth.token,offset=0,retries=0,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);
+    var groupId=clean(transferOptions.groupId||created.publication_group_id||''),token=currentAuth.token,offset=0,retries=0,useProxy=false,chunkBytes=Number(upload.chunkBytes||DIRECT_TUS_CHUNK);
     // A HEAD failure is NOT proof that a remote file disappeared. Retry HEAD, never issue PATCH at a guessed offset.
     for(var h=0;;h++){
       assertNotCanceled(groupId);
-      try{offset=await tusOffset(upload,token);break;}
+      try{offset=await tusOffset(upload,token,created.id,useProxy);break;}
       catch(error){if(error&&(error.status===401||error.status===403)){var refreshed=await auth();currentAuth.token=refreshed.token;token=refreshed.token;}
+        if(!useProxy&&!error.status){useProxy=true;continue;}
         if(error&&[400,404,410,413,415,422].indexOf(error.status)>=0||h>=11)throw error;
         await sleep(Math.min(10000,(h+1)*900));}
     }
@@ -182,19 +184,20 @@
       var end=Math.min(offset+(!anchored&&firstChunkBytes>0?firstChunkBytes:chunkBytes),file.size);
       try{
         assertNotCanceled(groupId);
-        var next=await sendChunk(upload,token,offset,file.slice(offset,end),function(bytes){report(offset+bytes,false);},groupId);
+        var next=await sendChunk(upload,token,offset,file.slice(offset,end),function(bytes){report(offset+bytes,false);},groupId,created.id,useProxy);
         assertNotCanceled(groupId);
         if(next<=offset||next>end)throw new Error('Confirmation directe incohérente');
         offset=next;retries=0;anchored=true;anchor();report(offset,true);
       }catch(error){
         if(cancelError(error)||isCanceled(groupId))throw Object.assign(new Error('Publication annulée'),{canceled:true});
         if(error&&error.name==='NotReadableError')throw new Error('Le téléphone ne peut plus lire ce média. Sélectionne-le à nouveau.');
+        if(!useProxy&&error&&error.transportUnavailable){useProxy=true;retries=0;try{console.info('Fyblic: transfert navigateur indisponible, reprise TUS via Railway');}catch(_log){}}
         if(error&&[400,404,410,413,415,422].indexOf(error.status)>=0)throw error;
         if(++retries>12)throw new Error('Envoi interrompu après 12 reprises : '+String(error&&error.message||error));
         if(error&&(error.status===401||error.status===403)){var refreshed=await auth();currentAuth.token=refreshed.token;token=refreshed.token;}
         // Reconcile before another PATCH, including a lost response after success.
         // If HEAD also fails, retry reconciliation. Never PATCH again using a speculative offset.
-        try{var resumed=await tusOffset(upload,token);if(resumed>file.size)throw new Error('Position de reprise invalide');offset=resumed;if(offset>0){anchored=true;anchor();report(offset,true);}}
+        try{var resumed=await tusOffset(upload,token,created.id,useProxy);if(resumed>file.size)throw new Error('Position de reprise invalide');offset=resumed;if(offset>0){anchored=true;anchor();report(offset,true);}}
         catch(headError){if(retries>=12)throw headError;}
         if(offset<file.size)await sleep(Math.min(10000,retries*900));
       }
@@ -347,7 +350,7 @@
           if(!created||String(created.id)!==String(children[i]))continue;
           if(created.status==='published'||created.primary_ready===true){jobs[i]=created;states[i]=created;continue;}
           if(!created.upload||created.upload.mode!=='direct-binary')continue;
-          var remoteOffset=await tusOffset(created.upload,session.token);
+          var remoteOffset;try{remoteOffset=await tusOffset(created.upload,session.token,created.id,false);}catch(_directHead){remoteOffset=await tusOffset(created.upload,session.token,created.id,true);}
           if(remoteOffset>asset.size)throw new Error('TUS : taille distante incohérente');
           if(remoteOffset===asset.size){
             var completed=(await request('/api/v2/publications/'+encodeURIComponent(created.id)+'/complete',{method:'POST'},session.token,45000)).body;
@@ -372,6 +375,6 @@
     dispatch({jobId:group.id,groupId:group.id,postId:group.postId,publicationType:group.publicationType,status:'paused',progress:confirmedPercent,stage:'Envoi interrompu · sélectionne les mêmes médias pour reprendre'});
   }
 
-  var api={version:'1165-tus-recovery-cancel-safe',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,cancelGroup:cancelGroup,pendingForFiles:pendingForFiles,pendingPlan:recoveryPlan,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
+  var api={version:'1166-tus-proxy-web-fallback',requiredSchemaVersion:REQUIRED_SCHEMA_VERSION,requiredProtocolVersion:REQUIRED_PROTOCOL_VERSION,uploadMode:'direct-tus-binary',available:available,readinessMessage:readinessMessage,submit:submit,submitMany:submitMany,status:status,watch:watch,resumeTracking:resumeTracking,cancel:cancel,cancelGroup:cancelGroup,pendingForFiles:pendingForFiles,pendingPlan:recoveryPlan,forget:forget};window.FyblicPublicationEngineV1082=api;window.FyblicPublicationEngineV1081=api;window.FyblicPublicationEngineV1080=api;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(resumeTracking,1000);},{once:true});else setTimeout(resumeTracking,1000);
 })();
