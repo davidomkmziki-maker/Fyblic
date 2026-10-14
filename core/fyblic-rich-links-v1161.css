@@ -1,0 +1,6 @@
+/* FYBLIC V1161: bleu fin, discret, accessible au toucher. */
+a.fyblic-rich-link-v1160,a.fyblic-rich-link-v1160:visited{color:#339fff!important;font-weight:400!important;text-decoration:none!important;overflow-wrap:anywhere;cursor:pointer;-webkit-tap-highlight-color:transparent}
+a.fyblic-rich-link-v1160:focus-visible{outline:2px solid #339fff;outline-offset:2px;border-radius:2px}
+.fyblic-insert-link-v1160{font:inherit;font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:29px;height:30px;padding:0;border:none;border-radius:9px;background:transparent;color:#339fff;cursor:pointer;vertical-align:middle}
+
+.miniDesc a.fyblic-rich-link-v1160,.haHomeFsDesc a.fyblic-rich-link-v1160,.hsvCaption a.fyblic-rich-link-v1160,.reelDescription a.fyblic-rich-link-v1160,.reelCaption a.fyblic-rich-link-v1160 {color:#339fff!important;-webkit-text-fill-color:#339fff!important;text-decoration:none!important}

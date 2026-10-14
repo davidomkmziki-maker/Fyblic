@@ -1,0 +1,21 @@
+FYBLIC SITE V1161 — OUVERTURE DES LIENS INCORPORES
+
+- Protege le clic sur les liens des gestionnaires profil/carte/video, y
+  compris les evenements tactiles (capture en amont sans bloquer le scroll).
+- Ouvre les liens HTTP/HTTPS externes depuis le navigateur / appli associee.
+- Les liens Fyblic restent orientes vers les routes existantes du domaine,
+  y compris le systeme existant de partage /s/... qui ouvre la publication.
+- Repare la couleur bleue sur les liens, meme en descriptions/style video.
+- Les descriptions et commentaires construits dynamiquement sont analysés
+  apres chaque mise a jour DOM sans alteration des donnees Supabase.
+- Aucun changement aux API Netlify de partage ou aux apercus de medias.
+
+IMPORTANT ASSOCIATION ANDROID
+Le dossier d'origine ne contenait pas .well-known/assetlinks.json.
+Avant de redeployer un site entier, y incorporer le fichier assetlinks
+existant et le nouveau certificat produit avec l'APK V206.
+Un outil de fusion est fourni :
+  python3 tools/merge_assetlinks.py /chemin/NOUVEAU_assetlinks.json .well-known/assetlinks.json
+Veillez a conserver le fichier precedent pour garder les empreintes des APK
+encore installes. Ne pas installer un APK signe par une autre cle sans
+actualiser l'assetlinks du domaine.
