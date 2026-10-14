@@ -40,7 +40,7 @@
     home:'index.html',
     profile:'modules/my-profile.html?v=1001-profile-identity-scale',
     profile_public:'modules/visitor-profile.html',
-    video:'modules/video.html?v=1167-audio-partage',
+    video:'modules/video.html?v=1168-one-video-player',
     photo:'modules/photo.html',
     message:'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover',
     publish:'modules/publish.html?v=1165-tus-recovery',
@@ -805,7 +805,7 @@
   }
   function persistentMainUrl(page){
     page=String(page||'');
-    if(page==='video')return 'modules/video.html?v=1167-audio-partage';
+    if(page==='video')return 'modules/video.html?v=1168-one-video-player';
     if(page==='message')return 'modules/message-center.html?mode=inbox&source=v738-assistance&v=1026-avatar-cover';
     if(page==='profile')return 'modules/my-profile.html?v=1001-profile-identity-scale';
     if(page==='profile_public')return VISITOR_PROFILE_PRELOAD_URL_V601;

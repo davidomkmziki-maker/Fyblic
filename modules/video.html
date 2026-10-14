@@ -1492,43 +1492,91 @@ function happyadPauseVideo(v){
 function happyadStopOtherVideos(except){
   document.querySelectorAll('.reel video').forEach(x=>{if(x!==except)happyadPauseVideo(x)})
 }
-/* V1167 : les ouvertures de vidéos partagées ne doivent ni produire deux
-   pistes audio ni redémarrer en parallèle le même lecteur. Le mode exclusif
-   est limité aux premières 30 secondes de l'ouverture ciblée. */
-function happyadSharedAudioTargetV1167(v){
-  try{
-    var reel=v&&v.closest&&v.closest('.reel'),id=String(reel&&reel.dataset&&reel.dataset.id||'');
-    if(!id)return false;
-    var q=new URLSearchParams(location.search);
-    var direct=String(q.get('from')||'')==='shared_link'||String(q.get('from')||'')==='message_share';
-    if(direct)return String(q.get('post')||id)===id;
+/* V1168 — un seul lecteur vidéo audible, y compris après un lien partagé,
+   un défilement, un retour vers une ancienne vidéo ou un démarrage différé. */
+function happyadVideoSharedFeedV1168(){
+  try{var from=new URLSearchParams(location.search).get('from');
+    if(from==='shared_link'||from==='message_share')return true;
     var ctx=JSON.parse(sessionStorage.getItem('FYBLIC_SHARED_VIDEO_AUDIO_HANDOFF_V1167')||'null');
-    if(!ctx||!ctx.id||Date.now()-Number(ctx.at)>30000)return false;
-    return String(ctx.id)===id;
+    return !!(ctx&&Date.now()-Number(ctx.at||0)<30*60*1000);
   }catch(_e){return false;}
 }
-function happyadSilenceOtherAudioV1167(v){
+function happyadVideoAllowedV1168(v){
+  try{
+    if(!v||!v.isConnected)return false;
+    var r=v.closest&&v.closest('.reel');if(!r)return false;
+    var f=document.getElementById('feed')||document.querySelector('.feed');
+    if(!f||!f.contains(r))return false;
+    var m=f.__happyadVideoWindowV621;
+    if(m){
+      if(m.destroyed||m.playbackSuspended)return false;
+      if(Number(r.dataset.logicalIndex)!==Number(m.activeIndex))return false;
+    }
+    if(typeof happyadVideoFrameVisibleV869==='function'&&!happyadVideoFrameVisibleV869())return false;
+    return true;
+  }catch(_e){return false;}
+}
+function happyadVideoPauseOtherMediaV1168(v){
   try{document.querySelectorAll('video,audio').forEach(function(other){
     if(other===v)return;
-    try{other.pause();}catch(_e){}
+    try{other.pause();other.muted=true;}catch(_e){}
   });}catch(_e){}
+}
+function happyadVideoNotifyParentV1168(v){
   try{if(window.parent&&window.parent!==window){
-    var reel=v&&v.closest&&v.closest('.reel'),id=String(reel&&reel.dataset&&reel.dataset.id||'');
-    window.parent.postMessage({type:'FYBLIC_SHARED_VIDEO_AUDIO_ACTIVE_V1167',postId:id},'*');
+    var r=v&&v.closest&&v.closest('.reel');
+    window.parent.postMessage({type:'FYBLIC_SHARED_VIDEO_AUDIO_ACTIVE_V1167',postId:String(r&&r.dataset&&r.dataset.id||'')},location.origin);
   }}catch(_e){}
 }
-document.addEventListener('play',function(ev){
-  try{var v=ev.target;if(v&&v.tagName==='VIDEO'&&happyadSharedAudioTargetV1167(v))happyadSilenceOtherAudioV1167(v);}catch(_e){}
-},true);
-function happyadPlayVideo(v,fromStart){
-  if(!v)return;
-  var sharedExclusiveV1167=happyadSharedAudioTargetV1167(v);
-  if(sharedExclusiveV1167){
-    /* Les rappels du chargement et de la navigation peuvent viser la même vidéo. */
-    if(v.__fyblicSharedPlayPendingV1167||(!v.paused&&!v.ended))return;
-    v.__fyblicSharedPlayPendingV1167=true;
-    happyadSilenceOtherAudioV1167(v);
+function happyadVideoEnforceExclusiveV1168(v){
+  if(!happyadVideoAllowedV1168(v)){
+    try{v.pause();v.muted=true;}catch(_e){}
+    return false;
   }
+  happyadVideoPauseOtherMediaV1168(v);
+  happyadVideoNotifyParentV1168(v);
+  return true;
+}
+/* Contrôle y compris des appels video.play() extérieurs au moteur principal. */
+['play','playing'].forEach(function(eventName){
+  document.addEventListener(eventName,function(ev){
+    try{var v=ev.target;if(v&&v.tagName==='VIDEO'&&v.closest('.reel'))happyadVideoEnforceExclusiveV1168(v);}catch(_e){}
+  },true);
+});
+function happyadVideoReleaseOldPlayerV1168(reel){
+  try{
+    if(!reel)return;
+    var v=reel.querySelector('video');if(!v)return;
+    v.__fyblicReleasedV1168=true;
+    try{v.pause();v.muted=true;}catch(_pause){}
+    try{if(activeVideo===v)activeVideo=null;}catch(_active){}
+    try{
+      var oldSourceV1168=String(v.currentSrc||v.src||v.dataset.src||'');
+      v.removeAttribute('src');v.removeAttribute('poster');v.dataset.src='';v.load();
+      if(/^blob:/i.test(oldSourceV1168))URL.revokeObjectURL(oldSourceV1168);
+    }catch(_src){}
+    try{v.remove();}catch(_rm){}
+    try{currentVideos=currentVideos.filter(function(other){return other!==v;});}catch(_list){}
+    reel.dataset.videoAttached='';
+    try{reel.classList.remove('videoReady','videoBufferingV621C');reel.classList.add('videoLoading');}catch(_cls){}
+    /* Le poster reste présent dans la carte pendant un retour éventuel. */
+    if(!reel.querySelector('.loader')){
+      var ld=document.createElement('div');ld.className='loader';ld.setAttribute('aria-label','Vidéo en préparation');
+      reel.insertBefore(ld,reel.firstChild);
+    }
+    try{happyadApplyVideoPosterLoader(reel,reel.__happyadPost||reel.__happyadPostV613E||{});}catch(_poster){}
+  }catch(_e){}
+}
+function happyadPlayVideo(v,fromStart){
+  if(!v||!happyadVideoAllowedV1168(v))return;
+  if(v.__fyblicPlayPendingV1168||(!v.paused&&!v.ended))return;
+  v.__fyblicPlayPendingV1168=true;
+  happyadVideoPauseOtherMediaV1168(v);
+  happyadVideoNotifyParentV1168(v);
+  var managerV1168=feed&&feed.__happyadVideoWindowV621;
+  var epochV1168=managerV1168?managerV1168.playbackEpoch:0;
+  function stillAllowedV1168(){return happyadVideoAllowedV1168(v)&&(!managerV1168||managerV1168.playbackEpoch===epochV1168);}
+  function resetPendingV1168(){v.__fyblicPlayPendingV1168=false;}
   try{
     if(window.parent&&window.parent!==window&&window.__HAPPYAD_VIDEO_TAB_VISIBLE_V594!==true){
       var actuallyVisible=false;
@@ -1536,15 +1584,14 @@ function happyadPlayVideo(v,fromStart){
       if(actuallyVisible)window.__HAPPYAD_VIDEO_TAB_VISIBLE_V594=true;
       else{
         window.__HAPPYAD_VIDEO_PENDING_PLAY_V621B=true;
-        if(sharedExclusiveV1167)v.__fyblicSharedPlayPendingV1167=false;
+        resetPendingV1168();
         v.pause();v.muted=true;setPausedUI(v);return;
       }
     }
   }catch(_visibility){}
-  /* Fyblic V465: démarrer la nouvelle vidéo AVANT de couper l'ancienne.
-     Avant, happyadStopOtherVideos() coupait l'ancienne puis la nouvelle attendait le réseau:
-     résultat = vidéo off/noire pendant le scroll. */
-  const previous=(activeVideo&&activeVideo!==v)?activeVideo:null;
+  /* V1168 : priorité au son unique. L'ancien lecteur est déjà arrêté
+     avant le lancement du nouveau, sans masquer sa miniature. */
+  const previous=null;
   activeVideo=v;
   happyadVideoSetActivePreload(v,true);
   if(fromStart){try{v.currentTime=0}catch(e){}}
@@ -1555,20 +1602,26 @@ function happyadPlayVideo(v,fromStart){
   const playReel=v.closest&&v.closest('.reel');
   try{if(playReel){playReel.classList.add('videoStarting');playReel.classList.remove('paused');}}catch(_spin){}
   function started(){
-    if(sharedExclusiveV1167)v.__fyblicSharedPlayPendingV1167=false;
+    resetPendingV1168();
+    if(!stillAllowedV1168()){
+      try{v.pause();v.muted=true;}catch(_e){}
+      return;
+    }
     try{if(playReel)playReel.classList.remove('videoStarting')}catch(_spin){}
     try{happyadStopOtherVideos(v)}catch(_e){}
     const t=v.closest('.reel')?.querySelector('.tapSound');if(t)t.style.display='none';
     activeVideo=v;setPausedUI(v);
   }
   function failed(){
-    if(sharedExclusiveV1167)v.__fyblicSharedPlayPendingV1167=false;
+    resetPendingV1168();
+    if(!stillAllowedV1168())return;
     try{if(playReel)playReel.classList.remove('videoStarting')}catch(_spin){}
     const t=v.closest('.reel')?.querySelector('.tapSound');if(t)t.style.display='block';
-    if(previous){activeVideo=previous;setPausedUI(previous)}
+    /* Ne jamais restaurer le lecteur précédent après un échec réseau. */
     setPausedUI(v);
   }
   v.play().then(started).catch(()=>{
+    if(!stillAllowedV1168()){resetPendingV1168();return;}
     v.muted=true;
     happyadVideoSetActivePreload(v,true);
     v.play().then(started).catch(failed);
@@ -1733,6 +1786,12 @@ async function attachVideo(reel,p){
     try{reel.classList.remove('videoReady');reel.classList.add('videoLoading');}catch(_e){}
     p=p||{};
     p=await happyadVideoFreshMarketplace1080BeforeAttachV1095(p);
+    if(!reel.isConnected){reel.dataset.videoAttached='';return null;}
+    var selectedManagerV1168=feed&&feed.__happyadVideoWindowV621;
+    if(happyadVideoSharedFeedV1168()&&selectedManagerV1168&&
+       Number(reel.dataset.logicalIndex)!==Number(selectedManagerV1168.activeIndex)){
+      reel.dataset.videoAttached='';return null;
+    }
     try{reel.__happyadPost=p;reel.__happyadPostV613E=p;}catch(_e){}
     let src=happyadVideoNormalizeMediaSrc(happyadVideoFastMediaUrl(p),p);
     if(!src){
@@ -1766,6 +1825,7 @@ async function attachVideo(reel,p){
     reel.insertBefore(v,reel.firstChild);try{v.load();}catch(_load){}
     const setBuffering=(on)=>{try{reel.classList.toggle('videoBufferingV621C',!!on);if(on)reel.classList.add('videoLoading')}catch(_e){}};
     const revealVideo=()=>{
+      if(v.__fyblicReleasedV1168||!v.isConnected)return;
       try{v.style.opacity='1'}catch(e){}
       try{reel.classList.add('videoReady');reel.classList.remove('videoLoading','videoBufferingV621C')}catch(e){}
       try{reel.querySelector('.loader')?.remove()}catch(e){}
@@ -1778,11 +1838,12 @@ async function attachVideo(reel,p){
     ['canplay','canplaythrough','playing','seeked'].forEach(type=>v.addEventListener(type,()=>setBuffering(false),{passive:true}));
     setTimeout(function(){try{if(v.readyState>=2&&!reel.classList.contains('videoReady'))revealVideo();else if(v.readyState<2)setBuffering(true);}catch(_e){}},1700);
     v.addEventListener('error',()=>{
+      if(v.__fyblicReleasedV1168||!v.isConnected)return;
       const tries=Number(v.dataset.happyadVideoRetryV621C||0);
       setBuffering(true);
       if(tries<2){
         v.dataset.happyadVideoRetryV621C=String(tries+1);
-        setTimeout(function(){try{v.load();if(reel.classList.contains('videoReady')||reel===document.querySelector('.reel.active'))happyadPlayVideo(v,false);}catch(_e){}},1000+(tries*900));
+        setTimeout(function(){try{if(v.__fyblicReleasedV1168||!v.isConnected)return;v.load();if(reel.classList.contains('videoReady')||reel===document.querySelector('.reel.active'))happyadPlayVideo(v,false);}catch(_e){}},1000+(tries*900));
         return;
       }
       try{reel.classList.remove('videoLoading','videoBufferingV621C')}catch(_e){}
@@ -1937,6 +1998,8 @@ async function renderVideoFeed(posts,keepWhenEmpty){
     start:0,
     activeIndex:initialIndex,
     epoch:0,
+    playbackEpoch:0,
+    playbackSuspended:false,
     settleTimer:0,
     scrollRaf:0,
     ignoreScrollUntil:0,
@@ -1958,6 +2021,8 @@ async function renderVideoFeed(posts,keepWhenEmpty){
     mount:function(index){
       if(this.destroyed)return;
       this.epoch++;
+      this.playbackEpoch++;
+      this.playbackSuspended=false;
       clearTimeout(this.settleTimer);
       index=Math.max(0,Math.min(this.posts.length-1,Number(index||0)));
       this.activeIndex=index;
@@ -1983,6 +2048,8 @@ async function renderVideoFeed(posts,keepWhenEmpty){
       });
     },
     warmNeighbors:function(index){
+      /* Depuis un partage : préparer les posters sans récréer le lecteur précédent. */
+      if(happyadVideoSharedFeedV1168())return;
       const self=this;
       [index-1,index+1].forEach(function(i){
         if(i<0||i>=self.posts.length||!self.reelForIndex(i))return;
@@ -1995,6 +2062,10 @@ async function renderVideoFeed(posts,keepWhenEmpty){
       if(this.destroyed)return;
       index=Math.max(0,Math.min(this.posts.length-1,Number(index||0)));
       this.activeIndex=index;
+      this.playbackSuspended=false;
+      /* Ne pas invalider la même vidéo sur les appels boot 0 ms / 120 ms.
+         mount() et le vrai scroll gèrent les nouvelles générations. */
+      const ticketV1168=this.playbackEpoch;
       this.maybeLoadMore(index);
       /* V883 : le préchauffage caché construit la carte et son poster, mais ne
          crée pas encore le lecteur <video>. Aucun téléchargement média ne peut
@@ -2006,7 +2077,8 @@ async function renderVideoFeed(posts,keepWhenEmpty){
       }
       const self=this;
       this.ensure(index,true).then(function(v){
-        if(!v)return;
+        /* Une ouverture précédente encore en réseau n'a plus le droit de lire. */
+        if(!v||self.destroyed||self.playbackEpoch!==ticketV1168||self.activeIndex!==index||!happyadVideoAllowedV1168(v))return;
         self.reels().forEach(function(r){const ov=r.querySelector('video');if(ov&&ov!==v)happyadPauseVideo(ov);});
         if(window.__HAPPYAD_VIDEO_DIRECT_PREPARING_V855R79===true){
           /* Préparation cachée d'une carte Accueil/profil : monter le bon lecteur
@@ -2073,7 +2145,10 @@ async function renderVideoFeed(posts,keepWhenEmpty){
       let globalIndex=Number(chosen.dataset.logicalIndex||0);
       const previousIndex=this.activeIndex;
       const changedVideo=globalIndex!==previousIndex;
+      const previousReelV1168=changedVideo?this.reelForIndex(previousIndex):null;
       this.activeIndex=globalIndex;
+      this.playbackSuspended=false;
+      if(changedVideo&&previousReelV1168)happyadVideoReleaseOldPlayerV1168(previousReelV1168);
       this.maybeLoadMore(globalIndex);
       if(local===reels.length-1&&globalIndex<this.posts.length-1)this.shiftDown();
       else if(local===0&&globalIndex>0)this.shiftUp();
@@ -2085,6 +2160,12 @@ async function renderVideoFeed(posts,keepWhenEmpty){
     onScroll:function(){
       if(this.destroyed)return;
       if(performance.now()<this.ignoreScrollUntil)return;
+      /* Pause SYNCHRONE dès le scroll ; pas après 105 ms ni après le réseau. */
+      if(!this.playbackSuspended){
+        this.playbackSuspended=true;
+        this.playbackEpoch++;
+        try{document.querySelectorAll('.reel video').forEach(function(v){v.pause();v.muted=true;});}catch(_e){}
+      }
       if(!this.scrollRaf){
         const self=this;
         this.scrollRaf=requestAnimationFrame(function(){
@@ -2855,7 +2936,7 @@ function pauseOne(v,manual){
   function startTargetVideo(reel){
     if(!targetAutoplayRequested()||!reel)return;
     var video=reel.querySelector('video');if(!video)return;
-    var sharedExclusiveV1167=happyadSharedAudioTargetV1167(video);
+    var sharedExclusiveV1167=happyadVideoSharedFeedV1168();
     if(sharedExclusiveV1167){
       if(video.__fyblicSharedInitialStartV1167)return;
       video.__fyblicSharedInitialStartV1167=true;

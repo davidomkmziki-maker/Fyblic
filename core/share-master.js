@@ -1145,19 +1145,25 @@
     try{document.querySelectorAll('iframe').forEach(function(fr){
       try{if(fr.contentDocument)silenceSharedBackgroundV1167(fr.contentDocument);}catch(_doc){}
       /* Les autres frames ne doivent pas conserver de piste audio active. */
-      if(fr.getAttribute('data-happyad-page')==='video')return;
+      /* Couper aussi tout ancien iframe vidéo avant la nouvelle ouverture. */
       try{fr.contentWindow&&fr.contentWindow.postMessage({type:'HAPPYAD_PAUSE_ALL_MEDIA',reason:'shared-video-audio-v1167'},'*');}catch(_post){}
     });}catch(_frames){}
   }
   window.addEventListener('message',function(event){
     try{
       if(!event.data||event.data.type!=='FYBLIC_SHARED_VIDEO_AUDIO_ACTIVE_V1167')return;
-      var vf=document.getElementById('happyadAppFrame_video');
-      if(!vf||event.source!==vf.contentWindow)return;
+      if(event.origin&&event.origin!==location.origin)return;
+      var frames=Array.prototype.slice.call(document.querySelectorAll('iframe'));
+      /* Le navigateur peut conserver plus d'un iframe vidéo pendant un retour.
+         Autoriser uniquement celui qui a réellement déclenché la lecture. */
+      var vf=frames.find(function(fr){return fr.contentWindow===event.source;});
+      if(!vf||!(vf.id==='happyadAppFrame_video'||vf.getAttribute('data-happyad-page')==='video'||/\/video\.html(?:[?#]|$)/.test(vf.getAttribute('src')||'')))return;
       var ctx=JSON.parse(sessionStorage.getItem(SHARED_AUDIO_KEY_V1167)||'null');
-      if(!ctx||Date.now()-Number(ctx.at)>30000||clean(ctx.id)!==clean(event.data.postId))return;
+      /* Après partage, maintenir l'exclusivité lors des scrolls et retours. */
+      if(!ctx||Date.now()-Number(ctx.at)>30*60*1000)return;
+      if(!vf.classList.contains('on')||vf.hasAttribute('inert')||vf.getAttribute('aria-hidden')==='true')return;
       silenceSharedBackgroundV1167(document);
-      document.querySelectorAll('iframe').forEach(function(fr){
+      frames.forEach(function(fr){
         if(fr===vf)return;
         try{if(fr.contentDocument)silenceSharedBackgroundV1167(fr.contentDocument);}catch(_doc){}
         try{fr.contentWindow&&fr.contentWindow.postMessage({type:'HAPPYAD_PAUSE_ALL_MEDIA',reason:'shared-video-playing-v1167'},'*');}catch(_post){}

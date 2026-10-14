@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1167-shared-video-audio-20261014';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1168-exclusive-video-audio-20261014';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -19,7 +19,7 @@ var HAPPYAD_APP_SHELL = [
   './icons/fyblic-app-icon-v1046-96.png',
   './icons/fyblic-app-icon-v1046-192.png',
   './icons/fyblic-app-icon-v1046-512.png',
-  './core/share-master.js?v=1167-shared-video-single-audio',
+  './core/share-master.js?v=1168-exclusive-scrolling',
   './modules/share-center.html?v=1041-first-open-ready',
   './icons/share-apps/whatsapp.png?v=555',
   './icons/share-apps/facebook.png',
@@ -67,7 +67,7 @@ var HAPPYAD_APP_SHELL = [
   './modules/notification-center.html?v=974-p1-module-lifecycle-registry',
   './core/notification-infinite-scroll-master-v700.js?v=869-connection-phase2',
   './modules/assistance.html?v=974-p1-module-lifecycle-registry',
-  './modules/video.html?v=1167-audio-partage',
+  './modules/video.html?v=1168-one-video-player',
   './modules/photo.html?v=983-seven-media-actions',
   './modules/map.html?v=974-p1-module-lifecycle-registry',
   './modules/publish.html?v=1166-tus-proxy',
@@ -82,7 +82,7 @@ var HAPPYAD_APP_SHELL = [
   './core/global-scroll-coordinator-v868.js?v=869-connection-phase2',
   './core/connection-work-coordinator-v869.js?v=869-connection-phase2',
   './core/return-reset-master-v633-story-safe.js?v=929-return-reset-canonical',
-  './core/navigation-master-v668.js?v=1166-tus-proxy',
+  './core/navigation-master-v668.js?v=1168-exclusive-scrolling',
   './core/home-scroll-priority-master-v863.js?v=869-connection-phase2',
   './core/profile-avatar-master-v855r32.js?v=1031-storage-security',
   './core/follow-master-v855r34.js?v=986-professional-icons-love',
@@ -110,7 +110,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-scroll-prepaint-master-v696.js?v=855r100-home-scroll-physical-stable',
   './core/profile-edit-clear-master-v742.css?v=742-profile-edit-clear',
   './core/profile-edit-clear-master-v742.js?v=855r93-home-silent',
-  './core/main-tabs-master-v615.js?v=1105-guest-profile-auth',
+  './core/main-tabs-master-v615.js?v=1168-exclusive-scrolling',
   './core/guest-radar-auth-v599.js?v=940-guest-auth-rainbow',
   './core/auth-frame-gate-v596.js?v=1105-boutique-readonly',
   './core/publish-master-v589.js?v=927-publish-canonical-return',
