@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1158-real-share-image-20261014';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1159-brand-upload-adaptive-20261014';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -13,12 +13,12 @@ var HAPPYAD_VAPID_PUBLIC_KEY = 'BA3UgDp8-6VYN6nZgSNX14LeZVLK6FesJgLXVytEKkKgplK_
 var HAPPYAD_APP_SHELL = [
   './',
   './index.html',
-  './index.html?v=v1046-logo-compresseur',
-  './manifest.webmanifest?v=1045-brand-unified',
+  './index.html?v=v1159-current-brand',
+  './manifest.webmanifest?v=1159-current-brand',
   './core/fyblic-system-theme-v1022.css?v=1022-world-theme',
-  './icons/fyblic-app-icon-v1046-96.png',
-  './icons/fyblic-app-icon-v1046-192.png',
-  './icons/fyblic-app-icon-v1046-512.png',
+  './icons/fyblic-app-icon-v1159-96.png',
+  './icons/fyblic-app-icon-v1159-192.png',
+  './icons/fyblic-app-icon-v1159-512.png',
   './core/share-master.js?v=1158-real-share-image',
   './modules/share-center.html?v=1041-first-open-ready',
   './icons/share-apps/whatsapp.png?v=555',
@@ -53,7 +53,7 @@ var HAPPYAD_APP_SHELL = [
   './core/happyad-search-nav-v998.css?v=1005r4-search-primary-name-white-locked',
   './core/story-name-presence-master-v999.css?v=999-story-name-presence-off',
   './core/story-name-presence-master-v999.js?v=999-story-name-presence-off',
-  './core/mention-render-master-v943.js?v=944-photo-profile-handoff',
+  './core/mention-render-master-v943.js?v=1159-external-urls',
   './core/profile-link-master-v992.js?v=996-primary-name-badge',
   './core/comment-mention-master-v994.js?v=996-primary-name-visible',
   './core/home-card-renderer-v1.js?v=1097-boutique-card-maturity',
@@ -72,7 +72,7 @@ var HAPPYAD_APP_SHELL = [
   './modules/map.html?v=974-p1-module-lifecycle-registry',
   './modules/publish.html?v=1157-preview-loading-fast',
   './core/media-compression-client-v1.js?v=1067-compression-lock',
-  './core/publication-engine-v1082.js?v=1083-story-tus-anchor',
+  './core/publication-engine-v1082.js?v=1159-all-tus-anchor',
   './core/publication-background-ui-v2.js?v=1081-fast-primary',
   './core/profile-publication-notice-v1066.js?v=1066-silent-finish',
   './modules/live.html?v=974-p1-module-lifecycle-registry',
@@ -290,8 +290,8 @@ function happyadPushPayload(event){
     type:'happyad_generic',
     title:'Fyblic',
     body:'Vous avez une nouvelle notification.',
-    icon:'./icons/fyblic-app-icon-v1046-192.png',
-    badge:'./icons/fyblic-app-icon-v1046-96.png',
+    icon:'./icons/fyblic-app-icon-v1159-192.png',
+    badge:'./icons/fyblic-app-icon-v1159-96.png',
     tag:'happyad-notification',
     url:'./index.html?source=push',
     sent_at:'',
@@ -517,7 +517,7 @@ function happyadAvatarCacheRequest(detail,url){
 }
 
 function happyadPrepareMessageAvatar(data,detail){
-  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1046-192.png','./icons/fyblic-app-icon-v1046-192.png');
+  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1159-192.png','./icons/fyblic-app-icon-v1159-192.png');
   if(!detail || detail.type!=='happyad_message')return Promise.resolve({icon:happyadNotificationAsset(data.icon,logo)||logo,status:'not-message',reason:''});
   var exact=happyadNotificationAsset(detail.sender_avatar||data.sender_avatar,'');
   if(!exact){
@@ -550,8 +550,8 @@ function happyadPrepareMessageAvatar(data,detail){
 }
 
 function happyadNotificationOptions(data,detail,preparedIcon,withActions){
-  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1046-192.png','./icons/fyblic-app-icon-v1046-192.png');
-  var badge=happyadNotificationAsset(data.badge||'./icons/fyblic-app-icon-v1046-96.png','./icons/fyblic-app-icon-v1046-96.png');
+  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1159-192.png','./icons/fyblic-app-icon-v1159-192.png');
+  var badge=happyadNotificationAsset(data.badge||'./icons/fyblic-app-icon-v1159-96.png','./icons/fyblic-app-icon-v1159-96.png');
   var icon=happyadNotificationAsset(preparedIcon,'')||happyadNotificationAsset(data.icon,logo)||logo;
   var options={
     body:String(data.body||'Vous avez une nouvelle notification.'),
@@ -583,7 +583,7 @@ function happyadAvatarDiagnostic(detail,reason,stage){
 
 function happyadShowNotification(data,detail){
   var title=String(data.title||'Fyblic');
-  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1046-192.png','./icons/fyblic-app-icon-v1046-192.png');
+  var logo=happyadNotificationAsset('./icons/fyblic-app-icon-v1159-192.png','./icons/fyblic-app-icon-v1159-192.png');
   return happyadPrepareMessageAvatar(data,detail).then(function(prepared){
     detail.sender_avatar_runtime_status=String(prepared.status||'');
     detail.sender_avatar_runtime_reason=String(prepared.reason||'');

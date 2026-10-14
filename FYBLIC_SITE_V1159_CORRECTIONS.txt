@@ -1,0 +1,11 @@
+SITE FYBLIC V1159 — 14 octobre 2026
+
+- Réutilisation du logo Fyblic R officiel provenant du générateur existant d'aperçu, non du logo ancien Happyad quatre pétales.
+- Icônes PWA/favicons et marque en tête d'accueil mises à jour avec URL V1159 anticache.
+- Métadonnées de logo redondantes retirées de la route de partage. La suppression de la petite icône secondaire reste contrôlée par WhatsApp, qui peut garder une ancienne mise en cache.
+- Générateur de miniature média de partage INCHANGÉ, image et lien r21 conservés.
+- Publications web normales et Story : attendre la confirmation TUS réelle des premiers octets avant le retour à l'accueil.
+- Accueil : photo carrée, horizontale et panorama avec ratio adapté, autres cartes/vidéos/album préservés.
+- Mentions : URLs http(s) ouvrables en onglet externe avec échappement HTML et protocole validé.
+
+Tests : contrôle syntaxique Node.js effectué, manifest JSON et fichiers icônes vérifiés. Test réseau Supabase et aperçu WhatsApp réels nécessaires après déploiement.

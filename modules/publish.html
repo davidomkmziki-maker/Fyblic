@@ -79,7 +79,7 @@ html[data-fyblic-native-android="1"] .preview.empty:not(.fyNativeRecentV1134):af
 <script src="../core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script>window.FYBLIC_MEDIA_COMPRESSOR_URL=window.FYBLIC_MEDIA_COMPRESSOR_URL||'https://fyblic-media-worker-production.up.railway.app';</script>
 <script src="../core/media-compression-client-v1.js?v=1052-mobile-json"></script>
-<script src="../core/publication-engine-v1082.js?v=1083-story-tus-anchor"></script>
+<script src="../core/publication-engine-v1082.js?v=1159-all-tus-anchor"></script>
 <script src="../core/profile-avatar-master-v855r32.js?v=995-source-default-profile-icon"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -928,7 +928,7 @@ button:disabled{filter:none;transform:none}
     clearInterval(progressTimer);
     progressTimer=null;
     progressValue=0;
-    setProgress(1,text||"Préparation de la publication");
+    setProgress(0,text||"Préparation de la publication");
   }
   function finishProgress(text){
     clearInterval(progressTimer);
@@ -2806,17 +2806,15 @@ return {source:'story',id:storyId};
             onGroupCreated:function(group){
               window.__FYBLIC_LAST_PUBLICATION_JOB_ID_V1067R1=String(group&&group.id||id);
               beginPublicationV1067R1(group&&group.id||id,state.mode);
-              state.completed=true;
-              setProgress(1,'Envoi du média');
-              /* V1083 ciblé Story : ne pas quitter Publication avant que Supabase
-                 ait confirmé les premiers octets. Le chemin Normal V1082 reste identique. */
-              if(state.mode!=='story'&&!returnedHome){returnedHome=true;setTimeout(function(){returnHomeAfterPublish('engine-v1082-background',{preserveMedia:true});},120);}
+              // Conserver l'écran de publication jusqu'à la confirmation réelle TUS.
+              setProgress(0,'Préparation de l’envoi');
             },
             onUploadAnchored:function(group,job,info){
-              if(state.mode!=='story'||returnedHome)return;
+              if(returnedHome)return;
               returnedHome=true;
+              state.completed=true;
               try{setProgress(Math.max(1,Number(job&&job.progress||progressValue||1)),'Envoi du média');}catch(_p){}
-              setTimeout(function(){returnHomeAfterPublish('story-tus-anchor-v1083',{preserveMedia:true});},0);
+              setTimeout(function(){returnHomeAfterPublish(state.mode==='story'?'story-tus-anchor-v1083':'normal-tus-anchor-v1159',{preserveMedia:true});},0);
             },
             onProgress:function(detail){setProgress(Number(detail&&detail.progress||progressValue),String(detail&&detail.stage||'Publication en cours'));}
           });
