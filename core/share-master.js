@@ -313,7 +313,7 @@
       var type=isVideo(post)?'video':'photo';
       /* L'image OG resout elle-meme le media par ID : aucun URL media long
          dans le lien et aucune dependance au chargement de l'iframe. */
-      return new URL('/share-image/'+encodeURIComponent(post.id)+'/r19?type='+encodeURIComponent(type),location.origin).href;
+      return new URL('/share-image/'+encodeURIComponent(post.id)+'/r21?type='+encodeURIComponent(type),location.origin).href;
     }catch(_e){return '';}
   }
   function prewarmPreviewV882(post){
@@ -334,9 +334,9 @@
     /* V877 : lien public court, sans nom/titre/description ni query longue.
        Le type reste dans le chemin afin que le deep-link humain parte immédiatement,
        sans lecture Supabase préalable. */
-    /* V897/r19 : second logo Fyblic place par coordonnees absolues en bas a droite du media; logo bas V893 conserve. */
-    try{return new URL('/s/'+type+'/'+encodeURIComponent(post.id)+'/r19',location.origin).href;}
-    catch(_e){return location.origin+'/s/'+type+'/'+encodeURIComponent(post.id)+'/r19';}
+    /* V897/r21 : second logo Fyblic place par coordonnees absolues en bas a droite du media; logo bas V893 conserve. */
+    try{return new URL('/s/'+type+'/'+encodeURIComponent(post.id)+'/r21',location.origin).href;}
+    catch(_e){return location.origin+'/s/'+type+'/'+encodeURIComponent(post.id)+'/r21';}
   }
   function permissionGate(){
     try{return window.HappyInteractionPrivacyV855R52||null;}catch(_e){return null;}

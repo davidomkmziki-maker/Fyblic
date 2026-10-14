@@ -1,0 +1,57 @@
+FYBLIC SITE V1158 — Images réelles dans les cartes de partage
+
+CORRECTIONS
+1. Les fonctions de partage disposent de la même configuration Supabase PUBLIQUE
+   que le navigateur, même sans variables Netlify. Des variables explicites
+   restent prioritaires. Les clés secrètes/service_role sont refusées.
+2. La clé publishable est transmise dans apikey, sans la placer dans le champ
+   Authorization réservé aux JWT. Les anciennes clés anon sont compatibles.
+3. Une seule sélection des médias est utilisée pour les images : photo réelle,
+   miniature/poster pour les vidéos, chemins relatifs et tableaux JSON compris.
+   Si une source image échoue, les autres sources enregistrées sont essayées.
+4. Délai de lecture Supabase porté à 5 secondes (auparavant environ 0,55 seconde
+   pour les métadonnées). La lecture des fichiers inclut aussi un délai et une
+   limite de taille; les adresses externes et redirections ne sont pas suivies.
+5. Plus de carte générique/logo renvoyée avec un succès HTTP lors d'une panne.
+   Une erreur temporaire est non cachable; aucun faux aperçu n'est enregistré
+   volontairement comme image de la publication.
+6. Image principale entière, fond adapté, format JPEG 1200 x 900 conservé.
+   Une vidéo utilise sa vraie miniature enregistrée, pas le fichier MP4.
+7. Liens et images r21, cache du site renouvelé. Les routes r19 restent valables.
+8. Les publications privées ou supprimées ne produisent pas d'aperçu public.
+
+DÉPLOIEMENT
+- Déployer le CONTENU du dossier du site avec Netlify en conservant
+  netlify.toml, package.json, le dossier netlify et ses fonctions.
+- Utiliser le déploiement Git habituel avec construction des Netlify Functions,
+  ou la CLI Netlify avec construction. Un simple hébergement statique sans
+  fonctions ne peut pas générer les aperçus dynamiques.
+- Les deux fonctions doivent apparaître dans Netlify : happyad-share-preview
+  et happyad-share-image. La dépendance sharp doit être installée.
+- La configuration publique du site est fournie; aucun changement SQL n'est requis.
+- Pour les nouveaux liens Android r21, compiler/installer FYBLIC V203.
+  V202 et les anciennes applications bénéficient du correctif serveur, mais
+  WhatsApp peut encore conserver l'aperçu d'un ancien lien r19.
+
+TEST APRÈS DÉPLOIEMENT
+Partager à nouveau une publication photo puis une vidéo depuis le site et V203.
+Le lien neuf finit par /r21. La photo ou miniature réelle doit apparaître.
+Une ancienne carte déjà envoyée n'est pas modifiable par ce correctif.
+Si la vidéo n'a aucune miniature publique enregistrée, aucune vraie miniature
+ne peut être inventée : la route image renvoie une erreur explicite.
+
+OUVERTURE DANS L'APK (SUITE V202)
+Après compilation de V203, télécharger l'artifact FYBLIC-V203-ASSETLINKS et
+placer assetlinks.json dans .well-known/ à la racine publiée du site, en
+conservant les associations déjà présentes. L'empreinte doit correspondre
+à l'APK installé. Aucun certificat n'a été inventé dans ce ZIP.
+
+VÉRIFICATIONS EFFECTUÉES
+Tests locaux des deux handlers avec requêtes HTTP simulées : photo, vidéo,
+album, chemins relatifs, seconde source après échec, lenteur Supabase, méthode
+HEAD, routes anciennes/nouvelles, erreurs non cachables, contenus privés et
+supprimés, origine des médias et échappement HTML/JSON.
+Images JPEG produites par sharp et dimensions vérifiées, contrôle de pixels
+confirmant l'utilisation de l'image source. Syntaxe JS et configuration vérifiées.
+Le test réseau direct vers Supabase a expiré dans l'environnement de travail :
+aucune validation du déploiement réel ni d'une carte WhatsApp réelle n'est revendiquée.
