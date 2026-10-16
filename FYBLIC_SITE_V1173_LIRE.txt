@@ -1,0 +1,19 @@
+FYBLIC SITE V1173 — PATCH COMPTEURS ACCUEIL UNIQUEMENT
+
+Appliquer APRÈS le déploiement V1172. L'archive ne contient que cinq fichiers modifiés.
+Ne pas rejouer le SQL V221 : aucune migration supplémentaire n'est requise.
+
+Cause identifiée : deux moteurs de rendu écrivaient alternativement les vues de la
+même carte (ancienne valeur/provisoire, puis compteur vérifié Supabase).
+
+Correctifs :
+- source de vérité unique de l'affichage dans FyblicViewsHomeV1173 ;
+- rendu initial : tiret seulement si aucune valeur vérifiée ;
+- jamais de réinitialisation visuelle à 0 lors d'un simple rerendu de carte ;
+- conservation de la dernière valeur valide durant une reconnexion ou le retour dans l'onglet ;
+- réponses réseau arrivées en retard ne font pas baisser le compteur affiché ;
+- version des assets et cache PWA actualisés ;
+- aucune modification des tables Supabase ni de la logique de monétisation.
+
+Note : validation JavaScript statique. Pour confirmer les valeurs réelles, tester en
+ligne avec deux comptes et consulter les logs/compteurs Supabase.
