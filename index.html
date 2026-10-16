@@ -3,7 +3,8 @@
 <!-- Fyblic V885: Stories last-good immediate + skeleton <=180ms -->
 <!-- Regression lineage cache-bust: 855r65-options-reactivation-fluide | 855r66-options-optimistic-supabase-bg | 855r67-popup-persistant-confirmation-haut | 855r90-home-card-single-design | 855r91-radar-add-persistent -->
 <!DOCTYPE html><html lang="fr" data-happyad-page="home"><head>
-<script src="./core/fyblic-counts-v1171.js?v=1171"></script>
+<script src="./core/fyblic-counts-v1171.js?v=1221"></script>
+<script src="./core/fyblic-views-home-v1172.js?v=221"></script>
 <script id="fyblic-v1128-native-app-early-boot">
 (function(){
   try{
@@ -3615,7 +3616,7 @@ function renderHomeVideoPreview(box,p,url){
       if(im.complete&&im.naturalWidth)try{happyadApplyCardFitV981(box,p,im.naturalWidth,im.naturalHeight);}catch(_fit2){}
     }
   }else happyadRenderVideoFallbackV643(box);
-  try{var vb=document.createElement('div');vb.className='happyadVideoViewsBadge';var a=(typeof getA==='function')?getA(p&&p.id):{};var viewText=(typeof happyadFmtViews==='function')?happyadFmtViews((a&&a.views)||p.views_count||p.video_views_count||0):String((a&&a.views)||p.views_count||p.video_views_count||0);vb.setAttribute('aria-label',viewText+' vues');vb.innerHTML='<svg class="happyadVideoViewsPlaySvg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.25 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L8.03 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"></path></svg><span class="happyadVideoViewsCount">'+esc(viewText)+'</span>';box.appendChild(vb);}catch(_viewsBadge){}
+  try{var vb=document.createElement('div');vb.className='happyadVideoViewsBadge';var a=(typeof getA==='function')?getA(p&&p.id):{};var verified=!!(a&&a.__uniqueViewsV220);var viewText=verified?happyadFmtViews(Number(a.views)||0):'—';vb.setAttribute('aria-label',viewText+' vues');vb.innerHTML='<svg class="happyadVideoViewsPlaySvg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.25 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L8.03 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"></path></svg><span class="happyadVideoViewsCount">'+esc(viewText)+'</span>';box.appendChild(vb);}catch(_viewsBadge){}
 }
 
 async function happyadMediaUrlForPost(p){

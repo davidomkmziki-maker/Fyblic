@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="fr" data-happyad-page="video">
 <head>
-<script src="../core/fyblic-counts-v1171.js?v=1171"></script>
+<script src="../core/fyblic-counts-v1171.js?v=1221"></script>
 <style id="happyad-profile-avatar-source-v995">
 /* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
 .avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
@@ -1390,7 +1390,7 @@ async function toggleVideoActionSupabase(postId,actionType,nextValue){const c=ha
 async function toggleVideoLikeSupabase(postId,nextLiked){return toggleVideoActionSupabase(postId,'like',nextLiked)}
 async function happyadMarkVideoViewSupabase(postId){
  const c=happyadSb();if(!c||!postId||!happyadVideoFrameVisibleV869())return;
- try{const a=getA(String(postId));a.views=await FyblicCountsV220.record(c,String(postId),'central_video');a.__uniqueViewsV220=true;setA(String(postId),a);happyadVideoPatchLocalCounts(String(postId),a);document.querySelectorAll('.reel[data-id="'+CSS.escape(String(postId))+'"]').forEach(refreshActionUI);return a;}catch(e){console.warn('Vue unique non enregistrée',e);}
+ try{const a=getA(String(postId));const params=new URLSearchParams(location.search);const fromHome=params.get('from')==='home'&&String(params.get('post')||'')===String(postId);a.views=await FyblicCountsV220.record(c,String(postId),fromHome?'home_video':'central_video');a.__uniqueViewsV220=true;setA(String(postId),a);happyadVideoPatchLocalCounts(String(postId),a);document.querySelectorAll('.reel[data-id="'+CSS.escape(String(postId))+'"]').forEach(refreshActionUI);return a;}catch(e){console.warn('Vue unique non enregistrée',e);}
 }
 
 
