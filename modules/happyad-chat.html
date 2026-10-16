@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fr" data-happyad-page="chat">
 <head>
-<script src="../core/fyblic-counts-v1171.js?v=1221"></script>
+<script src="../core/fyblic-counts-v1171.js?v=1172"></script>
 <style id="happyad-profile-avatar-source-v995">
 /* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
 .avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
@@ -6137,11 +6137,14 @@
       return value;
     }
     function listingCssEscape(value){try{return window.CSS&&typeof CSS.escape==='function'?CSS.escape(String(value)):String(value).replace(/[^a-zA-Z0-9_-]/g,'\\$&')}catch(_){return String(value||'')}}
+    window.addEventListener('FYBLIC_VERIFIED_COUNTS_V221',function(e){
+      (e.detail?.ids||[]).forEach(id=>{const row=FyblicCountsV220.cached(id);if(row)document.querySelectorAll(`[data-listing-view-count="${listingCssEscape(id)}"]`).forEach(node=>node.textContent=compactListingViews(row.listingViews));});
+    });
     const listingViewPromises=new Map();
     async function recordListingView(offer,source='marketplace'){
       const id=String(offer?.id||offer?.post_id||'').trim();if(!id||id==='draft-listing-preview')return Number(offer?.viewsCount||0);
 
-      if(listingViewPromises.has(id))return listingViewPromises.get(id);
+      const promiseKey=id+':'+source;if(listingViewPromises.has(promiseKey))return listingViewPromises.get(promiseKey);
       const task=(async()=>{
         const client=resolveSupabaseClient();if(!client||typeof client.rpc!=='function')return Number(offer?.viewsCount||0);
         const countV220=source==='detail'?await FyblicCountsV220.record(client,id,'listing'):Number((await FyblicCountsV220.read(client,id)).listingViews);
@@ -6152,8 +6155,8 @@
         offers.forEach(item=>{if(String(item?.id)===id){item.viewsCount=count;item.listing_views_count=count}});
         document.querySelectorAll(`[data-listing-view-count="${listingCssEscape(id)}"]`).forEach(node=>node.textContent=compactListingViews(count));
         return count;
-      })().catch(()=>Number(offer?.viewsCount||0)).finally(()=>setTimeout(()=>listingViewPromises.delete(id),1000));
-      listingViewPromises.set(id,task);return task;
+      })().catch(()=>Number(offer?.viewsCount||0)).finally(()=>setTimeout(()=>listingViewPromises.delete(promiseKey),1000));
+      listingViewPromises.set(promiseKey,task);return task;
     }
     const listingViewObserver=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
       entries.forEach(entry=>{

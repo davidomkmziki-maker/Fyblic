@@ -3,8 +3,7 @@
 <!-- Fyblic V885: Stories last-good immediate + skeleton <=180ms -->
 <!-- Regression lineage cache-bust: 855r65-options-reactivation-fluide | 855r66-options-optimistic-supabase-bg | 855r67-popup-persistant-confirmation-haut | 855r90-home-card-single-design | 855r91-radar-add-persistent -->
 <!DOCTYPE html><html lang="fr" data-happyad-page="home"><head>
-<script src="./core/fyblic-counts-v1171.js?v=1221"></script>
-<script src="./core/fyblic-views-home-v1172.js?v=1173"></script>
+<script src="./core/fyblic-counts-v1171.js?v=1172"></script>
 <script id="fyblic-v1128-native-app-early-boot">
 (function(){
   try{
@@ -559,7 +558,7 @@ html body #list.homeTimeline .miniMedia:not(.haPhotoUserCropV613D)>img{transform
 <script src="core/supabase-client-master-v972.js?v=973-p1-central-config"></script>
 <script src="core/account-isolation-master-v937.js?v=938-action-memory-reset"></script>
 <script src="core/fyblic-toast-master-v1105.js?v=1105-action-toast"></script>
-<script src="core/auth-session-master-v598.js?v=1113-legal-boot-stable"></script>
+<script src="core/auth-session-master-v598.js?v=1173-session-resume"></script>
 <script src="core/message-privacy-master-v855r51.js?v=972-p1-single-client"></script>
 <script src="core/account-discovery-privacy-v855r53.js?v=855r53-account-discovery"></script>
 <script src="core/location-privacy-master-v855r54.js?v=855r54-location-privacy"></script>
@@ -1635,7 +1634,7 @@ html body #homeRadarStoryMasterV629 .radarTitle,html body #homeRadarBlock .radar
 <button class="nav" type="button" data-happyad-main-nav="profile" aria-label="Mon profil"><span class="ico mainDockIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21c.7-4.2 3.2-6.4 7.5-6.4s6.8 2.2 7.5 6.4"></path></svg></span><span class="mainDockLabel">Profil</span></button>
 </nav></div>
 <!-- V1090 : même forme Chat SVG, trait renforcé et bouton harmonisé avec Recherche/Notification. -->
-<script src="core/story-master-v699.js?v=1092-radar-title-removed"></script>
+<script src="core/story-master-v699.js?v=1173-full-post-cta"></script>
 <script>try{if(window.HappyStoryV629&&typeof window.HappyStoryV629.renderRadar==='function')window.HappyStoryV629.renderRadar();}catch(_e){}</script>
 <script id="happyad-v855r89-sponsor-first-paint">
 (function(){
@@ -1688,8 +1687,8 @@ html body #homeRadarStoryMasterV629 .radarTitle,html body #homeRadarBlock .radar
 <script src="core/home-feed-master-v1.js?v=1096-card-visual-hq"></script>
 <script src="core/home-media-loader-v1.js?v=1099-photo-max-quality"></script>
 <script src="core/like-direct-master-v876.js?v=995-like-network-stable"></script>
-<script src="core/home-actions-master-v1.js?v=1173-stable-count"></script>
-<script src="core/home-card-renderer-v1.js?v=1173-stable-count"></script>
+<script src="core/home-actions-master-v1.js?v=1172-verified-counts"></script>
+<script src="core/home-card-renderer-v1.js?v=1097-boutique-card-maturity"></script>
 <script src="core/home-card-story-ring-master-v992.js?v=992-home-story-ring-exact"></script>
 <script src="core/home-feed-view-v1.js?v=929-prepaint-anchor"></script>
 <script src="core/home-feed-boot-v1.js?v=1088-adaptive-1080-priority"></script>
@@ -3616,7 +3615,7 @@ function renderHomeVideoPreview(box,p,url){
       if(im.complete&&im.naturalWidth)try{happyadApplyCardFitV981(box,p,im.naturalWidth,im.naturalHeight);}catch(_fit2){}
     }
   }else happyadRenderVideoFallbackV643(box);
-  try{var vb=document.createElement('div');vb.className='happyadVideoViewsBadge';var a=(typeof getA==='function')?getA(p&&p.id):{};var stable=window.FyblicViewsHomeV1173;var cached=stable&&stable.get(p&&p.id);var verified=cached!==null&&cached!==undefined;var viewText=verified?stable.display(p.id):(a&&a.__uniqueViewsV220===true?happyadFmtViews(Number(a.views)||0):'—');vb.setAttribute('aria-label',viewText+' vues');vb.innerHTML='<svg class="happyadVideoViewsPlaySvg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.25 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L8.03 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"></path></svg><span class="happyadVideoViewsCount">'+esc(viewText)+'</span>';box.appendChild(vb);}catch(_viewsBadge){}
+  try{var vb=document.createElement('div');vb.className='happyadVideoViewsBadge';var a=(typeof getA==='function')?getA(p&&p.id):{};var verified=window.FyblicCountsV220?.cached(p&&p.id);var viewText=verified?happyadFmtViews(verified.views):((a&&a.__uniqueViewsV220)?happyadFmtViews(a.views):'—');vb.setAttribute('aria-label',viewText+' vues');vb.innerHTML='<svg class="happyadVideoViewsPlaySvg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.25 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L8.03 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"></path></svg><span class="happyadVideoViewsCount">'+esc(viewText)+'</span>';box.appendChild(vb);}catch(_viewsBadge){}
 }
 
 async function happyadMediaUrlForPost(p){
@@ -11252,7 +11251,7 @@ html.haProfilePhotoFullscreenV854R8 body #happyadAppShell{pointer-events:none!im
 </script>
 <script src="core/profile/profile-photo-parent-v854r8.js?v=932-profile-handoff-pointer-release"></script>
 <script src="core/navigation-master-v668.js?v=1168-exclusive-scrolling"></script>
-<script src="core/auth-session-master-v598.js?v=1113-legal-boot-stable"></script>
+<script src="core/auth-session-master-v598.js?v=1173-session-resume"></script>
 <script id="happyad-profile-identity-stable-master-v741" src="core/profile-identity-stable-master-v741.js?v=1031-storage-security"></script>
 <script id="happyad-profile-avatar-recovery-master-v743" src="core/profile-avatar-recovery-master-v743.js?v=855r32-no-resurrection"></script>
 <script src="core/main-tabs-master-v615.js?v=1168-exclusive-scrolling"></script>

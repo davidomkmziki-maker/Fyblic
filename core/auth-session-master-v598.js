@@ -340,6 +340,11 @@
         sessionErrorCountV937=0;
         if(sessionRetryTimerV937){clearTimeout(sessionRetryTimerV937);sessionRetryTimerV937=0;}
         var s=result&&result.data&&result.data.session||null;
+        if(s && s.refresh_token && Number(s.expires_at||0)<=Date.now()/1000+120 && typeof c.auth.refreshSession==='function'){
+          var refreshed=await c.auth.refreshSession();
+          if(refreshed&&refreshed.error)throw refreshed.error;
+          s=refreshed&&refreshed.data&&refreshed.data.session||s;
+        }
         if(s&&readLoginGuardPendingV855R47()){
           try{await c.auth.signOut();}catch(_e){}
           resetLoginGuardV855R47();
@@ -1224,6 +1229,15 @@ body.happyadAuthGateOpenV595 #happyadMainDockV585{pointer-events:none!important}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){ensureOverlay();},{once:true});
   else ensureOverlay();
 
+  var resumeTimerV1173=0;
+  function resumeSessionV1173(){
+    clearTimeout(resumeTimerV1173);
+    if(document.hidden || navigator.onLine===false || logoutLockActiveV937())return;
+    resumeTimerV1173=setTimeout(function(){refresh(true).catch(function(){});},200);
+  }
+  document.addEventListener('visibilitychange',resumeSessionV1173);
+  window.addEventListener('pageshow',resumeSessionV1173);
+  window.addEventListener('online',resumeSessionV1173);
   window.HappyAuthSessionV598={version:VERSION,isReady:function(){return ready;},isAuthenticated:isAuthenticated,user:actualUser,refresh:refresh,require:requireAuth,open:open,openLogin:openLogin,openSignup:openSignup,openChoice:openChoice,notice:guestNotice,close:closeOverlay,logout:logout,broadcast:broadcast};
   window.HappyAuthSessionV597=window.HappyAuthSessionV598;
   window.HappyAuthSessionV596=window.HappyAuthSessionV598;

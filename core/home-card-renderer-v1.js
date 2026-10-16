@@ -56,7 +56,7 @@
     }catch(_e){}
   }
   function videoViewsBadge(v){
-    var value=esc(v==null?'—':v);
+    var value=esc(v==null?'0':v);
     return '<div class="happyadVideoViewsBadge" aria-label="'+value+' vues"><svg class="happyadVideoViewsPlaySvg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.25 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L8.03 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"></path></svg><span class="happyadVideoViewsCount">'+value+'</span></div>';
   }
 
@@ -268,10 +268,9 @@
     if(video){
       var media=card.querySelector('.miniMedia');
       var a=call('getAction',p.id)||{};
-      var stable=window.FyblicViewsHomeV1173;var verified=stable&&stable.get(p.id);
-      var views=verified!==null&&verified!==undefined?stable.display(p.id):(a&&a.__uniqueViewsV220===true?call('formatViews',a.views||0):'—');
+      var views=call('formatViews',(a&&a.views)||p.views_count||p.video_views_count||0)||'0';
       if(media)media.insertAdjacentHTML('beforeend','<div class="videoHint">Ouvrir vidéo longue</div>'+videoViewsBadge(views));
-      else card.insertAdjacentHTML('beforeend',videoViewsBadge(views));
+      else card.insertAdjacentHTML('beforeend',videoViewsBadge('0'));
       card.onclick=function(e){if(e.target&&e.target.closest&&e.target.closest('[data-card-act],button,a,.miniTop,.miniMedia'))return;var cp=card.__happyadPost||p;call('openVideo',cp&&cp.id,cp);};
     }else{
       card.onclick=function(e){if(e.target&&e.target.closest&&e.target.closest('[data-card-act],button,a,.miniTop,.miniMedia'))return;var cp=card.__happyadPost||p;call('openPhoto',cp&&cp.id,cp);};

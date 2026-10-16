@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1173-compteurs-stables-20261016';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1173-session-messages-20261016';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -11,8 +11,7 @@ var HAPPYAD_PUSH_STATE_CACHE = 'happyad-push-state-v1';
 var HAPPYAD_PUSH_AVATAR_CACHE = 'happyad-push-avatar-v2';
 var HAPPYAD_VAPID_PUBLIC_KEY = 'BA3UgDp8-6VYN6nZgSNX14LeZVLK6FesJgLXVytEKkKgplK_3KVssohN_SAKPDdkhoAmpQzIo3Ev9VGIXNZP-bE';
 var HAPPYAD_APP_SHELL = [
-  './core/fyblic-counts-v1171.js?v=1221',
-  './core/fyblic-views-home-v1172.js?v=1173',
+  './core/fyblic-counts-v1171.js?v=1172',
   './',
   './index.html',
   './index.html?v=v1046-logo-compresseur',
@@ -45,7 +44,7 @@ var HAPPYAD_APP_SHELL = [
   './core/home-feed-master-v1.js?v=1096-card-visual-hq',
   './core/home-media-loader-v1.js?v=1099-photo-max-quality',
   './core/like-direct-master-v876.js?v=995-like-network-stable',
-  './core/home-actions-master-v1.js?v=1173-stable-count',
+  './core/home-actions-master-v1.js?v=1172-verified-counts',
   './core/actions-layout-master-v982.css?v=1006-action-count-15',
   './core/home-card-layout-master-v982.css?v=986-professional-icons-love',
   './core/home-visual-maturity-master-v988.css?v=1097-boutique-card-maturity',
@@ -58,7 +57,7 @@ var HAPPYAD_APP_SHELL = [
   './core/mention-render-master-v943.js?v=944-photo-profile-handoff',
   './core/profile-link-master-v992.js?v=996-primary-name-badge',
   './core/comment-mention-master-v994.js?v=996-primary-name-visible',
-  './core/home-card-renderer-v1.js?v=1173-stable-count',
+  './core/home-card-renderer-v1.js?v=1097-boutique-card-maturity',
   './core/home-card-story-ring-master-v992.js?v=992-home-story-ring-exact',
   './core/home-feed-view-v1.js?v=929-prepaint-anchor',
   './core/home-feed-boot-v1.js?v=1088-adaptive-1080-priority',
@@ -101,10 +100,10 @@ var HAPPYAD_APP_SHELL = [
   './core/interaction-privacy-master-v855r52.js?v=972-p1-single-client',
   './core/post-options-master-v693.js?v=1104-menu-tap-polish',
   './core/share-button-bridge.js?v=938-guest-share-gate',
-  './core/story-master-v699.js?v=1092-radar-title-removed',
+  './core/story-master-v699.js?v=1173-full-post-cta',
   './core/notification-master-v700.js?v=1031-storage-security',
   './core/fyblic-toast-master-v1105.js?v=1105-action-toast',
-  './core/auth-session-master-v598.js?v=1113-legal-boot-stable',
+  './core/auth-session-master-v598.js?v=1173-session-resume',
   './conditions-utilisation.html?v=1113-legal-boot-stable',
   './core/profile-identity-stable-master-v741.js?v=1031-storage-security',
   './core/profile-avatar-recovery-master-v743.js?v=855r32-no-resurrection',

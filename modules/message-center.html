@@ -12857,6 +12857,7 @@
       }
 
       async function markRead(conversationId, serverSeq){
+        if(conversationId!==currentConversationId || !messageCenterVisible() || !chatNearBottom(220))return null;
         if(!isUuid(conversationId) || finiteNumber(serverSeq,0) <= 0) return null;
         const seq = finiteNumber(serverSeq,0);
         const previous = finiteNumber(readSync.get(conversationId),0);
@@ -13317,6 +13318,7 @@
           renderConversations(searchInput && searchInput.value);
           warmConversationPrivacyV855R51(conversations).catch(()=>{});
           syncInboxDelivered(conversations);
+          syncKnownConversationGaps({limit:10}).catch(()=>{});
         }else if(!options.silent){
           setListState('Chargement des conversations…');
         }
@@ -13338,6 +13340,7 @@
              sont peints sans attendre deux autres RPC, les profils ou la confidentialité. */
           renderConversations(searchInput && searchInput.value);
           syncInboxDelivered(conversations);
+          syncKnownConversationGaps({limit:10}).catch(()=>{});
           refreshUnreadTotal().catch(() => {});
           queuePersistConversations();
           const profileIds=conversations.map(item => item.targetId);
@@ -13918,7 +13921,7 @@
       }
 
       function messageCenterVisible(){
-        if(activeMessageView !== 'chat') return false;
+        if(activeMessageView !== 'chat' || !messageFrameVisibleV868()) return false;
         if(document.hidden || document.visibilityState !== 'visible') return false;
         if(typeof document.hasFocus === 'function' && !document.hasFocus()) return false;
         if(!isUuid(currentConversationId) || currentConversationId !== readEligibleConversationId) return false;

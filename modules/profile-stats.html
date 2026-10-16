@@ -2,7 +2,7 @@
 
 <html lang="fr" data-happyad-page="profile-stats">
 <head>
-<script src="../core/fyblic-counts-v1171.js?v=1221"></script>
+<script src="../core/fyblic-counts-v1172.js?v=1171"></script>
 <style id="happyad-profile-avatar-source-v995">
 /* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
 .avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
@@ -1749,7 +1749,7 @@
 <section class="page active" data-page="overview">
 <div class="kpi-grid">
 <article class="kpi" data-live-kpi="overview.views" style="--tone:rgba(145,202,255,.11)"><div class="kpi-top"><span class="kpi-label">Vues totales</span><span class="kpi-icon"><svg class="icon"><use href="#i-eye" xlink:href="#i-eye"></use></svg></span></div><div><div class="kpi-value" data-kpi="views">—</div><div class="delta neutral">—</div></div></article>
-<article class="kpi" data-live-kpi="overview.reach" style="--tone:rgba(145,202,255,.11)"><div class="kpi-top"><span class="kpi-label">Comptes touchés</span><span class="kpi-icon"><svg class="icon"><use href="#i-users" xlink:href="#i-users"></use></svg></span></div><div><div class="kpi-value" data-kpi="reach">—</div><div class="delta neutral">—</div></div></article>
+<article class="kpi" data-live-kpi="overview.reach" style="--tone:rgba(145,202,255,.11)"><div class="kpi-top"><span class="kpi-label">Comptes observés</span><span class="kpi-icon"><svg class="icon"><use href="#i-users" xlink:href="#i-users"></use></svg></span></div><div><div class="kpi-value" data-kpi="reach">—</div><div class="delta neutral">—</div></div></article>
 <article class="kpi" data-live-kpi="overview.interactions" style="--tone:rgba(145,202,255,.11)"><div class="kpi-top"><span class="kpi-label">Interactions</span><span class="kpi-icon"><svg class="icon"><use href="#i-heart" xlink:href="#i-heart"></use></svg></span></div><div><div class="kpi-value" data-kpi="engagement">—</div><div class="delta neutral">—</div></div></article>
 <article class="kpi" data-live-kpi="audience.gained" style="--tone:rgba(145,202,255,.11)"><div class="kpi-top"><span class="kpi-label">Nouveaux abonnés</span><span class="kpi-icon"><svg class="icon"><use href="#i-user-plus" xlink:href="#i-user-plus"></use></svg></span></div><div><div class="kpi-value" data-kpi="followers">—</div><div class="delta neutral">—</div></div></article>
 <article class="kpi" data-live-kpi="profile.messageTaps" style="--tone:rgba(145,202,255,.11)"><div class="kpi-top"><span class="kpi-label">Contacts par message</span><span class="kpi-icon"><svg class="icon"><use href="#i-message" xlink:href="#i-message"></use></svg></span></div><div><div class="kpi-value" data-kpi="messages">—</div><div class="delta neutral">—</div></div></article>
@@ -2452,7 +2452,7 @@
       const typeLabel=item.type==='video'?'Vidéo':item.type==='photo'?'Photo':'Publication Marketplace';
       const common=[
         contentStat('Vues',formatCompact(item.views*scale)),
-        contentStat('Comptes touchés',formatCompact(item.reach*scale)),
+        contentStat('Comptes observés',formatCompact(item.reach*scale)),
         contentStat('J’aime',scaledMetric(item.likes).toLocaleString(GLOBAL_LOCALE)),
         contentStat('Commentaires',scaledMetric(item.comments).toLocaleString(GLOBAL_LOCALE)),
         contentStat('Partages',scaledMetric(item.shares).toLocaleString(GLOBAL_LOCALE)),
@@ -2591,7 +2591,7 @@
     }
 
     const pageHelp={
-      overview:{purpose:'Synthèse de la performance du compte pour la période sélectionnée.',metrics:['Vues totales : lectures ou affichages enregistrés.','Comptes touchés : utilisateurs uniques exposés.','Conversion : part des actions ayant atteint l’objectif défini.']},
+      overview:{purpose:'Synthèse de la performance du compte pour la période sélectionnée.',metrics:['Vues totales : lectures ou affichages enregistrés.','Comptes observés : utilisateurs uniques exposés.','Conversion : part des actions ayant atteint l’objectif défini.']},
       content:{purpose:'Analyse individuelle et agrégée des photos, vidéos et publications.',metrics:['Les vidéos ajoutent durée moyenne, temps total et rétention.','Les photos conservent portée, ouvertures et interactions, sans durée de visionnage.']},
       audience:{purpose:'Répartition et activité de l’audience avec agrégation respectueuse de la confidentialité.',metrics:['Les données démographiques nécessitent un seuil minimum avant affichage.','Les heures actives utilisent le fuseau horaire du compte.']},
       engagement:{purpose:'Mesure des actions volontaires : mentions J’aime, commentaires, partages et enregistrements.',metrics:['Le taux d’engagement rapporte les interactions à la portée ou aux vues selon le contexte.']},
@@ -2669,7 +2669,7 @@
       const o=statsState?.data?.overview||{},p=statsState?.data?.profile||{};
       return `<div class="detail-grid">
         <div class="detail-card"><small>Vues</small><strong>${formatCompactLive(o.views)}</strong></div>
-        <div class="detail-card"><small>Comptes touchés</small><strong>${formatCompactLive(o.reach)}</strong></div>
+        <div class="detail-card"><small>Comptes observés</small><strong>${formatCompactLive(o.reach)}</strong></div>
         <div class="detail-card"><small>Interactions</small><strong>${formatCompactLive(o.interactions)}</strong></div>
         <div class="detail-card"><small>Visites du profil</small><strong>${formatCompactLive(p.visits)}</strong></div>
       </div>`;
@@ -2860,7 +2860,7 @@
       try{const topWindow=window.top;
         if(typeof topWindow.happyadOpenInternalUrlV492==='function'){
           try{window.parent.HappyProfileStatsHostV855R4?.close({reason:'open-publication'});}catch(_){}
-          topWindow.happyadOpenInternalUrlV492(path,{source:'stats-v1171',force:true});return;
+          topWindow.happyadOpenInternalUrlV492(path,{source:'stats-v1172',force:true});return;
         }
       }catch(_){}
       window.top.location.href=new URL('../'+path,location.href).href;return;
@@ -3060,7 +3060,7 @@
     }
     function bindKpis(){document.querySelectorAll('[data-live-kpi]').forEach(art=>{const k=art.dataset.liveKpi;let v=getPath(statsState.data,k),ch=0,f='number',s='%';if(k==='overview.views')ch=getPath(statsState.data,'overview.viewsChange');if(k==='overview.reach')ch=getPath(statsState.data,'overview.reachChange');if(k==='overview.interactions')ch=getPath(statsState.data,'overview.interactionsChange');if(k==='audience.gained')ch=getPath(statsState.data,'profile.newFollowsChange');if(k==='profile.messageTaps')ch=getPath(statsState.data,'profile.messageTapsChange');if(k==='overview.conversion'){const reach=number(getPath(statsState.data,'overview.reach')),taps=number(getPath(statsState.data,'profile.messageTaps'));v=reach?100*taps/reach:null;f='percent';s='pt'}if(k==='content.total'){const canonical=getPath(statsState.data,'content.publications');v=canonical!==undefined&&canonical!==null?number(canonical):number(getPath(statsState.data,'content.posts'))+number(getPath(statsState.data,'content.videos'));ch=getPath(statsState.data,'content.publicationsChange');if(ch===undefined||ch===null)ch=getPath(statsState.data,'content.postsChange')}if(k==='content.averageViews'){const canonical=getPath(statsState.data,'content.publications');const total=canonical!==undefined&&canonical!==null?number(canonical):number(getPath(statsState.data,'content.posts'))+number(getPath(statsState.data,'content.videos'));v=total?number(getPath(statsState.data,'overview.views'))/total:null}if(k==='content.completionRate'){const videos=number(getPath(statsState.data,'content.videos'));if(!videos)v=null;f='percent'}if(k==='growth.conversion'){const visits=number(getPath(statsState.data,'profile.visits'));v=visits?100*number(getPath(statsState.data,'audience.gained'))/visits:null;f='percent';s='pt'}if(k==='stories.completion'){const views=number(getPath(statsState.data,'content.storyViews')),exits=number(getPath(statsState.data,'content.storyExits'));v=views?100*Math.max(0,views-exits)/views:null;f='percent'}if(k==='messages.averageResponse'){v='—';f='duration'}if(k==='messages.responseRate')f='percent';if(k.startsWith('revenue.')||k==='rewards.total'||k==='rewards.pending')f='money';setKpi(art,v,ch,f,s)})}
     function renderPerformanceSummary(){document.querySelectorAll('[data-live-summary]').forEach(item=>{const n=number(getPath(statsState.data,item.dataset.liveSummary)),el=item.querySelector('strong');if(!el)return;el.textContent=n===0?'—':`${n>0?'+':''}${n.toLocaleString(GLOBAL_LOCALE,{maximumFractionDigits:1})} %`;el.style.color=n<0?'#ff747a':n>0?'#43dc9b':'#9ca5b6'})}
-    function renderInsights(){const c=statsState.data.content||{},p=statsState.data.profile||{},a=byId('overviewInsightContent'),b=byId('overviewInsightProfile');if(a){a.querySelector('strong').textContent=number(c.videos)>0?'Performance vidéo':'Analyse du contenu';a.querySelector('p').textContent=number(c.videos)>0?`${formatNumber(c.videos)} vidéos, durée moyenne ${number(c.averageWatchSeconds).toLocaleString(GLOBAL_LOCALE,{maximumFractionDigits:1})} s et complétion ${formatPercent(c.completionRate)}.`:'Aucune vidéo publiée pendant la période sélectionnée.'}if(b){b.querySelector('strong').textContent='Activité du profil';b.querySelector('p').textContent=`${formatNumber(p.visits)} visites, ${formatNumber(p.messageTaps)} contacts par message et ${formatNumber(p.linkTaps)} ouvertures de lien.`}}
+    function renderInsights(){const c=statsState.data.content||{},p=statsState.data.profile||{},a=byId('overviewInsightContent'),b=byId('overviewInsightProfile');if(a){a.querySelector('strong').textContent=number(c.videos)>0?'Performance vidéo':'Analyse du contenu';a.querySelector('p').textContent=number(c.videos)>0?`${formatNumber(c.videos)} vidéos, durée moyenne ${c.averageWatchSeconds==null?'indisponible':number(c.averageWatchSeconds).toLocaleString(GLOBAL_LOCALE,{maximumFractionDigits:1})+' s'} et complétion ${formatPercent(c.completionRate)}.`:'Aucune vidéo publiée pendant la période sélectionnée.'}if(b){b.querySelector('strong').textContent='Activité du profil';b.querySelector('p').textContent=`${formatNumber(p.visits)} visites, ${formatNumber(p.messageTaps)} contacts par message et ${formatNumber(p.linkTaps)} ouvertures de lien.`}}
     function decodeHtmlValue(value){
       const text=String(value||'');if(!text.includes('&'))return text;
       try{const node=document.createElement('textarea');node.innerHTML=text;return node.value}catch(_){return text}
@@ -3297,11 +3297,11 @@
       const item=normalizeTop(base||{});
       const d=detail&&typeof detail==='object'?detail:{};
       const media=mergeMediaDetails(item,d);
-      const likes=number(d.likes),comments=number(d.comments),shares=number(d.shares),saves=number(d.saves);
+      const likes=number(d.likes),comments=number(d.comments),shares=d.countsVerifiedV220&&d.shares==null?null:number(d.shares),saves=number(d.saves);
       const detailBreakdown=likes+comments+shares+saves;
       const views=d.countsVerifiedV220?number(d.views):number(item.views);
-      const reach=Math.max(number(item.reach),number(d.reach));
-      const interactions=Math.max(number(item.interactions),number(d.interactions),detailBreakdown);
+      const reach=d.countsVerifiedV220?d.reach:Math.max(number(item.reach),number(d.reach));
+      const interactions=d.countsVerifiedV220?d.interactions:Math.max(number(item.interactions),number(d.interactions),detailBreakdown);
       const publicationKey=String(d.publicationKey||d.publication_key||item.publicationKey||'');
       const explicitlyResolved=d.breakdownResolved===true||d.breakdown_resolved===true;
       const breakdownResolved=explicitlyResolved||interactions===detailBreakdown;
@@ -3630,7 +3630,7 @@
       }
     }
     function ensureTopPageLoaded(){if(!topPaging.loaded&&!topPaging.loading)loadMoreTopContents(true)}
-    function renderContent(){const c=statsState.data.content||{};if(byId('contentWatchTotal'))byId('contentWatchTotal').textContent=formatHours(number(c.watchSeconds)/3600);if(byId('contentWatchAverage'))byId('contentWatchAverage').textContent=`${number(c.averageWatchSeconds).toLocaleString(GLOBAL_LOCALE,{maximumFractionDigits:1})} s`;if(byId('contentVideoViews'))byId('contentVideoViews').textContent=formatCompactLive(c.videoViews);if(byId('contentCompletion'))byId('contentCompletion').textContent=formatPercent(c.completionRate);const vals=[['Vidéos',number(c.videos)],['Photos',number(c.photos)],['Stories',number(c.stories)]],max=Math.max(1,...vals.map(x=>x[1]));if(byId('contentFormatPanel'))byId('contentFormatPanel').innerHTML=vals.map(([l,v])=>`<div class="metric-row"><div><div class="metric-label">${l}</div><div class="bar"><span style="--w:${Math.round(100*v/max)}%"></span></div></div><div class="metric-value">${formatNumber(v)}</div></div>`).join('')}
+    function renderContent(){const c=statsState.data.content||{};if(byId('contentWatchTotal'))byId('contentWatchTotal').textContent=(c.watchSeconds==null?'—':formatHours(number(c.watchSeconds)/3600));if(byId('contentWatchAverage'))byId('contentWatchAverage').textContent=(c.averageWatchSeconds==null?'—':`${number(c.averageWatchSeconds).toLocaleString(GLOBAL_LOCALE,{maximumFractionDigits:1})} s`);if(byId('contentVideoViews'))byId('contentVideoViews').textContent=formatCompactLive(c.videoViews);if(byId('contentCompletion'))byId('contentCompletion').textContent=formatPercent(c.completionRate);const vals=[['Vidéos',number(c.videos)],['Photos',number(c.photos)],['Stories',number(c.stories)]],max=Math.max(1,...vals.map(x=>x[1]));if(byId('contentFormatPanel'))byId('contentFormatPanel').innerHTML=vals.map(([l,v])=>`<div class="metric-row"><div><div class="metric-label">${l}</div><div class="bar"><span style="--w:${Math.round(100*v/max)}%"></span></div></div><div class="metric-value">${formatNumber(v)}</div></div>`).join('')}
     function normalizeLocations(r){return Array.isArray(r)?r.map(x=>({name:String(x?.name||x?.location||x?.city||x?.label||''),value:number(x?.value??x?.count??x?.percentage??x?.percent)})).filter(x=>x.name):[]}
     function renderAudience(){const o=statsState.data.overview||{},a=statsState.data.audience||{},reach=number(o.reach),fs=number(o.followerShare),ns=number(o.nonFollowerShare);if(byId('audienceReachPanel'))byId('audienceReachPanel').innerHTML=`<h3 style="font-size:14px;margin:0 0 16px">Répartition de l’audience</h3><div class="donut-row"><div class="donut"><div class="donut-center"><strong>${formatCompactLive(reach)}</strong><small>personnes</small></div></div><div class="donut-legend"><div><span class="dotlabel"><i style="background:var(--accent)"></i>Abonnés</span><strong>${formatPercent(fs)}</strong></div><div><span class="dotlabel"><i style="background:var(--blue)"></i>Non-abonnés</span><strong>${formatPercent(ns)}</strong></div><div><span class="dotlabel"><i style="background:var(--purple)"></i>Abonnés actuels</span><strong>${formatCompactLive(a.followers)}</strong></div></div></div>`;const loc=normalizeLocations(a.locations).slice(0,6);if(byId('audienceLocationsPanel'))byId('audienceLocationsPanel').innerHTML=`<h3 style="font-size:14px;margin:0 0 12px">Principales villes</h3>${loc.length?loc.map(x=>`<div class="metric-row"><div><div class="metric-label">${escapeHtml(x.name)}</div><div class="bar"><span style="--w:${Math.max(5,100*x.value/Math.max(1,loc[0].value))}%"></span></div></div><div class="metric-value">${formatCompactLive(x.value)}</div></div>`).join(''):'<div class="live-empty">Aucune localisation disponible</div>'}`;const ages=a.ages&&typeof a.ages==='object'?Object.entries(a.ages):[];if(byId('audienceAgePanel'))byId('audienceAgePanel').innerHTML=ages.length?ages.map(([l,v])=>`<div class="metric-row"><div><div class="metric-label">${escapeHtml(l)} ans</div><div class="bar"><span style="--w:${Math.max(0,Math.min(100,number(v)))}%"></span></div></div><div class="metric-value">${formatPercent(v)}</div></div>`).join(''):'<div class="live-empty">Données démographiques indisponibles</div>'}
     function updateAudienceActivitySummary(matrix,times,names){let best={value:-1,day:0,slot:0};matrix.forEach((d,i)=>d.forEach((v,s)=>{if(number(v)>best.value)best={value:number(v),day:i,slot:s}}));const n=document.querySelectorAll('.audience-activity-summary strong');if(n[0])n[0].textContent=best.value>0?names[best.day]:'—';if(n[1])n[1].textContent=best.value>0?times[best.slot]:'—';if(n[2])n[2].textContent='Local'}
@@ -3643,7 +3643,7 @@
       if(panel)panel.hidden=true;
       if(empty){empty.hidden=false;empty.innerHTML=`<strong>Rétention indisponible pour cette période</strong>${escapeHtml(content.retentionReason||'Les vues seules ne permettent pas de calculer la durée réellement regardée. Les données apparaîtront après l’enregistrement des événements video_watch.')}`}
     }
-    const STATS_CACHE_VERSION='v1171-unique-views';
+    const STATS_CACHE_VERSION='v1172-unique-views';
     const STATS_CACHE_FRESH_MS=15*60*1000;
     const STATS_CACHE_STALE_MS=24*60*60*1000;
     let activeAnalyticsLoad=null,activeAnalyticsKey='',lastAnalyticsCompletedKey='',lastAnalyticsCompletedAt=0;
@@ -3848,10 +3848,10 @@
         }
         const kind=inferMediaKind(d);
         contentById[id]=d;
-        const actionValue=value=>d.interactionBreakdownUnavailable?'—':formatNumber(value);
-        const common=[...(kind==='video'?[contentStat('Vues uniques',formatCompactLive(d.views))]:[]),contentStat('Comptes touchés',formatCompactLive(d.reach)),contentStat('J’aime',formatNumber(d.likes)),contentStat('Commentaires',actionValue(d.comments)),contentStat('Partages',actionValue(d.shares)),contentStat('Enregistrements',actionValue(d.saves)),contentStat('Interactions',formatNumber(d.interactions))];
+        const actionValue=value=>value==null||d.interactionBreakdownUnavailable?'—':formatNumber(value);
+        const common=[...(kind==='video'?[contentStat('Vues uniques',formatCompactLive(d.views))]:[]),contentStat('Comptes observés',(d.reach==null?'—':formatCompactLive(d.reach))),contentStat('J’aime',formatNumber(d.likes)),contentStat('Commentaires',actionValue(d.comments)),contentStat('Partages',actionValue(d.shares)),contentStat('Enregistrements',actionValue(d.saves)),contentStat('Interactions',(d.interactions==null?'—':formatNumber(d.interactions)))];
         const breakdownNote=d.interactionBreakdownUnavailable?'<div class="content-detail-note">Le total des interactions est disponible, mais la répartition détaillée n’a pas pu être récupérée pour le moment. Réessayez après vérification de la connexion.</div>':'';
-        const extra=(kind==='video'?`<h4 class="content-detail-section">Visionnage vidéo</h4><div class="content-stat-grid">${contentStat('Temps visionné total',formatHours(number(d.watchSeconds)/3600),true)}${contentStat('Durée moyenne',`${number(d.averageWatchSeconds).toLocaleString(GLOBAL_LOCALE,{maximumFractionDigits:1})} s`,true)}${contentStat('Taux de complétion',formatPercent(d.completionRate),true)}${contentStat('Sessions',formatNumber(d.watchEvents),true)}</div>`:kind==='embed'?'<div class="content-detail-note">Cette publication intégrée n’est pas identifiée comme une vidéo. Aucune durée de visionnage vidéo n’est affichée.</div>':'<div class="content-detail-note">Les photos n’affichent pas de durée de visionnage.</div>')+breakdownNote;
+        const extra=(kind==='video'&&d.countsVerifiedV220?'<div class="content-detail-note">Durée de visionnage et monétisation : données vérifiées indisponibles.</div>':kind==='video'?`<h4 class="content-detail-section">Visionnage vidéo</h4><div class="content-stat-grid">${contentStat('Temps visionné total',formatHours(number(d.watchSeconds)/3600),true)}${contentStat('Durée moyenne',`${number(d.averageWatchSeconds).toLocaleString(GLOBAL_LOCALE,{maximumFractionDigits:1})} s`,true)}${contentStat('Taux de complétion',formatPercent(d.completionRate),true)}${contentStat('Sessions',formatNumber(d.watchEvents),true)}</div>`:kind==='embed'?'<div class="content-detail-note">Cette publication intégrée n’est pas identifiée comme une vidéo. Aucune durée de visionnage vidéo n’est affichée.</div>':'<div class="content-detail-note">Les photos n’affichent pas de durée de visionnage.</div>')+breakdownNote;
         const mediaBlock=showMedia?detailMediaPreview(d):'';
         const fullscreenLabel='Voir la publication';
         byId('drawerContent').innerHTML=`${mediaBlock}<div class="content-detail-identity${showMedia?'':' stats-only'}"><strong>${escapeHtml(d.title||'Publication Fyblic')}</strong><small>${escapeHtml(mediaLabel(d))} • Données du compte</small></div><button class="content-full-button" data-open-media-full="${escapeHtml(id)}" type="button">${icon('eye')}<span>${fullscreenLabel}</span></button><h4 class="content-detail-section">Performance générale</h4><div class="content-stat-grid">${common.join('')}</div>${extra}`;

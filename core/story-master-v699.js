@@ -1501,7 +1501,7 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
     var grouped=isGroupedSharedPostV913(row),count=sourcePostGroupCountV913(row)||sourcePostGroupIdsV913(row).length;
     var groupBadge=grouped?'<span class="ha629SharedPostGroupBadgeV913" aria-label="Publication groupée"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="14" height="14" rx="2"></rect><path d="M8 3h10a3 3 0 0 1 3 3v10"></path></svg><b>'+esc(String(count||''))+'</b></span>':'';
     var arrow='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
-    return '<div class="ha629SharedPostCardV912" id="ha629SharedPostCardV912" role="group" aria-label="Publication partagée"><span class="ha629SharedPostHeadV912"><span class="ha629SharedPostAvatarV912">'+avHtml+'</span><span class="ha629SharedPostWhoV912"><span class="ha629SharedNameLineV889"><b>'+esc(name)+'</b><span id="ha629SharedPostBadgeV890"></span></span></span></span><span class="ha629SharedCardShellV891"><span class="ha629SharedPostMediaV912">'+mediaHtml+loader+groupBadge+'</span></span><span class="ha629SharedPostBodyV912"><strong>'+esc(title)+'</strong>'+(cap?'<p>'+esc(cap)+'</p>':'')+'<button class="ha629SharedPostOpenV912" id="ha629SharedPostOpenBottomV914" type="button"><span>Voir la publication</span>'+arrow+'</button></span></div>'
+    return '<div class="ha629SharedPostCardV912" id="ha629SharedPostCardV912" role="group" aria-label="Publication partagée"><span class="ha629SharedPostHeadV912"><span class="ha629SharedPostAvatarV912">'+avHtml+'</span><span class="ha629SharedPostWhoV912"><span class="ha629SharedNameLineV889"><b>'+esc(name)+'</b><span id="ha629SharedPostBadgeV890"></span></span></span></span><span class="ha629SharedCardShellV891"><span class="ha629SharedPostMediaV912">'+mediaHtml+loader+groupBadge+'</span></span><span class="ha629SharedPostBodyV912"><strong>'+esc(title)+'</strong>'+(cap?'<p>'+esc(cap)+'</p>':'')+'<button class="ha629SharedPostOpenV912" id="ha629SharedPostOpenBottomV914" type="button"><span class="fyblic-story-cta-v1173">'+(typ==='video'?'Voir la publication complète':'Voir la publication')+'</span>'+arrow+'</button></span></div>'
   }
 
   function applySharedAspectClassV891(card,node){
@@ -2254,3 +2254,5 @@ body.haStoryOpenV629,html.haStoryOpenV629{overflow:hidden!important;overscroll-b
     document.head.appendChild(st);
   }catch(_e){}
 })();
+
+(function(){var s=document.createElement('style');s.textContent='@keyframes fyblicStoryPulse1173{from{transform:scale(1)}to{transform:scale(1.035)}}.ha629SharedPostCardV912:has(video) .fyblic-story-cta-v1173{display:inline-block;transform-origin:left center;animation:fyblicStoryPulse1173 1.3s ease-in-out infinite alternate}@media(prefers-reduced-motion:reduce){.fyblic-story-cta-v1173{animation:none!important}}';document.head.appendChild(s);})();

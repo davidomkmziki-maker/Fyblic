@@ -1,0 +1,120 @@
+FYBLIC V221 / SITE V1172 — VUES UNIFIÉES ET PROVENANCES
+
+INSTALLATION
+1. Dans Supabase > SQL Editor, exécuter FYBLIC_V221_SQL_MAITRE_VUES.sql EN PREMIER.
+2. Déployer Android V221 et le site V1172 avec les commandes ci-dessous.
+3. Attendre GitHub Actions / Netlify, installer l'APK et rouvrir le site.
+La configuration de signature et applicationId sont conservés.
+Le SQL fourni est complet pour le système de compteurs V220/V221 : pas besoin de
+réexécuter les précédents scripts de vues. Le fichier au nom V220 présent dans
+ces nouveaux ZIP contient aussi ce SQL maître pour éviter une régression.
+Ne pas réexécuter une ancienne copie téléchargée avant cette mise à jour.
+
+RÈGLES
+- Annonce vidéo : union des comptes ayant ouvert le détail OU démarré la lecture
+  dans la Centrale. Les deux écrans affichent le même total.
+- Une seule vue par publication/compte, y compris entre Android et le site.
+- Ouvrir l'annonce puis lire la vidéo, ou l'inverse, ne double pas le compteur.
+- Annonce photo : uniquement à l'ouverture du détail (Voir l'annonce).
+- Vidéo normale : lecture dans la Centrale; l'ouverture depuis une carte Accueil
+  est bien comptée dès que la lecture démarre dans la Centrale.
+- Une simple carte visible et les visiteurs non connectés ne créent pas de vue.
+- Les lectures de compteur ne créent jamais de vue.
+- Accueil : dernier compteur vérifié conservé; sinon — pendant le chargement.
+  Une vraie valeur 0 renvoyée par le serveur reste affichable.
+
+CONSERVATION / SQL MAÎTRE
+Aucune vue V220 n'est effacée. La fusion prend les comptes distincts et la plus
+ancienne date, pas la somme des compteurs. Les anciennes vues déjà récupérées
+restent incluses. Le script est transactionnel et relançable sans doublon.
+Il remplace les RPC fyblic_counts_v220 et fyblic_record_view_v220, et ajoute
+fyblic_record_view_v221. Les appels V220 restent compatibles avec la nouvelle règle.
+Il n'efface ni les autres fonctions, ni les triggers historiques non identifiés.
+Les anciens compteurs d'impressions ne sont plus la source des vues affichées.
+Un relevé final liste les fonctions de vues et déclencheurs présents : transmettre
+ce résultat pour auditer d'autres scripts installés qui ne nous ont pas été fournis.
+Ce fichier ne prétend pas réparer tous les SQL inconnus du projet Supabase.
+Les SQL des messages, stories, notifications, paiements et permissions sont conservés.
+
+PROVENANCES
+fyblic_unique_views_v220 : première date, first_source et first_platform.
+fyblic_view_sources_v221 : publication, compte, surface (central_video ou
+listing_detail), plateforme (android/web/unknown), événement (playback_started
+ou listing_opened), première date d'observation et evidence.
+Un même compte peut avoir une observation sur chaque surface sans compter deux
+fois. Les anciennes vues sont legacy_unknown : leur provenance n'est pas inventée.
+Une ouverture d'annonce n'est pas une preuve de durée regardée. Les origines sont
+déclarées par les clients, pas une validation anti-fraude. Aucun paiement ni vue
+qualifiée monétisable n'est calculé par cette version. Les futures règles devront
+utiliser des durées vérifiées et distinguer les événements, pas sommer les lignes.
+Les identités de spectateurs ne sont pas exposées aux clients.
+
+STATISTIQUES
+Les vues vidéo utilisent le même registre que l'accueil/Centrale/Boutique vidéo.
+Les likes, favoris et republications sont les actions actives par compte distinct;
+les commentaires sont les lignes existantes non supprimées.
+Pour la période choisie : première vue et date des actions/commentaires concernés.
+Les comptes observés sont distincts sur le registre, pas une estimation d'impressions.
+Les photos normales n'ont pas de vues vidéo ni de portée inventée.
+Le total de partages affiché sur les cartes reste issu du compteur de publication
+alimenté par le service de partage existant. Sans historique de partages daté
+vérifié, les partages et interactions agrégées de période affichent — dans les
+statistiques, plutôt que d'attribuer un total historique à cette période.
+Les anciennes courbes d'impressions et les durées non vérifiées ne sont plus
+présentées comme si elles décrivaient les nouveaux compteurs uniques.
+Les autres rubriques indépendantes (profil, messages, stories, revenus) conservent
+leurs services existants; elles ne sont pas recalculées par ce correctif.
+
+VÉRIFICATIONS RÉALISÉES
+SQL exécuté dans PostgreSQL embarqué (PGlite) sur un schéma de test : migration
+répétée, fusion, dates, origines, séquence annonce/lecture, photos, authentification,
+confidentialité, droits d'accès, compteurs d'actions/commentaires et valeurs inconnues.
+JavaScript : vérification syntaxique des scripts des pages modifiées et tests du
+cache persistant, paramètres RPC, visiteur, dates inclusives et statistiques.
+Kotlin : analyse syntaxique des fichiers modifiés; signature comparée à V220.
+Pas de compilation APK complète ni d'exécution sur votre Supabase/téléphone ici.
+
+TEST SUR TÉLÉPHONE
+Compte A ouvre une annonce vidéo : Boutique et Centrale augmentent ensemble une
+fois; A lit ensuite la même vidéo : aucune hausse. Compte B lit d'abord cette
+vidéo : les deux augmentent de 1; B ouvre l'annonce : aucune hausse supplémentaire.
+Fermer/rouvrir l'application : compteur connu conservé. Photo Boutique : faire
+défiler sa carte ne change rien; ouvrir son annonce enregistre une seule vue.
+
+TERMUX ANDROID (dossier habituel ~/fyblic-android)
+(
+set -e
+cd "$HOME/fyblic-android"
+test "$(git rev-parse --show-toplevel)" = "$PWD"
+test -f /sdcard/Download/FYBLIC_V221_VUES_UNIFIEES_PROVENANCES.zip
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Modifications locales présentes : envoyer le résultat avant de continuer."
+  git status --short
+  exit 1
+fi
+test "$(git branch --show-current)" = main
+git pull --ff-only origin main
+unzip -o /sdcard/Download/FYBLIC_V221_VUES_UNIFIEES_PROVENANCES.zip -d .
+git add -A
+if ! git diff --cached --quiet; then git commit -m "V221 : vues unifiees et provenances"; fi
+git push origin main
+)
+
+TERMUX SITE (dépôt Fyblic.git confirmé)
+(
+set -e
+cd "$HOME/fyblic-v1050-deploy"
+test "$(git rev-parse --show-toplevel)" = "$PWD"
+test -f /sdcard/Download/FYBLIC_SITE_V1172_VUES_UNIFIEES_PROVENANCES.zip
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Modifications locales présentes : envoyer le résultat avant de continuer."
+  git status --short
+  exit 1
+fi
+test "$(git branch --show-current)" = main
+git pull --ff-only origin main
+unzip -o /sdcard/Download/FYBLIC_SITE_V1172_VUES_UNIFIEES_PROVENANCES.zip -d .
+git add -A
+if ! git diff --cached --quiet; then git commit -m "V1172 : vues unifiees et statistiques verifiees"; fi
+git push origin main
+)

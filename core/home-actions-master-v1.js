@@ -163,6 +163,7 @@
   function saveAll(x){memory=(x&&typeof x==='object')?x:{};persist();}
   function get(id){
     id=String(id||'');var a=normalize(ensureMemory()[id]||{});
+    var verified=window.FyblicCountsV220?.cached(id);if(verified){a.views=verified.views;a.__uniqueViewsV220=true;}
     /* Le code historique modifie puis appelle set(); retourner une copie évite les mutations silencieuses. */
     return Object.assign({},a,{commentsList:Array.isArray(a.commentsList)?a.commentsList.slice():[]});
   }
@@ -229,8 +230,7 @@
     });
     var vb=card.querySelector('.happyadVideoViewsBadge');
     if(vb){
-      var counter=window.FyblicViewsHomeV1173,verified=counter&&counter.get(id);
-      var viewText=verified!==null&&verified!==undefined?counter.display(id):(a.__uniqueViewsV220===true?compact(a.views||0):'—'),viewCount=vb.querySelector('.happyadVideoViewsCount');
+      var viewText=a.__uniqueViewsV220?compact(a.views):'—',viewCount=vb.querySelector('.happyadVideoViewsCount');
       if(!viewCount){
         vb.innerHTML='<svg class="happyadVideoViewsPlaySvg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.25 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L8.03 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"></path></svg><span class="happyadVideoViewsCount"></span>';
         viewCount=vb.querySelector('.happyadVideoViewsCount');
@@ -243,6 +243,8 @@
     if(!card||!p||!p.id)return;var id=String(p.id);card.__happyadPost=p;
     if(!cards[id])cards[id]=[];if(cards[id].indexOf(card)<0)cards[id].push(card);
   }
+  window.addEventListener('FYBLIC_VERIFIED_COUNTS_V221',function(e){(e.detail?.ids||[]).forEach(refreshEverywhere);});
+  window.addEventListener('storage',function(e){if(e.key==='FYBLIC_VERIFIED_VIEWS_V221')Object.keys(cards).forEach(refreshEverywhere);});
   function refreshEverywhere(id){
     id=String(id||'');var arr=(cards[id]||[]).filter(function(c){return c&&c.isConnected;});cards[id]=arr;arr.forEach(function(c){refreshCard(c,id);});
   }
@@ -374,7 +376,7 @@
       }else if(!activeAuthUid){
         a=resetMineV938(a);
       }
-      try{var exactV220=await window.FyblicCountsV220.read(c,id);a.views=Number(exactV220.views)||0;a.likes=Number(exactV220.likes)||0;a.__uniqueViewsV220=true;}catch(_countsV220){}
+      try{var exactV220=await window.FyblicCountsV220.read(c,id);a.views=Number(exactV220.views)||0;a.likes=Number(exactV220.likes)||0;a.comments=Number(exactV220.comments)||0;a.favs=Number(exactV220.saves)||0;a.reposts=Number(exactV220.reposts)||0;a.__uniqueViewsV220=true;}catch(_countsV220){}
       preservePending(id,a);
       /* V908 : la requête ci-dessus a pu démarrer avant le chargement détaillé des commentaires.
          Relire l'état le plus récent juste avant l'écriture empêche le vieux snapshot de vider
@@ -413,7 +415,7 @@
     }else if(!activeAuthUid){
       ids.forEach(function(id){if(byPost[id])byPost[id]=resetMineV938(byPost[id]);});
     }
-    try{var exactV220=await window.FyblicCountsV220.counts(c,ids);(exactV220.items||[]).forEach(function(row){var a=byPost[String(row.id)];if(a){a.views=Number(row.views)||0;a.likes=Number(row.likes)||0;a.__uniqueViewsV220=true;}});}catch(_countsV220){}
+    try{var exactV220=await window.FyblicCountsV220.counts(c,ids);(exactV220.items||[]).forEach(function(row){var a=byPost[String(row.id)];if(a){a.views=Number(row.views)||0;a.likes=Number(row.likes)||0;a.comments=Number(row.comments)||0;a.favs=Number(row.saves)||0;a.reposts=Number(row.reposts)||0;a.__uniqueViewsV220=true;}});}catch(_countsV220){}
     ids.forEach(function(id){preservePending(id,byPost[id]);byPost[id]=preserveLatestCommentDetail(id,byPost[id]);loadedAt[id]=Date.now();});
     /* La peinture était déjà différée ; la persistance lourde doit l'être aussi. */
     await waitScrollIdle();

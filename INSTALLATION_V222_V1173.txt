@@ -1,0 +1,70 @@
+FYBLIC ANDROID V222 / SITE V1173 — MESSAGES, STORIES, REPRISE
+
+Messages : mise à jour du compteur avant le préchargement. Les conversations
+récentes dont le cache est en retard sont téléchargées sans accusé de lecture.
+Android : jusqu’à 10 conversations, 30 messages récents, 3 téléchargements à la fois.
+Un message peut être marqué lu uniquement dans sa conversation visible, active,
+et au niveau des messages récents. Quitter la conversation retire cette autorisation.
+Le préchargement dépend du réseau et des restrictions Android en arrière-plan.
+
+Stories : aperçu partagé vidéo toujours limité à 30 secondes. Le lien devient
+« Voir la publication complète » avec un zoom doux. Les photos gardent leur texte.
+
+Reprise : reconnexion au retour au premier plan ou du réseau, renouvellement de
+session si nécessaire, tentatives espacées après erreur. Les pages Android en
+échec sont relancées après récupération. Une session révoquée nécessite toujours
+une nouvelle connexion. Aucun travail permanent de chauffe en arrière-plan.
+
+La configuration de signature Android et l’identifiant de l’application sont
+conservés. Les secrets GitHub existants restent nécessaires pour signer l’APK.
+Aucun nouveau SQL requis pour cette version si le SQL maître V221 est installé.
+Les correctifs V221 des vues et provenances sont conservés.
+
+Vérification : analyse syntaxique Kotlin et JavaScript, test isolé de protection
+des lectures. Pas de compilation APK complète ni de test sur votre téléphone ou
+votre Supabase ici. Le push Android déclenche la compilation GitHub Actions.
+
+À vérifier avec deux comptes : ouvrir puis quitter une conversation, envoyer
+un nouveau message et vérifier le badge dans l’accueil; ouvrir ensuite le chat.
+Tester aussi le retour après veille et coupure réseau, puis une story vidéo partagée.
+
+Télécharger les deux ZIP dans Download sans renommer. Les commandes s’arrêtent
+si le dépôt contient des modifications locales : ne pas les effacer pour poursuivre.
+
+TERMUX ANDROID (dossier habituel ~/fyblic-android)
+(
+set -e
+cd "$HOME/fyblic-android"
+test "$(git rev-parse --show-toplevel)" = "$PWD"
+test -f /sdcard/Download/FYBLIC_V222_MESSAGES_STORIES_SESSION.zip
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Modifications locales présentes : envoyer le résultat avant de continuer."
+  git status --short
+  exit 1
+fi
+test "$(git branch --show-current)" = main
+git pull --ff-only origin main
+unzip -o /sdcard/Download/FYBLIC_V222_MESSAGES_STORIES_SESSION.zip -d .
+git add -A
+if ! git diff --cached --quiet; then git commit -m "V222 : messages stories et reprise session"; fi
+git push origin main
+)
+
+TERMUX SITE (dépôt Fyblic.git confirmé)
+(
+set -e
+cd "$HOME/fyblic-v1050-deploy"
+test "$(git rev-parse --show-toplevel)" = "$PWD"
+test -f /sdcard/Download/FYBLIC_SITE_V1173_MESSAGES_STORIES_SESSION.zip
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Modifications locales présentes : envoyer le résultat avant de continuer."
+  git status --short
+  exit 1
+fi
+test "$(git branch --show-current)" = main
+git pull --ff-only origin main
+unzip -o /sdcard/Download/FYBLIC_SITE_V1173_MESSAGES_STORIES_SESSION.zip -d .
+git add -A
+if ! git diff --cached --quiet; then git commit -m "V1173 : messages stories et reprise session"; fi
+git push origin main
+)
