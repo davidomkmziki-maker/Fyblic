@@ -199,7 +199,7 @@
       a.shares=Math.max(a.shares,num(p.shares_count,p.share_count,p.shares));
       a.reposts=Math.max(a.reposts,num(p.reposts_count,p.repost_count,p.reposts,p.republication_count));
       a.favs=Math.max(a.favs,num(p.saves_count,p.favs_count,p.favorite_count,p.favorites_count,p.favs));
-      a.views=Math.max(a.views,num(p.views_count,p.view_count,p.video_views_count,p.views));
+      a.views=a.__uniqueViewsV220?Number(a.views||0):0;
       set(p.id,a,{deferPersist:true});schedulePersist();
     }catch(_e){}
   }
@@ -326,7 +326,7 @@
     v=ownNum(p,['shares_count','share_count','shares']);if(v!==null)a.shares=authoritative?v:Math.max(Number(a.shares||0),v);
     v=ownNum(p,['reposts_count','repost_count','reposts','republication_count']);if(v!==null)a.reposts=authoritative?v:Math.max(Number(a.reposts||0),v);
     v=ownNum(p,['saves_count','favs_count','favorite_count','favorites_count','favs']);if(v!==null)a.favs=authoritative?v:Math.max(Number(a.favs||0),v);
-    v=ownNum(p,['views_count','view_count','video_views_count','views']);if(v!==null)a.views=authoritative?v:Math.max(Number(a.views||0),v);
+    if(!a.__uniqueViewsV220)a.views=0;
     return a;
   }
   function applyMine(a,rows){
@@ -373,6 +373,7 @@
       }else if(!activeAuthUid){
         a=resetMineV938(a);
       }
+      try{var exactV220=await window.FyblicCountsV220.read(c,id);a.views=Number(exactV220.views)||0;a.likes=Number(exactV220.likes)||0;a.__uniqueViewsV220=true;}catch(_countsV220){}
       preservePending(id,a);
       /* V908 : la requête ci-dessus a pu démarrer avant le chargement détaillé des commentaires.
          Relire l'état le plus récent juste avant l'écriture empêche le vieux snapshot de vider
@@ -411,6 +412,7 @@
     }else if(!activeAuthUid){
       ids.forEach(function(id){if(byPost[id])byPost[id]=resetMineV938(byPost[id]);});
     }
+    try{var exactV220=await window.FyblicCountsV220.counts(c,ids);(exactV220.items||[]).forEach(function(row){var a=byPost[String(row.id)];if(a){a.views=Number(row.views)||0;a.likes=Number(row.likes)||0;a.__uniqueViewsV220=true;}});}catch(_countsV220){}
     ids.forEach(function(id){preservePending(id,byPost[id]);byPost[id]=preserveLatestCommentDetail(id,byPost[id]);loadedAt[id]=Date.now();});
     /* La peinture était déjà différée ; la persistance lourde doit l'être aussi. */
     await waitScrollIdle();

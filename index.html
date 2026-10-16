@@ -3,6 +3,7 @@
 <!-- Fyblic V885: Stories last-good immediate + skeleton <=180ms -->
 <!-- Regression lineage cache-bust: 855r65-options-reactivation-fluide | 855r66-options-optimistic-supabase-bg | 855r67-popup-persistant-confirmation-haut | 855r90-home-card-single-design | 855r91-radar-add-persistent -->
 <!DOCTYPE html><html lang="fr" data-happyad-page="home"><head>
+<script src="./core/fyblic-counts-v1171.js?v=1171"></script>
 <script id="fyblic-v1128-native-app-early-boot">
 (function(){
   try{
@@ -3417,7 +3418,7 @@ function happyadVideoFastOpenPayload(postId){
   }catch(_e){}
 }
 
-async function happyadMarkVideoViewFromHome(id){try{const c=happyadSb();const u=await happyadAuthUser();if(!c||!u||!id)return;const r=await c.from('happyad_video_views').upsert({post_id:String(id),viewer_id:u.id,viewed_at:new Date().toISOString()},{onConflict:'post_id,viewer_id'}).select('id').maybeSingle();if(r&&r.error)throw r.error;const vc=await c.from('happyad_video_views').select('id',{count:'exact',head:true}).eq('post_id',String(id));const a=getA(id);a.views=Number((vc&&!vc.error&&vc.count)||a.views||0);setA(id,a);refreshLikeEverywhere(id);try{await c.from('happyad_posts').update({views_count:Number(a.views||0)}).eq('id',String(id));localStorage.setItem('HAPPYAD_ACTION_FAST_SYNC_V1',JSON.stringify({id:String(id),t:Date.now(),type:'view'}));}catch(_e){}}catch(e){console.warn('home video view mark',e)}}
+async function happyadMarkVideoViewFromHome(id){ /* V1171: only actual Central playback records a view. */ }
 function happyadVideoCardClickFeedback(id){
   try{document.querySelectorAll('.bottom .nav').forEach(function(n){n.classList.remove('active','happyadTapOrange','happyadBottomPressedV504','happyadVideoOpeningV16R');});}catch(_b){}
   try{var safe=(window.CSS&&CSS.escape)?CSS.escape(String(id)):String(id).replace(/[^a-zA-Z0-9_-]/g,'\\$&');var card=document.querySelector('[data-post-id="'+safe+'"]');if(card){card.classList.add('happyadVideoCardOpeningV16R');clearTimeout(card.__happyadVideoOpenT);card.__happyadVideoOpenT=setTimeout(function(){try{card.classList.remove('happyadVideoCardOpeningV16R');}catch(_e){}},520);}}catch(_c){}

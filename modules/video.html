@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="fr" data-happyad-page="video">
 <head>
+<script src="../core/fyblic-counts-v1171.js?v=1171"></script>
 <style id="happyad-profile-avatar-source-v995">
 /* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
 .avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
@@ -751,7 +752,7 @@ function mapHappyPost(r){
     comments_count:Number(r.comments_count||0),
     shares_count:Number(r.shares_count||0),
     saves_count:Number(r.saves_count||0),
-    views_count:Number(r.views_count||r.view_count||r.video_views_count||0),
+    views_count:0, // V1171: hydrated from unique-account ledger
     comments_disabled:(r.comments_disabled===true),hide_like_count:(r.hide_like_count===true),mentioned_user_ids:(r.mentioned_user_ids!=null?r.mentioned_user_ids:(r.mentionedUserIds||[])),mention_handles:(r.mention_handles!=null?r.mention_handles:(r.mentionHandles||[])),mentions:r.mentions||r.mention_text||r.mentionText||'',mentionedUsers:Array.isArray(r.mentionedUsers)?r.mentionedUsers:[],
     visibility:r.visibility||r.privacy||r.audience||r.status||'',privacy:r.privacy||'',audience:r.audience||'',status:r.status||'',is_private:(r.is_private===true||r.private===true||String(r.visibility||r.privacy||r.audience||r.status||'').toLowerCase()==='private'),private_at:r.private_at||r.privated_at||'',deleted_at:r.deleted_at||'',
     happyadMarketplace:marketplace,
@@ -1104,12 +1105,7 @@ function happyadVideoListingViewerKeyV820(){
   return value;
 }
 const HAPPYAD_VIDEO_LISTING_VIEW_PENDING_V820=new Map();
-async function happyadRecordListingVideoViewV820(p){
-  if(!happyadVideoIsMarketplaceV820(p))return 0;var id=String(p.id||p.post_id||'').trim();if(!id)return 0;
-  if(HAPPYAD_VIDEO_LISTING_VIEW_PENDING_V820.has(id))return HAPPYAD_VIDEO_LISTING_VIEW_PENDING_V820.get(id);
-  var task=(async function(){var c=happyadSb&&happyadSb();if(!c||typeof c.rpc!=='function')return 0;var r=await c.rpc('happyad_record_listing_view_v1',{p_listing_id:id,p_source:'video',p_viewer_key:happyadVideoListingViewerKeyV820()});if(r&&r.error)throw r.error;var count=Number(r&&r.data&&r.data.count||0)||0;p.listing_views_count=count;p.listingViewsCount=count;return count})().catch(function(){return Number(p.listing_views_count||0)}).finally(function(){setTimeout(function(){HAPPYAD_VIDEO_LISTING_VIEW_PENDING_V820.delete(id)},900)});
-  HAPPYAD_VIDEO_LISTING_VIEW_PENDING_V820.set(id,task);return task;
-}
+async function happyadRecordListingVideoViewV820(p){return 0; /* Listing detail owns listing views. */}
 function happyadStopVideoForListingV850(){
   try{window.__HAPPYAD_VIDEO_TAB_VISIBLE_V594=false;}catch(_e){}
   try{if(typeof window.happyadStopAllVideoAudio==='function')window.happyadStopAllVideoAudio('listing-open-v850');}catch(_e){}
@@ -1163,7 +1159,7 @@ function initials(s){return String(s||'Fyblic').trim().split(/\s+/).slice(0,2).m
 const KEY='HAPPYAD_VIDEO_ACTIONS_V1';
 function readActions(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
 function saveActions(x){localStorage.setItem(KEY,JSON.stringify(x))}
-function getA(id){const all=readActions();return all[id]||{like:false,fav:false,likes:0,comments:0,shares:0,favs:0,views:0,commentsList:[]}}
+function getA(id){const all=readActions();if(all[id]&&!all[id].__uniqueViewsV220)all[id].views=0;return all[id]||{like:false,fav:false,likes:0,comments:0,shares:0,favs:0,views:0,commentsList:[]}}
 function setA(id,a){const all=readActions();all[id]=a;saveActions(all)}
 let HAPPYAD_VIDEO_AUTH_EPOCH_V938=0;
 const HAPPYAD_VIDEO_ACTION_PENDING_LOCKS={};function videoPendingKey(postId,actionType){return String(postId||'')+'::'+String(actionType||'like')}function setVideoPendingAction(postId,actionType,on,count,ttl){try{HAPPYAD_VIDEO_ACTION_PENDING_LOCKS[videoPendingKey(postId,actionType)]={on:!!on,count:Number(count||0),until:Date.now()+Number(ttl||8000)}}catch(e){}}function clearVideoPendingAction(postId,actionType){try{delete HAPPYAD_VIDEO_ACTION_PENDING_LOCKS[videoPendingKey(postId,actionType)]}catch(e){}}function getVideoPendingAction(postId,actionType){try{const x=HAPPYAD_VIDEO_ACTION_PENDING_LOCKS[videoPendingKey(postId,actionType)];if(x&&Date.now()<Number(x.until||0))return x;if(x)delete HAPPYAD_VIDEO_ACTION_PENDING_LOCKS[videoPendingKey(postId,actionType)]}catch(e){}return null}function happyadVideoApplyDirectLikeV876(id,a){try{var d=window.HappyLikeDirectV876;if(d&&d.apply)return d.apply(id,a)||a;}catch(_e){}return a}
@@ -1340,7 +1336,7 @@ async function loadVideoActionsFromSupabase(input,options){
     const actionsP=Promise.resolve(happyadVideoSelectRows(c,'happyad_content_actions',id)).catch(function(e){console.warn('video actions load',e);return null;});
     const commentsP=Promise.resolve(happyadVideoSelectRows(c,'happyad_content_comments',id)).catch(function(e){console.warn('video comments load',e);return null;});
     const commentCountP=(async function(){try{let q=await c.from('happyad_content_comments').select('id',{count:'exact',head:true}).eq('post_id',id);if(q&&q.error)throw q.error;let n=(q&&isFinite(Number(q.count)))?Math.max(0,Number(q.count)):null;if(n===0){try{const l=await c.from('happyad_content_comments').select('id',{count:'exact',head:true}).eq('content_id',id);if(l&&!l.error&&isFinite(Number(l.count))&&Number(l.count)>0)n=Math.max(0,Number(l.count));}catch(_legacy){}}return n;}catch(_e){return null;}})();
-    const viewsP=Promise.resolve(c.from('happyad_video_views').select('*').eq('post_id',id)).then(function(q){if(q&&!q.error)return q.data||[];if(q&&q.error&&!happyadVideoSchemaError(q.error))console.warn('video views load',q.error);return null;}).catch(function(e){console.warn('video views load',e);return null;});
+    const viewsP=FyblicCountsV220.read(c,id).catch(function(){return null;});
     const settled=await Promise.all([userP,actionsP,commentsP,viewsP,commentCountP]);const user=settled[0];actions=settled[1];comments=settled[2];views=settled[3];exactCommentCount=settled[4];const uid=String((user&&user.id)||'');
     if(Array.isArray(comments)&&comments.length){const ids=comments.map(function(r){return r&&r.id;}).filter(Boolean);if(ids.length){try{const q=await c.from('happyad_content_comment_likes').select('*').in('comment_id',ids);if(q&&!q.error)commentLikes=q.data||[];}catch(_e){}}}
     const a=Object.assign({},base);
@@ -1368,7 +1364,7 @@ async function loadVideoActionsFromSupabase(input,options){
       if(exactCommentCount!==null)a.comments=happyadVideoMutationRecentV68(id,'comments')?Math.max(Number(a.comments||0),Number(exactCommentCount||0),treeCount):Math.max(Number(exactCommentCount||0),treeCount);
       else a.comments=Math.max(Number(a.comments||0),treeCount);
     }else if(exactCommentCount!==null){a.comments=happyadVideoMutationRecentV68(id,'comments')?Math.max(Number(a.comments||0),Number(exactCommentCount||0)):Number(exactCommentCount||0);}
-    if(Array.isArray(views))a.views=happyadVideoUniqueRows(views.filter(function(r){return !r.deleted_at;})).length;
+    if(views){a.views=Number(views.views)||0;a.likes=Number(views.likes)||0;a.__uniqueViewsV220=true;}
     const pl=getVideoPendingAction(id,'like');if(pl){a.like=!!pl.on;a.likes=Number(pl.count||0);}
     happyadVideoApplyDirectLikeV876(id,a);
     const pf=getVideoPendingAction(id,'fav');if(pf){a.fav=!!pf.on;a.favs=Number(pf.count||0);}
@@ -1384,7 +1380,7 @@ async function syncVideoPostCounts(postId){
   let exact=null;try{const cq=await c.from('happyad_content_comments').select('id',{count:'exact',head:true}).eq('post_id',id);if(cq&&!cq.error&&isFinite(Number(cq.count)))exact=Math.max(0,Number(cq.count));if(exact===0){try{const cq2=await c.from('happyad_content_comments').select('id',{count:'exact',head:true}).eq('content_id',id);if(cq2&&!cq2.error&&isFinite(Number(cq2.count))&&Number(cq2.count)>0)exact=Math.max(0,Number(cq2.count));}catch(_legacy){}}}catch(_cc){}
   if(exact!==null){a.comments=exact;setA(id,a);}
   happyadVideoPatchLocalCounts(id,a);
-  const full={likes_count:Number(a.likes||0),saves_count:Number(a.favs||0),views_count:Number(a.views||0)};if(exact!==null)full.comments_count=Number(exact);
+  const full={likes_count:Number(a.likes||0),saves_count:Number(a.favs||0)};if(exact!==null)full.comments_count=Number(exact);
   const variants=exact!==null?[full,{likes_count:full.likes_count,comments_count:full.comments_count,saves_count:full.saves_count},{likes_count:full.likes_count,comments_count:full.comments_count},{likes_count:full.likes_count}]:[full,{likes_count:full.likes_count,saves_count:full.saves_count},{likes_count:full.likes_count}];
   for(let i=0;i<variants.length;i++){try{const q=await c.from('happyad_posts').update(variants[i]).eq('id',id);if(!q||!q.error)break;if(!happyadVideoSchemaError(q.error)){console.warn('video post counts sync',q.error);break;}}catch(e){break;}}
   document.querySelectorAll('.reel[data-id="'+CSS.escape(String(id))+'"]').forEach(refreshActionUI);
@@ -1392,7 +1388,10 @@ async function syncVideoPostCounts(postId){
 }
 async function toggleVideoActionSupabase(postId,actionType,nextValue){const c=happyadSb();if(!c||!postId)throw new Error('Supabase non chargé');const user=await happyadAuthUser();if(!user)throw new Error('Connexion requise');const id=String(postId);happyadMarkVideoLocalMutationV68(id,'actions',2600);if((actionType==='share'||actionType==='repost')&&(actionType==='share'||nextValue)){const gate=window.HappyInteractionPrivacyV855R52;if(!gate||!(await gate.canPost(id,'reposts',true)))throw new Error('Le propriétaire n’autorise pas les partages ou republications.');}if(actionType==='share'){const row={post_id:id,content_id:id,content_type:'video',action_type:'share',user_id:user.id,liked:true};const ins=await c.from('happyad_content_actions').upsert(row,{onConflict:'post_id,content_type,action_type,user_id'});if(ins.error)throw ins.error;}else{const safeActionType=(actionType==='fav'?'favorite':actionType);const row={post_id:id,content_id:id,content_type:'video',action_type:safeActionType,user_id:user.id,liked:!!nextValue};const up=await c.from('happyad_content_actions').upsert(row,{onConflict:'post_id,content_type,action_type,user_id'});if(up.error)throw up.error;}happyadMarkVideoLocalMutationV68(id,'actions',2600);try{localStorage.setItem('HAPPYAD_ACTION_FAST_SYNC_V1',JSON.stringify({id:id,t:Date.now()}));}catch(e){}if(nextValue&&(actionType==='like'||actionType==='fav'||actionType==='favorite')){try{happyadNotifyMediaAction(actionType==='like'?'like':'favoris');}catch(_n){}}happyadScheduleVideoCountsV68(id);return getA(id)}
 async function toggleVideoLikeSupabase(postId,nextLiked){return toggleVideoActionSupabase(postId,'like',nextLiked)}
-async function happyadMarkVideoViewSupabase(postId){const c=happyadSb();if(!c||!postId)return;try{const user=await happyadAuthUser();if(!user)return;const id=String(postId);const key='HAPPYAD_VIDEO_VIEW_MARKED_V1';let seen={};try{seen=JSON.parse(sessionStorage.getItem(key)||'{}')||{}}catch(e){}if(seen[id])return;seen[id]=Date.now();sessionStorage.setItem(key,JSON.stringify(seen));happyadMarkVideoLocalMutationV68(id,'views',2200);const up=await c.from('happyad_video_views').upsert({post_id:id,viewer_id:user.id,viewed_at:new Date().toISOString()},{onConflict:'post_id,viewer_id'}).select('id').maybeSingle();if(up&&up.error)throw up.error;const a=getA(id);try{const vc=await c.from('happyad_video_views').select('id',{count:'exact',head:true}).eq('post_id',id);if(vc&&!vc.error)a.views=Number(vc.count||a.views||0);}catch(_count){}setA(id,a);happyadVideoPatchLocalCounts(id,a);document.querySelectorAll('.reel[data-id="'+CSS.escape(String(id))+'"]').forEach(refreshActionUI);happyadScheduleVideoCountsV68(id);try{localStorage.setItem('HAPPYAD_HOME_REFRESH_NEEDED','1');localStorage.setItem('HAPPYAD_ACTION_FAST_SYNC_V1',JSON.stringify({id:id,t:Date.now(),type:'view'}));}catch(e){}return a;}catch(e){console.warn('video view mark',e)}}
+async function happyadMarkVideoViewSupabase(postId){
+ const c=happyadSb();if(!c||!postId||!happyadVideoFrameVisibleV869())return;
+ try{const a=getA(String(postId));a.views=await FyblicCountsV220.record(c,String(postId),'central_video');a.__uniqueViewsV220=true;setA(String(postId),a);happyadVideoPatchLocalCounts(String(postId),a);document.querySelectorAll('.reel[data-id="'+CSS.escape(String(postId))+'"]').forEach(refreshActionUI);return a;}catch(e){console.warn('Vue unique non enregistrée',e);}
+}
 
 
 function happyadVideoCommentSaveErrorV16ZI(err){var msg=String((err&&err.message)||err||'Erreur inconnue');if(/row-level security|violates row-level|Supabase bloque|RLS|Session Supabase expirée|42501/i.test(msg)){try{if(typeof toast==='function')toast(msg);else console.warn(msg);}catch(_e){console.warn(msg)}return;}alert('Commentaire non enregistré : '+msg);}
@@ -1860,7 +1859,7 @@ async function attachVideo(reel,p){
     if(seek){seek.addEventListener('input',e=>{e.stopPropagation();seek.dragging=true;const d=v.duration||0;const pct=Math.max(0,Math.min(100,Number(seek.value||0)/10));if(controls)controls.style.setProperty('--haVideoProgress',String(pct));if(d)v.currentTime=(seek.value/1000)*d});seek.addEventListener('change',()=>{seek.dragging=false;happyadSetVideoProgress();});}
     if(hot)hot.onclick=e=>{e.stopPropagation();reel.classList.add('showTime');clearTimeout(reel.timer);reel.timer=setTimeout(()=>reel.classList.remove('showTime'),4200)};
     if(controls)controls.onclick=e=>e.stopPropagation();
-    v.addEventListener('play',()=>{revealVideo();setPausedUI(v);try{happyadMarkVideoViewSupabase(p.id).then(()=>refreshVideoLikeFromSupabase(p.id))}catch(e){}try{happyadRecordListingVideoViewV820(p)}catch(e){}});
+    v.addEventListener('playing',()=>{revealVideo();setPausedUI(v);try{happyadMarkVideoViewSupabase(p.id).then(()=>refreshVideoLikeFromSupabase(p.id))}catch(e){}try{happyadRecordListingVideoViewV820(p)}catch(e){}});
 v.addEventListener('ended',()=>{try{v.currentTime=0;happyadPlayVideo(v,true);}catch(e){}});
 v.addEventListener('pause',()=>{setPausedUI(v);happyadVideoApplyPendingUpgradeV1087(reel,v)});
     happyadVideoScheduleAuto1080V1087(reel,p);
@@ -2535,13 +2534,7 @@ $('commentList').onclick=async e=>{const mention=e.target.closest('[data-happyad
 </script>
 
 
-<script id="happyad-v212-video-view-open-mark">
-(function(){
-  function markStart(){try{var id=new URLSearchParams(location.search).get('post');if(id&&typeof happyadMarkVideoViewSupabase==='function')happyadMarkVideoViewSupabase(id).then(function(){try{refreshVideoLikeFromSupabase(id)}catch(e){}});}catch(e){}}
-  setTimeout(markStart,700);
-  window.addEventListener('pageshow',function(){setTimeout(markStart,700)});
-})();
-</script>
+<!-- V1171: view marking happens only on actual playing, never on page open. -->
 
 
 <style id="happyad-v404-video-avatar-profile-fix">

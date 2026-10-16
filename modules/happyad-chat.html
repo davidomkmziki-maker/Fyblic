@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="fr" data-happyad-page="chat">
 <head>
+<script src="../core/fyblic-counts-v1171.js?v=1171"></script>
 <style id="happyad-profile-avatar-source-v995">
 /* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
 .avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
@@ -2527,6 +2528,7 @@
   body.fyblic-guest-boutique-v1105 .switcher [data-mode="market"]{display:flex!important}
   @media(max-width:390px){body.fyblic-guest-boutique-v1105 .switcher{grid-template-columns:38px minmax(0,1fr)!important}}
 </style>
+<style>.market-view-count,.detail-views-inline{flex-direction:row-reverse!important;gap:4px;white-space:nowrap}</style>
 </head>
 <body>
   <div class="app">
@@ -3536,7 +3538,7 @@
     }
     function ownerListingStatsV933(offer={}){
       const back=ensureOwnerListingSheetV933(),body=back.querySelector('#marketOwnerSheetBodyV933');back.querySelector('#marketOwnerSheetTitleV933').textContent='Statistiques de l’annonce';
-      body.innerHTML=`<div class="market-owner-stats-v933"><div class="market-owner-stat-v933"><small>Vues</small><strong>${escapeHtml(compactListingViews(offer.viewsCount||offer.listing_views_count||0))}</strong></div><div class="market-owner-stat-v933"><small>Statut</small><strong>${escapeHtml(ownerListingStatusLabelV933(offer))}</strong></div></div><div class="market-owner-actions-v933"><button type="button" data-owner-back-v933>Retour à la gestion</button></div>`;
+      body.innerHTML=`<div class="market-owner-stats-v933"><div class="market-owner-stat-v933"><small>Vues</small><strong>${escapeHtml('—')}</strong></div><div class="market-owner-stat-v933"><small>Statut</small><strong>${escapeHtml(ownerListingStatusLabelV933(offer))}</strong></div></div><div class="market-owner-actions-v933"><button type="button" data-owner-back-v933>Retour à la gestion</button></div>`;
       body.querySelector('[data-owner-back-v933]').onclick=()=>openOwnerListingMenuV933(offer);back.classList.add('show');
     }
     function renderOwnerListingMenuV1029(offer={}){
@@ -6127,7 +6129,7 @@
       const kind=/(violet|purple|jaune|yellow|business|entreprise|personnal)/i.test(badge)?'violet':'bleu';
       return `<span class="market-seller-badge ${kind}" title="Badge Fyblic" aria-label="Badge Fyblic vérifié"></span>`;
     }
-    function compactListingViews(value){const n=Math.max(0,Number(value)||0);if(n<1000)return String(n);if(n<1000000)return `${Math.floor(n/100)/10}K`;return `${Math.floor(n/100000)/10}M`}
+    function compactListingViews(value){return window.FyblicCountsV220.compact(value)}
     function listingViewerKey(){
       const uid=currentUserUidV933();if(uid)return `user:${uid}`;
       const key='HAPPYAD_LISTING_VIEWER_KEY_V820';let value='';try{value=localStorage.getItem(key)||''}catch(_){}
@@ -6138,11 +6140,12 @@
     const listingViewPromises=new Map();
     async function recordListingView(offer,source='marketplace'){
       const id=String(offer?.id||offer?.post_id||'').trim();if(!id||id==='draft-listing-preview')return Number(offer?.viewsCount||0);
-      if(isOwnListingV933(offer))return Number(offer?.viewsCount||offer?.listing_views_count||0);
+
       if(listingViewPromises.has(id))return listingViewPromises.get(id);
       const task=(async()=>{
         const client=resolveSupabaseClient();if(!client||typeof client.rpc!=='function')return Number(offer?.viewsCount||0);
-        const response=await client.rpc('happyad_record_listing_view_v1',{p_listing_id:id,p_source:source,p_viewer_key:listingViewerKey()});
+        const countV220=source==='detail'?await FyblicCountsV220.record(client,id,'listing'):Number((await FyblicCountsV220.read(client,id)).listingViews);
+        const response={data:{count:countV220}};
         if(response?.error)throw response.error;
         const count=Number(response?.data?.count??response?.data?.views_count??offer?.viewsCount??0)||0;
         offer.viewsCount=count;offer.listing_views_count=count;
@@ -6359,7 +6362,7 @@
           <div class="market-card-body">
             <div class="market-card-title-row">
               <h2 class="market-card-title">${escapeHtml(offer.title)}</h2>
-              <span class="market-card-statuses"><span class="market-view-count"><svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.7" stroke="currentColor" stroke-width="1.8"/></svg><span data-listing-view-count="${escapeHtml(String(offer.id))}">${compactListingViews(offer.viewsCount||offer.listing_views_count||0)}</span></span><span class="market-active-mark ${listingPausedV933(offer)?'paused':''}">${escapeHtml(ownerListingStatusLabelV933(offer))}</span></span>
+              <span class="market-card-statuses"><span class="market-view-count"><svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.7" stroke="currentColor" stroke-width="1.8"/></svg><span data-listing-view-count="${escapeHtml(String(offer.id))}">${'—'}</span></span><span class="market-active-mark ${listingPausedV933(offer)?'paused':''}">${escapeHtml(ownerListingStatusLabelV933(offer))}</span></span>
             </div>
             <div class="market-card-meta">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.3" stroke="currentColor" stroke-width="1.8"/></svg>
@@ -9855,7 +9858,7 @@ J’affiche déjà les résultats disponibles sans lieu précis. Dans quelle vil
           <div class="detail-info"><small>${o.category==='Emploi'?'Salaire':'Prix'}</small><strong>${escapeHtml(displayedPrice)}</strong></div>
           <div class="detail-info"><small>Accès</small><strong>${Number.isFinite(Number(o.score))?`${Number(o.score)}% compatible`:'Annonce directe'}</strong></div>
           <div class="detail-info"><small>Annonceur</small><strong class="detail-seller-inline">${escapeHtml(o.seller||'Utilisateur Fyblic')}${listingBadgeMarkup(o)}</strong></div>
-          <div class="detail-info"><small>Vues</small><strong class="detail-views-inline"><svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.7" stroke="currentColor" stroke-width="1.8"/></svg><span data-listing-view-count="${escapeHtml(String(o.id||''))}">${compactListingViews(o.viewsCount||o.listing_views_count||0)}</span></strong></div>
+          <div class="detail-info"><small>Vues</small><strong class="detail-views-inline"><svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.7" stroke="currentColor" stroke-width="1.8"/></svg><span data-listing-view-count="${escapeHtml(String(o.id||''))}">${'—'}</span></strong></div>
           <div class="detail-info"><small>Catégorie</small><strong>${escapeHtml(o.category)}</strong></div>
           <div class="detail-info"><small>Disponibilité</small><strong>${escapeHtml(o.availability||'Selon l’annonce')}</strong></div>
           <div class="detail-info"><small>Statut</small><strong>${escapeHtml(ownerListingStatusLabelV933(o))} · Fyblic</strong></div>

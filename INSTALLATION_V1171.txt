@@ -1,0 +1,46 @@
+FYBLIC SITE V1171 — Compteurs partagés avec Android V220
+
+PRÉREQUIS
+Exécuter le SQL corrigé FYBLIC_V220_VUES_UNIQUES.sql dans Supabase SQL Editor.
+Le fichier inclus utilise text pour les identifiants de publications. Si ce SQL
+corrigé a déjà réussi pour Android V220, aucune nouvelle exécution n'est requise.
+
+CHANGEMENTS
+- Même registre de vues uniques par compte pour Android et le site : pas de
+  double comptage lors d'une lecture sur les deux supports avec le même compte.
+- Boutique : lecture seule sur les cartes, enregistrement à l'ouverture du détail.
+  Les visiteurs non connectés n'ajoutent aucune vue de compte.
+- Compteur à gauche de l'œil ; formats 1k, 999.9k, 1M et 1MD.
+- Centrale vidéo : enregistrement sur l'événement playing, pas à l'ouverture de
+  la page ni au clic depuis l'accueil. Le serveur impose l'unicité par compte.
+- Statistiques : nouvelles vues uniques pour les vidéos et likes actifs distincts.
+  Les photos affichent leurs J’aime au lieu d'un nombre de vues vidéo.
+- Voir la publication : parcours habituel Centrale vidéo / publication photo.
+- Cache des statistiques et version du service worker actualisés.
+- Les autres indicateurs restent issus des services existants.
+
+HISTORIQUE
+Les anciennes impressions ne sont pas importées dans le nouveau registre.
+Les vues déjà enregistrées par Android V220 apparaissent aussi sur le site.
+Le déploiement du site ne remet pas ce registre à zéro et ne supprime aucun like.
+
+DÉPLOIEMENT TERMUX
+Depuis le dossier de votre dépôt Git du SITE :
+unzip -o /sdcard/Download/FYBLIC_SITE_V1171_VUES_UNIQUES_STATISTIQUES.zip -d .
+git add -A
+git commit -m "V1171 : compteurs partages avec Android V220"
+git push origin main
+Attendre le déploiement Netlify puis fermer et rouvrir le site pour activer le cache.
+
+VALIDATION
+104 scripts JavaScript intégrés + 4 fichiers JS contrôlés syntaxiquement.
+Tests du module partagé exécutés avec un client simulé : formatage, visiteur,
+compte connecté, dates inclusives, likes des photos, classement et erreur réseau.
+Pas de test connecté à votre Supabase ni de déploiement exécuté ici.
+
+À TESTER SUR DEUX COMPTES
+A ouvre plusieurs fois la même annonce sur Android puis le site : une seule vue.
+B ouvre la même annonce : une deuxième vue.
+A lit la même vidéo sur les deux supports : une seule vue dans Centrale vidéo.
+Une photo : aucun ajout de vue vidéo, J’aime actif visible dans les statistiques.
+Vérifier Voir la publication sur une photo et une vidéo.

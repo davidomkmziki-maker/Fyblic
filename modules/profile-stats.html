@@ -2,6 +2,7 @@
 
 <html lang="fr" data-happyad-page="profile-stats">
 <head>
+<script src="../core/fyblic-counts-v1171.js?v=1171"></script>
 <style id="happyad-profile-avatar-source-v995">
 /* V995 — fallback profil directement dans le source : aucune initiale B/C/K en connexion faible. */
 .avatar,.commentAvatar,.commentAvatarSmall,.haCommentAvatar,.radarInitial,.mentionAutoAvatar,.person-selector-avatar,.chat-avatar,.haProfileAvatar,.avatar-fallback,.ha629Avatar,.ha629SharedPostAvatarV912,.haMentionAvatarV63,.haSearchAvatar,.happy-avatar,.hsvAvatar,.haV872Avatar,.haHomeFsAvatar,.hsvmAv,.haSamAv,.sponsorCreatorInitial,#currentUserAvatar,#chatAvatar,#profileAvatar,#hsvAvatar{background-color:#fff;background-image:radial-gradient(circle at 50% 34%,#9299a4 0 19.5%,transparent 20.5%),radial-gradient(ellipse 61% 45% at 50% 103%,#9299a4 0 98%,transparent 100%);background-repeat:no-repeat;background-size:100% 100%;background-position:center;color:transparent!important;text-shadow:none!important}
@@ -2064,7 +2065,7 @@
         const c=this.client||await this.resolveClient();let last;
         for(const name of this.rpcOrder(storageKey,names)){
           const r=await c.rpc(name,params);
-          if(!r.error){this.rememberRpc(storageKey,name);if(typeof onSuccess==='function')onSuccess(name);return r.data}
+          if(!r.error){this.rememberRpc(storageKey,name);if(typeof onSuccess==='function')onSuccess(name);return window.FyblicCountsV220.analytics(c,name.includes('profile_contents')?'contents':name.includes('profile_analytics')?'profile':'content',r.data||{},params)}
           last=r.error;
           if(this.missing(r.error)){this.forgetRpc(storageKey,name);continue}
           throw r.error;
@@ -2853,26 +2854,16 @@
       activeViewerId='';activeViewerItem=null;
     }
     async function openContentViewerLive(id){
-      const base=contentById[id];
-      if(!base)return;
-      activeViewerId=id;
-      const requestId=++viewerRequestId;
-      mediaViewerStage.innerHTML='<div class="media-viewer-loading"><strong>Ouverture du contenu</strong></div>';
-      renderMediaViewerItem(base);
-      openMediaViewerSurface();
-      try{
-        const range=statsState.range||getRange();
-        const detail=await withDeadline(HappyadStatsDataProvider.callContent(id,range.start,range.end),10000,'Le contenu met plus de temps que prévu');
-        if(requestId!==viewerRequestId||activeViewerId!==id)return;
-        const merged=mergeContentAnalytics(base,detail);
-        contentById[id]=merged;
-        renderMediaViewerItem(merged);
-      }catch(error){
-        if(requestId!==viewerRequestId||activeViewerId!==id)return;
-        if(!hasRenderableMedia(base)){
-          mediaViewerStage.innerHTML=`<div class="media-viewer-error"><strong>Contenu indisponible</strong><span>${escapeHtml(error?.message||'Impossible de charger ce média')}</span></div>`;
+      const target=contentById[id];if(!target)return;
+      const video=inferMediaKind(target)==='video';
+      const path='modules/'+(video?'video':'photo')+'.html?post='+encodeURIComponent(id)+(video?'&autoplay=1':'')+'&from=stats';
+      try{const topWindow=window.top;
+        if(typeof topWindow.happyadOpenInternalUrlV492==='function'){
+          try{window.parent.HappyProfileStatsHostV855R4?.close({reason:'open-publication'});}catch(_){}
+          topWindow.happyadOpenInternalUrlV492(path,{source:'stats-v1171',force:true});return;
         }
-      }
+      }catch(_){}
+      window.top.location.href=new URL('../'+path,location.href).href;return;
     }
     function openActiveViewerStats(){
       const id=activeViewerId;
@@ -3196,6 +3187,9 @@
         mediaSources:x.mediaSources||x.media_sources||[],
         iframeSources:x.iframeSources||x.iframe_sources||[],
         createdAt:String(x.createdAt||x.created_at||''),
+        isVideo:typeof x.isVideo==='boolean'?x.isVideo:undefined,
+        countsVerifiedV220:!!x.countsVerifiedV220,
+        likes:number(x.likes),
         views:number(x.views),
         reach:number(x.reach),
         interactions:number(x.interactions),
@@ -3234,6 +3228,7 @@
     }
     function inferMediaKind(item){
       const x=item||{};
+      if(typeof x.isVideo==='boolean')return x.isVideo?'video':'photo';
       const declared=[
         x.mediaKind,x.media_kind,x.mediaType,x.media_type,
         x.contentType,x.content_type,x.mimeType,x.mime_type,
@@ -3304,7 +3299,7 @@
       const media=mergeMediaDetails(item,d);
       const likes=number(d.likes),comments=number(d.comments),shares=number(d.shares),saves=number(d.saves);
       const detailBreakdown=likes+comments+shares+saves;
-      const views=Math.max(number(item.views),number(d.views));
+      const views=d.countsVerifiedV220?number(d.views):number(item.views);
       const reach=Math.max(number(item.reach),number(d.reach));
       const interactions=Math.max(number(item.interactions),number(d.interactions),detailBreakdown);
       const publicationKey=String(d.publicationKey||d.publication_key||item.publicationKey||'');
@@ -3430,7 +3425,7 @@
         <div class="rank ${index===0?'gold':index===1?'blue':index===2?'purple':''}">${index+1}</div>
         <div class="thumb ${escapeHtml(kind)}">${mediaPreview(item)}</div>
         <div class="list-copy"><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(mediaLabel(item))}</small></div>
-        <div class="list-value"><span class="view-number">${icon('eye')}<strong>${formatCompactLive(item.views)}</strong></span><small>${formatCompactLive(item.interactions)} interactions</small></div>
+        <div class="list-value"><span class="view-number">${icon(inferMediaKind(item)==='video'?'eye':'heart')}<strong>${formatCompactLive(inferMediaKind(item)==='video'?item.views:item.likes)}</strong></span><small>${formatCompactLive(item.interactions)} interactions</small></div>
       </button>`;
     }
     function contentGridCardMarkup(item){
@@ -3438,7 +3433,7 @@
       return `<button class="content-grid-card" type="button" data-content-id="${escapeHtml(item.id)}" aria-haspopup="dialog" aria-label="Voir ${escapeHtml(item.title)} en plein écran">
         <span class="content-grid-media thumb ${escapeHtml(kind)}">
           ${mediaPreview(item)}
-          <span class="content-grid-views">${icon('eye')}<strong>${formatCompactLive(item.views)}</strong></span>
+          <span class="content-grid-views">${icon(inferMediaKind(item)==='video'?'eye':'heart')}<strong>${formatCompactLive(inferMediaKind(item)==='video'?item.views:item.likes)}</strong></span>
         </span>
         <strong class="content-grid-title">${escapeHtml(item.title)}</strong>
       </button>`;
@@ -3648,7 +3643,7 @@
       if(panel)panel.hidden=true;
       if(empty){empty.hidden=false;empty.innerHTML=`<strong>Rétention indisponible pour cette période</strong>${escapeHtml(content.retentionReason||'Les vues seules ne permettent pas de calculer la durée réellement regardée. Les données apparaîtront après l’enregistrement des événements video_watch.')}`}
     }
-    const STATS_CACHE_VERSION='v855r20';
+    const STATS_CACHE_VERSION='v1171-unique-views';
     const STATS_CACHE_FRESH_MS=15*60*1000;
     const STATS_CACHE_STALE_MS=24*60*60*1000;
     let activeAnalyticsLoad=null,activeAnalyticsKey='',lastAnalyticsCompletedKey='',lastAnalyticsCompletedAt=0;
@@ -3738,7 +3733,7 @@
         if(!window.parent||window.parent===window)return null;
         const host=window.parent.HappyProfileStatsHostV855R4||window.parent.HappyProfileStatsHostV855R3||window.parent.HappyProfileStatsHostV855R2;
         if(!host||typeof host.getPrefetch!=='function')return null;
-        return host.getPrefetch(range)||null;
+        return null; // V1171: legacy host data has unverified impression counters.
       }catch(_){return null}
     }
     function signalStatsDataReady(source){
@@ -3845,7 +3840,7 @@
         const range=statsState.range||getRange(),base=contentById[id]||{};
         const raw=await withDeadline(HappyadStatsDataProvider.callContent(id,range.start,range.end),18000,'Les statistiques du contenu mettent plus de temps que prévu');
         let d=mergeContentAnalytics(base,raw);
-        if(d.interactionBreakdownUnavailable&&String(d.publicationKey||'').startsWith('album:')){
+        if(!d.countsVerifiedV220&&d.interactionBreakdownUnavailable&&String(d.publicationKey||'').startsWith('album:')){
           try{
             const grouped=await withDeadline(HappyadStatsDataProvider.callGroupedBreakdown(d,range.start,range.end),12000,'La répartition des interactions met plus de temps que prévu');
             if(grouped&&grouped.breakdownResolved)d=mergeContentAnalytics(d,{...raw,...grouped});
@@ -3854,11 +3849,11 @@
         const kind=inferMediaKind(d);
         contentById[id]=d;
         const actionValue=value=>d.interactionBreakdownUnavailable?'—':formatNumber(value);
-        const common=[contentStat('Vues',formatCompactLive(d.views)),contentStat('Comptes touchés',formatCompactLive(d.reach)),contentStat('J’aime',actionValue(d.likes)),contentStat('Commentaires',actionValue(d.comments)),contentStat('Partages',actionValue(d.shares)),contentStat('Enregistrements',actionValue(d.saves)),contentStat('Interactions',formatNumber(d.interactions))];
+        const common=[...(kind==='video'?[contentStat('Vues uniques',formatCompactLive(d.views))]:[]),contentStat('Comptes touchés',formatCompactLive(d.reach)),contentStat('J’aime',formatNumber(d.likes)),contentStat('Commentaires',actionValue(d.comments)),contentStat('Partages',actionValue(d.shares)),contentStat('Enregistrements',actionValue(d.saves)),contentStat('Interactions',formatNumber(d.interactions))];
         const breakdownNote=d.interactionBreakdownUnavailable?'<div class="content-detail-note">Le total des interactions est disponible, mais la répartition détaillée n’a pas pu être récupérée pour le moment. Réessayez après vérification de la connexion.</div>':'';
         const extra=(kind==='video'?`<h4 class="content-detail-section">Visionnage vidéo</h4><div class="content-stat-grid">${contentStat('Temps visionné total',formatHours(number(d.watchSeconds)/3600),true)}${contentStat('Durée moyenne',`${number(d.averageWatchSeconds).toLocaleString(GLOBAL_LOCALE,{maximumFractionDigits:1})} s`,true)}${contentStat('Taux de complétion',formatPercent(d.completionRate),true)}${contentStat('Sessions',formatNumber(d.watchEvents),true)}</div>`:kind==='embed'?'<div class="content-detail-note">Cette publication intégrée n’est pas identifiée comme une vidéo. Aucune durée de visionnage vidéo n’est affichée.</div>':'<div class="content-detail-note">Les photos n’affichent pas de durée de visionnage.</div>')+breakdownNote;
         const mediaBlock=showMedia?detailMediaPreview(d):'';
-        const fullscreenLabel=showMedia?'Voir la publication en plein écran':'Revoir la publication en plein écran';
+        const fullscreenLabel='Voir la publication';
         byId('drawerContent').innerHTML=`${mediaBlock}<div class="content-detail-identity${showMedia?'':' stats-only'}"><strong>${escapeHtml(d.title||'Publication Fyblic')}</strong><small>${escapeHtml(mediaLabel(d))} • Données du compte</small></div><button class="content-full-button" data-open-media-full="${escapeHtml(id)}" type="button">${icon('eye')}<span>${fullscreenLabel}</span></button><h4 class="content-detail-section">Performance générale</h4><div class="content-stat-grid">${common.join('')}</div>${extra}`;
         if(showMedia)requestAnimationFrame(startDetailMedia);
       }catch(e){byId('drawerContent').innerHTML=`<div class="live-error-card">${escapeHtml(e?.message||'Données indisponibles')}</div>`}

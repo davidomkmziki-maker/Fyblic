@@ -148,20 +148,8 @@
   }
   function viewMark(id,key){return 'HAPPYAD_LISTING_VIEWED_V820_'+String(id).replace(/[^a-zA-Z0-9_-]/g,'_')+'_'+String(key).replace(/[^a-zA-Z0-9_-]/g,'_').slice(-48);}
   async function recordView(post,source){
-    var id=idOf(post);if(!id||!isMarketplace(post))return 0;
-    var key=viewerKey(),mark=viewMark(id,key);
-    try{if(sessionStorage.getItem(mark)==='1'||localStorage.getItem(mark)==='1')return Number(post.listing_views_count||0);}catch(_e){}
-    if(pending.has(id))return pending.get(id);
-    var task=(async function(){
-      var c=client();if(!c||typeof c.rpc!=='function')return Number(post.listing_views_count||0);
-      var result=await c.rpc('happyad_record_listing_view_v1',{p_listing_id:id,p_source:source||'home',p_viewer_key:key});
-      if(result&&result.error)throw result.error;
-      var count=Number(result&&result.data&&(result.data.count||result.data.views_count)||0)||0;
-      post.listing_views_count=count;post.listingViewsCount=count;
-      try{sessionStorage.setItem(mark,'1');localStorage.setItem(mark,'1');}catch(_e){}
-      return count;
-    })().catch(function(){return Number(post.listing_views_count||0);}).finally(function(){setTimeout(function(){pending.delete(id);},800);});
-    pending.set(id,task);return task;
+    var id=idOf(post),c=client();if(!id||!c)return 0;
+    try{var row=await window.FyblicCountsV220.read(c,id);post.listing_views_count=Number(row.listingViews)||0;return post.listing_views_count;}catch(_e){return 0;}
   }
   function closeHomeFullscreen(){try{var box=document.getElementById('happyadHomePhotoFullscreen');if(box){box.classList.remove('on');document.body.classList.remove('haHomePhotoFsLock');}}catch(_e){}}
   function stopVideoBeforeListingV850(){
