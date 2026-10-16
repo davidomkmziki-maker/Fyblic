@@ -1,0 +1,19 @@
+VÉRIFICATION V222.1 ANDROID / V1173.1 SITE
+
+Correctifs supplémentaires après vérification :
+- Site : un accusé de lecture tardif ne remet plus à zéro les nouveaux non lus.
+- Site : lire un ancien passage du chat ne supprime plus le compteur d'un nouvel arrivant.
+- Site : les échecs du renouvellement de session conservent le délai progressif.
+- Android : une synchronisation ignorée car le fil est occupé n'annonce plus une récupération réussie; elle est retentée.
+- Android : le chargement du chat s'arrête dès que le cache préchargé est disponible.
+
+Validation : tests exécutés pour conversation cachée, historique éloigné, accusé tardif,
+lecture courante et délais de renouvellement 500/1000/2000 ms. Syntaxe Kotlin des
+fichiers modifiés : aucune erreur. Syntaxe JavaScript : 72 scripts intégrés et 3
+fichiers externes valides. Archives ZIP contrôlées.
+Limites : pas de compilation APK complète, pas de test visuel sur appareil ni sur
+la base Supabase de production. Tester après déploiement avec deux comptes.
+Stories : aperçu vidéo partagé de 30 secondes, lien vers la publication complète
+avec zoom doux; texte conservé pour les photos. Aucun nouveau SQL.
+Android versionCode 223, versionName 22.2.1; configuration de signature conservée.
+

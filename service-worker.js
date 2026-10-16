@@ -3,7 +3,7 @@
 /* Fyblic V855R66 - Options instantanées, Supabase vérifié en arrière-plan */
 'use strict';
 
-var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1173-session-messages-20261016';
+var HAPPYAD_SW_VERSION = 'fyblic-pwa-v1173-1-session-messages-20261016';
 var HAPPYAD_STATIC_CACHE = HAPPYAD_SW_VERSION + '-static';
 var HAPPYAD_RUNTIME_CACHE = HAPPYAD_SW_VERSION + '-runtime';
 var HAPPYAD_MEDIA_CACHE = 'happyad-message-media-v1';
@@ -100,10 +100,10 @@ var HAPPYAD_APP_SHELL = [
   './core/interaction-privacy-master-v855r52.js?v=972-p1-single-client',
   './core/post-options-master-v693.js?v=1104-menu-tap-polish',
   './core/share-button-bridge.js?v=938-guest-share-gate',
-  './core/story-master-v699.js?v=1173-full-post-cta',
+  './core/story-master-v699.js?v=1173-1-full-post-cta',
   './core/notification-master-v700.js?v=1031-storage-security',
   './core/fyblic-toast-master-v1105.js?v=1105-action-toast',
-  './core/auth-session-master-v598.js?v=1173-session-resume',
+  './core/auth-session-master-v598.js?v=1173-1-session-resume',
   './conditions-utilisation.html?v=1113-legal-boot-stable',
   './core/profile-identity-stable-master-v741.js?v=1031-storage-security',
   './core/profile-avatar-recovery-master-v743.js?v=855r32-no-resurrection',

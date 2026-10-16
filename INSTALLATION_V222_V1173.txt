@@ -1,3 +1,22 @@
+VÉRIFICATION V222.1 ANDROID / V1173.1 SITE
+
+Correctifs supplémentaires après vérification :
+- Site : un accusé de lecture tardif ne remet plus à zéro les nouveaux non lus.
+- Site : lire un ancien passage du chat ne supprime plus le compteur d'un nouvel arrivant.
+- Site : les échecs du renouvellement de session conservent le délai progressif.
+- Android : une synchronisation ignorée car le fil est occupé n'annonce plus une récupération réussie; elle est retentée.
+- Android : le chargement du chat s'arrête dès que le cache préchargé est disponible.
+
+Validation : tests exécutés pour conversation cachée, historique éloigné, accusé tardif,
+lecture courante et délais de renouvellement 500/1000/2000 ms. Syntaxe Kotlin des
+fichiers modifiés : aucune erreur. Syntaxe JavaScript : 72 scripts intégrés et 3
+fichiers externes valides. Archives ZIP contrôlées.
+Limites : pas de compilation APK complète, pas de test visuel sur appareil ni sur
+la base Supabase de production. Tester après déploiement avec deux comptes.
+Stories : aperçu vidéo partagé de 30 secondes, lien vers la publication complète
+avec zoom doux; texte conservé pour les photos. Aucun nouveau SQL.
+Android versionCode 223, versionName 22.2.1; configuration de signature conservée.
+
 FYBLIC ANDROID V222 / SITE V1173 — MESSAGES, STORIES, REPRISE
 
 Messages : mise à jour du compteur avant le préchargement. Les conversations
@@ -36,7 +55,7 @@ TERMUX ANDROID (dossier habituel ~/fyblic-android)
 set -e
 cd "$HOME/fyblic-android"
 test "$(git rev-parse --show-toplevel)" = "$PWD"
-test -f /sdcard/Download/FYBLIC_V222_MESSAGES_STORIES_SESSION.zip
+test -f /sdcard/Download/FYBLIC_V222_1_MESSAGES_STORIES_SESSION.zip
 if [ -n "$(git status --porcelain)" ]; then
   echo "Modifications locales présentes : envoyer le résultat avant de continuer."
   git status --short
@@ -44,9 +63,9 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 test "$(git branch --show-current)" = main
 git pull --ff-only origin main
-unzip -o /sdcard/Download/FYBLIC_V222_MESSAGES_STORIES_SESSION.zip -d .
+unzip -o /sdcard/Download/FYBLIC_V222_1_MESSAGES_STORIES_SESSION.zip -d .
 git add -A
-if ! git diff --cached --quiet; then git commit -m "V222 : messages stories et reprise session"; fi
+if ! git diff --cached --quiet; then git commit -m "V222.1 : messages stories et reprise session"; fi
 git push origin main
 )
 
@@ -55,7 +74,7 @@ TERMUX SITE (dépôt Fyblic.git confirmé)
 set -e
 cd "$HOME/fyblic-v1050-deploy"
 test "$(git rev-parse --show-toplevel)" = "$PWD"
-test -f /sdcard/Download/FYBLIC_SITE_V1173_MESSAGES_STORIES_SESSION.zip
+test -f /sdcard/Download/FYBLIC_SITE_V1173_1_MESSAGES_STORIES_SESSION.zip
 if [ -n "$(git status --porcelain)" ]; then
   echo "Modifications locales présentes : envoyer le résultat avant de continuer."
   git status --short
@@ -63,8 +82,8 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 test "$(git branch --show-current)" = main
 git pull --ff-only origin main
-unzip -o /sdcard/Download/FYBLIC_SITE_V1173_MESSAGES_STORIES_SESSION.zip -d .
+unzip -o /sdcard/Download/FYBLIC_SITE_V1173_1_MESSAGES_STORIES_SESSION.zip -d .
 git add -A
-if ! git diff --cached --quiet; then git commit -m "V1173 : messages stories et reprise session"; fi
+if ! git diff --cached --quiet; then git commit -m "V1173.1 : messages stories et reprise session"; fi
 git push origin main
 )

@@ -337,14 +337,14 @@
         }
         var result=await c.auth.getSession();
         if(result&&result.error)throw result.error;
-        sessionErrorCountV937=0;
-        if(sessionRetryTimerV937){clearTimeout(sessionRetryTimerV937);sessionRetryTimerV937=0;}
         var s=result&&result.data&&result.data.session||null;
         if(s && s.refresh_token && Number(s.expires_at||0)<=Date.now()/1000+120 && typeof c.auth.refreshSession==='function'){
           var refreshed=await c.auth.refreshSession();
           if(refreshed&&refreshed.error)throw refreshed.error;
           s=refreshed&&refreshed.data&&refreshed.data.session||s;
         }
+        sessionErrorCountV937=0;
+        if(sessionRetryTimerV937){clearTimeout(sessionRetryTimerV937);sessionRetryTimerV937=0;}
         if(s&&readLoginGuardPendingV855R47()){
           try{await c.auth.signOut();}catch(_e){}
           resetLoginGuardV855R47();

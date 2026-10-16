@@ -12881,7 +12881,7 @@
         }
         conversations.forEach(item => {
           if(item.id === conversationId){
-            item.unread = 0;
+            if(finiteNumber(item.lastSeq,0)>0 && finiteNumber(item.lastSeq,0)<=confirmedRead)item.unread = 0;
             item.myDelivered = Math.max(item.myDelivered || 0,confirmedDelivered);
             item.myRead = Math.max(item.myRead || 0,confirmedRead);
           }
@@ -14095,7 +14095,7 @@
             && normalized.serverSeq > 0
             && conversationId === currentConversationId
             && conversationId === readEligibleConversationId
-            && messageCenterVisible();
+            && messageCenterVisible() && chatNearBottom(220);
           /* Peinture immédiate du texte/tombstone, puis récupération différentielle
              enrichie (pièce jointe, états) sans relire l'historique. */
           if(normalized.deletedForAll) markMessageDeletedForAllLocally(normalized.id,normalized);
