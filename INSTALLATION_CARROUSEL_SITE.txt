@@ -1,0 +1,7 @@
+Correctif site uniquement. Conserver le site actuel.
+Extraire fyblic-radar-carousel.js à la racine du dépôt site.
+Ajouter une seule fois avant </body>, après les scripts existants :
+<script src="/fyblic-radar-carousel.js"></script>
+Le SQL FYBLIC_ADMIN_CARROUSEL.sql doit déjà être exécuté.
+Les images sont gérées depuis l’admin, aucune image à copier dans le site.
+Changement toutes les 4 secondes, transition vers la gauche, pause en arrière-plan.
